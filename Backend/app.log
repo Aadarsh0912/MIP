@@ -1,0 +1,943 @@
+2026-05-09 23:22:28,207  INFO  QualityAnalyser loaded.
+2026-05-09 23:22:28,262  INFO  IntentClassifier loaded.
+2026-05-09 23:22:28,265  INFO  Prompt Lab backend  |  model: google/gemma-3-27b-it:free  |  port: 5000
+2026-05-09 23:22:28,291  INFO  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-09 23:22:28,291  INFO  [33mPress CTRL+C to quit[0m
+2026-05-09 23:22:50,249  INFO  127.0.0.1 - - [09/May/2026 23:22:50] "GET /api/health HTTP/1.1" 200 -
+2026-05-09 23:22:50,516  INFO  127.0.0.1 - - [09/May/2026 23:22:50] "GET /api/health HTTP/1.1" 200 -
+2026-05-09 23:23:06,425  INFO  127.0.0.1 - - [09/May/2026 23:23:06] "GET /api/health HTTP/1.1" 200 -
+2026-05-09 23:23:06,732  INFO  127.0.0.1 - - [09/May/2026 23:23:06] "GET /api/health HTTP/1.1" 200 -
+2026-05-09 23:25:26,665  INFO  QualityAnalyser loaded.
+2026-05-09 23:25:26,726  INFO  IntentClassifier loaded.
+2026-05-09 23:25:26,729  INFO  Prompt Lab backend  |  model: google/gemma-3-27b-it:free  |  port: 5000
+2026-05-09 23:25:26,762  INFO  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-09 23:25:26,763  INFO  [33mPress CTRL+C to quit[0m
+2026-05-09 23:25:35,192  INFO  192.168.1.5 - - [09/May/2026 23:25:35] "[33mGET / HTTP/1.1[0m" 404 -
+2026-05-09 23:25:35,329  INFO  192.168.1.5 - - [09/May/2026 23:25:35] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-05-09 23:25:45,768  INFO  127.0.0.1 - - [09/May/2026 23:25:45] "GET /api/health HTTP/1.1" 200 -
+2026-05-09 23:25:46,029  INFO  127.0.0.1 - - [09/May/2026 23:25:46] "GET /api/health HTTP/1.1" 200 -
+2026-05-09 23:28:58,790  INFO  QualityAnalyser loaded.
+2026-05-09 23:28:58,846  INFO  IntentClassifier loaded.
+2026-05-09 23:28:58,849  INFO  Prompt Lab backend  |  model: google/gemma-3-27b-it:free  |  port: 5000
+2026-05-09 23:28:58,870  INFO  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-09 23:28:58,870  INFO  [33mPress CTRL+C to quit[0m
+2026-05-09 23:30:06,617  INFO  QualityAnalyser loaded.
+2026-05-09 23:30:06,672  INFO  IntentClassifier loaded.
+2026-05-09 23:30:06,675  INFO  Prompt Lab backend  |  model: google/gemma-3-27b-it:free  |  port: 5000
+2026-05-09 23:30:06,689  INFO  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-09 23:30:06,689  INFO  [33mPress CTRL+C to quit[0m
+2026-05-09 23:30:24,558  INFO  127.0.0.1 - - [09/May/2026 23:30:24] "GET /api/health HTTP/1.1" 200 -
+2026-05-09 23:30:24,822  INFO  127.0.0.1 - - [09/May/2026 23:30:24] "GET /api/health HTTP/1.1" 200 -
+2026-05-09 23:30:24,869  INFO  127.0.0.1 - - [09/May/2026 23:30:24] "GET /api/history HTTP/1.1" 200 -
+2026-05-09 23:30:24,885  INFO  127.0.0.1 - - [09/May/2026 23:30:24] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-09 23:30:33,180  INFO  127.0.0.1 - - [09/May/2026 23:30:33] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:34,511  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:34,515  INFO  127.0.0.1 - - [09/May/2026 23:30:34] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:34,911  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:34,915  INFO  127.0.0.1 - - [09/May/2026 23:30:34] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:37,185  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:37,190  INFO  127.0.0.1 - - [09/May/2026 23:30:37] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:37,512  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:37,514  INFO  127.0.0.1 - - [09/May/2026 23:30:37] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:37,809  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:37,811  INFO  127.0.0.1 - - [09/May/2026 23:30:37] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:39,549  INFO  127.0.0.1 - - [09/May/2026 23:30:39] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:40,690  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:40,692  INFO  127.0.0.1 - - [09/May/2026 23:30:40] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:41,390  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:41,393  INFO  127.0.0.1 - - [09/May/2026 23:30:41] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:42,744  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:42,747  INFO  127.0.0.1 - - [09/May/2026 23:30:42] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:43,018  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:43,020  INFO  127.0.0.1 - - [09/May/2026 23:30:43] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:43,480  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:43,484  INFO  127.0.0.1 - - [09/May/2026 23:30:43] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:45,658  INFO  127.0.0.1 - - [09/May/2026 23:30:45] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:46,465  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:46,468  INFO  127.0.0.1 - - [09/May/2026 23:30:46] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:48,475  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:48,477  INFO  127.0.0.1 - - [09/May/2026 23:30:48] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:50,642  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:50,643  INFO  127.0.0.1 - - [09/May/2026 23:30:50] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:30:51,108  INFO  127.0.0.1 - - [09/May/2026 23:30:51] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-09 23:30:52,272  ERROR  OpenRouter error: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:30:52,275  INFO  127.0.0.1 - - [09/May/2026 23:30:52] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-09 23:30:52,283  INFO  127.0.0.1 - - [09/May/2026 23:30:52] "GET /api/history HTTP/1.1" 200 -
+2026-05-09 23:31:05,241  INFO  127.0.0.1 - - [09/May/2026 23:31:05] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:31:06,100  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:31:06,103  INFO  127.0.0.1 - - [09/May/2026 23:31:06] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:31:06,265  INFO  127.0.0.1 - - [09/May/2026 23:31:06] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-09 23:31:07,082  ERROR  OpenRouter error: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:31:07,084  INFO  127.0.0.1 - - [09/May/2026 23:31:07] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-09 23:31:07,092  INFO  127.0.0.1 - - [09/May/2026 23:31:07] "GET /api/history HTTP/1.1" 200 -
+2026-05-09 23:34:00,908  INFO  127.0.0.1 - - [09/May/2026 23:34:00] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:02,074  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:34:02,076  INFO  127.0.0.1 - - [09/May/2026 23:34:02] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:04,213  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:34:04,215  INFO  127.0.0.1 - - [09/May/2026 23:34:04] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:06,577  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:34:06,579  INFO  127.0.0.1 - - [09/May/2026 23:34:06] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:08,083  INFO  127.0.0.1 - - [09/May/2026 23:34:08] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:09,259  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:34:09,261  INFO  127.0.0.1 - - [09/May/2026 23:34:09] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:10,517  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:34:10,519  INFO  127.0.0.1 - - [09/May/2026 23:34:10] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:16,475  INFO  127.0.0.1 - - [09/May/2026 23:34:16] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:17,303  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:34:17,305  INFO  127.0.0.1 - - [09/May/2026 23:34:17] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:17,497  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:34:17,499  INFO  127.0.0.1 - - [09/May/2026 23:34:17] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:20,893  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:34:20,895  INFO  127.0.0.1 - - [09/May/2026 23:34:20] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:21,766  INFO  127.0.0.1 - - [09/May/2026 23:34:21] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:22,628  WARNING  AI tips failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:34:22,630  INFO  127.0.0.1 - - [09/May/2026 23:34:22] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-09 23:34:24,224  INFO  127.0.0.1 - - [09/May/2026 23:34:24] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-09 23:34:25,387  ERROR  OpenRouter error: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:34:25,390  INFO  127.0.0.1 - - [09/May/2026 23:34:25] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-09 23:34:25,396  INFO  127.0.0.1 - - [09/May/2026 23:34:25] "GET /api/history HTTP/1.1" 200 -
+2026-05-09 23:42:16,866  INFO  127.0.0.1 - - [09/May/2026 23:42:16] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-09 23:42:18,078  ERROR  OpenRouter error: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-09 23:42:18,080  INFO  127.0.0.1 - - [09/May/2026 23:42:18] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-09 23:42:18,086  INFO  127.0.0.1 - - [09/May/2026 23:42:18] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:00:01,954  INFO  QualityAnalyser loaded.
+2026-05-10 00:00:02,017  INFO  IntentClassifier loaded.
+2026-05-10 00:00:02,021  INFO  Prompt Lab backend  |  model=mistralai/mistral-7b-instruct:free  |  port=5000
+2026-05-10 00:00:02,021  INFO  API key set: True
+2026-05-10 00:00:02,047  INFO  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 00:00:02,048  INFO  [33mPress CTRL+C to quit[0m
+2026-05-10 00:00:26,044  INFO  127.0.0.1 - - [10/May/2026 00:00:26] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:00:26,292  INFO  127.0.0.1 - - [10/May/2026 00:00:26] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:00:26,354  INFO  127.0.0.1 - - [10/May/2026 00:00:26] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:00:26,369  INFO  127.0.0.1 - - [10/May/2026 00:00:26] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:00:31,354  INFO  127.0.0.1 - - [10/May/2026 00:00:31] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:00:31,727  INFO  → OpenRouter  model=mistralai/mistral-7b-instruct:free  max_tokens=1200
+2026-05-10 00:00:32,595  ERROR  OpenRouter HTTP 404  body={"error":{"message":"No endpoints found for mistralai/mistral-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:00:32,595  ERROR  generate() AI response failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:00:32,598  INFO  127.0.0.1 - - [10/May/2026 00:00:32] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 00:00:32,610  INFO  127.0.0.1 - - [10/May/2026 00:00:32] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:01:29,513  INFO  → OpenRouter  model=mistralai/mistral-7b-instruct:free  max_tokens=1200
+2026-05-10 00:01:30,283  ERROR  OpenRouter HTTP 404  body={"error":{"message":"No endpoints found for mistralai/mistral-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:01:30,284  ERROR  generate() AI response failed: 404 Client Error: Not Found for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:01:30,286  INFO  127.0.0.1 - - [10/May/2026 00:01:30] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 00:08:55,710  INFO  QualityAnalyser loaded.
+2026-05-10 00:08:55,767  INFO  IntentClassifier loaded.
+2026-05-10 00:08:55,770  INFO  Prompt Lab backend  |  model=nvidia/nemotron-3-super-120b-a12b:free  |  port=5000
+2026-05-10 00:08:55,770  INFO  API key set: True
+2026-05-10 00:08:55,793  INFO  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 00:08:55,794  INFO  [33mPress CTRL+C to quit[0m
+2026-05-10 00:09:18,717  INFO  127.0.0.1 - - [10/May/2026 00:09:18] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:09:18,979  INFO  127.0.0.1 - - [10/May/2026 00:09:18] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:09:19,026  INFO  127.0.0.1 - - [10/May/2026 00:09:19] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:09:19,043  INFO  127.0.0.1 - - [10/May/2026 00:09:19] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:09:24,425  INFO  127.0.0.1 - - [10/May/2026 00:09:24] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:09:24,805  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:09:25,227  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:09:26,511  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:09:28,398  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:09:29,742  INFO  127.0.0.1 - - [10/May/2026 00:09:29] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:09:30,095  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=1200
+2026-05-10 00:09:31,854  INFO  ← OpenRouter OK  usage={'prompt_tokens': 138, 'completion_tokens': 400, 'total_tokens': 538, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 464, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:09:31,856  WARNING  AI tips failed (non-fatal): Expecting value: line 1 column 1 (char 0)
+2026-05-10 00:09:31,857  INFO  127.0.0.1 - - [10/May/2026 00:09:31] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:09:35,506  INFO  ← OpenRouter OK  usage={'prompt_tokens': 169, 'completion_tokens': 232, 'total_tokens': 401, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 226, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:09:35,508  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:09:39,837  INFO  ← OpenRouter OK  usage={'prompt_tokens': 138, 'completion_tokens': 250, 'total_tokens': 388, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 181, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:09:39,843  INFO  127.0.0.1 - - [10/May/2026 00:09:39] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 00:09:40,166  INFO  127.0.0.1 - - [10/May/2026 00:09:40] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:09:40,589  INFO  ← OpenRouter OK  usage={'prompt_tokens': 137, 'completion_tokens': 400, 'total_tokens': 537, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 389, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:09:40,592  WARNING  AI tips failed (non-fatal): Unterminated string starting at: line 1 column 208 (char 207)
+2026-05-10 00:09:40,593  INFO  127.0.0.1 - - [10/May/2026 00:09:40] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:09:44,583  INFO  ← OpenRouter OK  usage={'prompt_tokens': 138, 'completion_tokens': 321, 'total_tokens': 459, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 227, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:09:44,585  INFO  127.0.0.1 - - [10/May/2026 00:09:44] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:09:44,607  INFO  ← OpenRouter OK  usage={'prompt_tokens': 137, 'completion_tokens': 355, 'total_tokens': 492, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 268, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:09:44,611  WARNING  AI tips failed (non-fatal): Extra data: line 1 column 499 (char 498)
+2026-05-10 00:09:44,612  INFO  127.0.0.1 - - [10/May/2026 00:09:44] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:01,646  INFO  127.0.0.1 - - [10/May/2026 00:10:01] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:01,951  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:10:05,562  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:10:06,430  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:10:07,426  INFO  127.0.0.1 - - [10/May/2026 00:10:07] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:07,792  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:10:09,972  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:10:11,058  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:10:14,531  INFO  ← OpenRouter OK  usage={'prompt_tokens': 141, 'completion_tokens': 400, 'total_tokens': 541, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 275, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:10:14,533  WARNING  AI tips failed (non-fatal): Unterminated string starting at: line 1 column 472 (char 471)
+2026-05-10 00:10:14,534  INFO  127.0.0.1 - - [10/May/2026 00:10:14] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:14,842  INFO  127.0.0.1 - - [10/May/2026 00:10:14] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:15,194  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:10:16,080  INFO  ← OpenRouter OK  usage={'prompt_tokens': 142, 'completion_tokens': 400, 'total_tokens': 542, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 394, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:10:16,083  WARNING  AI tips failed (non-fatal): Unterminated string starting at: line 1 column 67 (char 66)
+2026-05-10 00:10:16,083  INFO  127.0.0.1 - - [10/May/2026 00:10:16] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:16,438  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:10:17,088  INFO  ← OpenRouter OK  usage={'prompt_tokens': 141, 'completion_tokens': 400, 'total_tokens': 541, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 349, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:10:17,090  WARNING  AI tips failed (non-fatal): Unterminated string starting at: line 3 column 56 (char 243)
+2026-05-10 00:10:17,091  INFO  127.0.0.1 - - [10/May/2026 00:10:17] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:17,459  INFO  127.0.0.1 - - [10/May/2026 00:10:17] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:10:17,816  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=1200
+2026-05-10 00:10:18,317  INFO  ← OpenRouter OK  usage={'prompt_tokens': 143, 'completion_tokens': 400, 'total_tokens': 543, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 444, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:10:18,319  WARNING  AI tips failed (non-fatal): Unterminated string starting at: line 1 column 47 (char 46)
+2026-05-10 00:10:18,320  INFO  127.0.0.1 - - [10/May/2026 00:10:18] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:25,592  INFO  ← OpenRouter OK  usage={'prompt_tokens': 139, 'completion_tokens': 400, 'total_tokens': 539, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 359, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:10:25,595  WARNING  AI tips failed (non-fatal): Expecting value: line 1 column 393 (char 392)
+2026-05-10 00:10:25,596  INFO  127.0.0.1 - - [10/May/2026 00:10:25] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:29,233  INFO  ← OpenRouter OK  usage={'prompt_tokens': 144, 'completion_tokens': 338, 'total_tokens': 482, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 193, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:10:29,235  INFO  127.0.0.1 - - [10/May/2026 00:10:29] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:43,663  INFO  ← OpenRouter OK  usage={'prompt_tokens': 146, 'completion_tokens': 342, 'total_tokens': 488, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 201, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:10:43,666  INFO  127.0.0.1 - - [10/May/2026 00:10:43] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:10:57,204  INFO  ← OpenRouter OK  usage={'prompt_tokens': 148, 'completion_tokens': 400, 'total_tokens': 548, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 319, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:10:57,208  WARNING  AI tips failed (non-fatal): Unterminated string starting at: line 1 column 453 (char 452)
+2026-05-10 00:10:57,209  INFO  127.0.0.1 - - [10/May/2026 00:10:57] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:11:19,461  INFO  ← OpenRouter OK  usage={'prompt_tokens': 179, 'completion_tokens': 1200, 'total_tokens': 1379, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 1000, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:11:19,464  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:11:32,382  INFO  ← OpenRouter OK  usage={'prompt_tokens': 148, 'completion_tokens': 400, 'total_tokens': 548, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 401, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:11:32,384  WARNING  AI tips failed (non-fatal): Unterminated string starting at: line 1 column 49 (char 48)
+2026-05-10 00:11:32,385  INFO  127.0.0.1 - - [10/May/2026 00:11:32] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 00:11:32,707  INFO  127.0.0.1 - - [10/May/2026 00:11:32] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:12:40,606  INFO  127.0.0.1 - - [10/May/2026 00:12:40] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:12:40,921  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:12:40,970  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:12:41,810  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:12:44,687  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:12:47,682  INFO  127.0.0.1 - - [10/May/2026 00:12:47] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:12:48,042  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:12:51,044  INFO  ← OpenRouter OK  usage={'prompt_tokens': 139, 'completion_tokens': 359, 'total_tokens': 498, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 252, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:12:51,046  INFO  127.0.0.1 - - [10/May/2026 00:12:51] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:12:53,430  INFO  127.0.0.1 - - [10/May/2026 00:12:53] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:12:53,785  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=1200
+2026-05-10 00:12:55,621  INFO  ← OpenRouter OK  usage={'prompt_tokens': 139, 'completion_tokens': 400, 'total_tokens': 539, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 362, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:12:55,623  WARNING  AI tips failed (non-fatal): Unterminated string starting at: line 1 column 420 (char 419)
+2026-05-10 00:12:55,623  INFO  127.0.0.1 - - [10/May/2026 00:12:55] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:12:56,091  INFO  ← OpenRouter OK  usage={'prompt_tokens': 138, 'completion_tokens': 400, 'total_tokens': 538, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 441, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:12:56,092  WARNING  AI tips failed (non-fatal): Expecting value: line 1 column 1 (char 0)
+2026-05-10 00:12:56,093  INFO  127.0.0.1 - - [10/May/2026 00:12:56] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:12:57,381  INFO  ← OpenRouter OK  usage={'prompt_tokens': 174, 'completion_tokens': 150, 'total_tokens': 324, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 94, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:12:57,383  INFO  → OpenRouter  model=nvidia/nemotron-3-super-120b-a12b:free  max_tokens=400
+2026-05-10 00:12:58,527  INFO  ← OpenRouter OK  usage={'prompt_tokens': 143, 'completion_tokens': 350, 'total_tokens': 493, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 229, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:12:58,529  INFO  127.0.0.1 - - [10/May/2026 00:12:58] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:13:01,453  INFO  ← OpenRouter OK  usage={'prompt_tokens': 141, 'completion_tokens': 376, 'total_tokens': 517, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 316, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:13:01,456  INFO  127.0.0.1 - - [10/May/2026 00:13:01] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:13:46,290  INFO  ← OpenRouter OK  usage={'prompt_tokens': 143, 'completion_tokens': 309, 'total_tokens': 452, 'cost': 0, 'is_byok': False, 'prompt_tokens_details': {'cached_tokens': 0, 'cache_write_tokens': 0, 'audio_tokens': 0, 'video_tokens': 0}, 'cost_details': {'upstream_inference_cost': 0, 'upstream_inference_prompt_cost': 0, 'upstream_inference_completions_cost': 0}, 'completion_tokens_details': {'reasoning_tokens': 194, 'image_tokens': 0, 'audio_tokens': 0}}
+2026-05-10 00:13:46,293  INFO  127.0.0.1 - - [10/May/2026 00:13:46] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 00:13:46,609  INFO  127.0.0.1 - - [10/May/2026 00:13:46] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:14:39,583  INFO  127.0.0.1 - - [10/May/2026 00:14:39] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:14:39,900  INFO  127.0.0.1 - - [10/May/2026 00:14:39] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:14:39,901  INFO  127.0.0.1 - - [10/May/2026 00:14:39] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:14:39,902  INFO  127.0.0.1 - - [10/May/2026 00:14:39] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:14:44,664  INFO  127.0.0.1 - - [10/May/2026 00:14:44] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:14:44,930  INFO  127.0.0.1 - - [10/May/2026 00:14:44] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:14:44,977  INFO  127.0.0.1 - - [10/May/2026 00:14:44] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:14:44,979  INFO  127.0.0.1 - - [10/May/2026 00:14:44] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:14:51,503  INFO  127.0.0.1 - - [10/May/2026 00:14:51] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:14:51,821  INFO  127.0.0.1 - - [10/May/2026 00:14:51] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:14:51,822  INFO  127.0.0.1 - - [10/May/2026 00:14:51] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:14:51,825  INFO  127.0.0.1 - - [10/May/2026 00:14:51] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:14:57,383  INFO  127.0.0.1 - - [10/May/2026 00:14:57] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:14:57,648  INFO  127.0.0.1 - - [10/May/2026 00:14:57] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:14:57,695  INFO  127.0.0.1 - - [10/May/2026 00:14:57] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:14:57,697  INFO  127.0.0.1 - - [10/May/2026 00:14:57] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:16:45,517  INFO  127.0.0.1 - - [10/May/2026 00:16:45] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:16:45,758  INFO  127.0.0.1 - - [10/May/2026 00:16:45] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:16:45,837  INFO  127.0.0.1 - - [10/May/2026 00:16:45] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:16:45,837  INFO  127.0.0.1 - - [10/May/2026 00:16:45] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:19:44,390  INFO  QualityAnalyser loaded.
+2026-05-10 00:19:44,471  INFO  IntentClassifier loaded.
+2026-05-10 00:19:44,474  INFO  Prompt Lab  |  model=nvidia/nemotron-3-super-120b-a12b:free  |  port=5000
+2026-05-10 00:19:44,508  INFO  [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 00:19:44,509  INFO  [33mPress CTRL+C to quit[0m
+2026-05-10 00:20:08,963  INFO  127.0.0.1 - - [10/May/2026 00:20:08] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:20:09,209  INFO  127.0.0.1 - - [10/May/2026 00:20:09] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:20:09,272  INFO  127.0.0.1 - - [10/May/2026 00:20:09] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:20:09,302  INFO  127.0.0.1 - - [10/May/2026 00:20:09] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:20:16,773  INFO  127.0.0.1 - - [10/May/2026 00:20:16] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:20:23,094  INFO  127.0.0.1 - - [10/May/2026 00:20:23] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:20:23,396  WARNING  AI tips failed (non-fatal): Unterminated string starting at: line 2 column 61 (char 62)
+2026-05-10 00:20:23,398  INFO  127.0.0.1 - - [10/May/2026 00:20:23] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:20:23,908  WARNING  AI tips failed (non-fatal): Unterminated string starting at: line 1 column 53 (char 52)
+2026-05-10 00:20:23,909  INFO  127.0.0.1 - - [10/May/2026 00:20:23] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:20:29,194  INFO  127.0.0.1 - - [10/May/2026 00:20:29] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:20:31,195  WARNING  AI tips failed (non-fatal): Expecting value: line 1 column 1 (char 0)
+2026-05-10 00:20:31,196  INFO  127.0.0.1 - - [10/May/2026 00:20:31] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:20:32,227  WARNING  AI tips failed (non-fatal): Expecting value: line 1 column 1 (char 0)
+2026-05-10 00:20:32,229  INFO  127.0.0.1 - - [10/May/2026 00:20:32] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:20:32,936  WARNING  AI tips failed (non-fatal): Expecting value: line 1 column 1 (char 0)
+2026-05-10 00:20:32,937  INFO  127.0.0.1 - - [10/May/2026 00:20:32] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:20:34,050  WARNING  AI tips failed (non-fatal): Expecting value: line 1 column 1 (char 0)
+2026-05-10 00:20:34,051  INFO  127.0.0.1 - - [10/May/2026 00:20:34] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:20:46,595  WARNING  AI tips failed (non-fatal): Expecting value: line 1 column 1 (char 0)
+2026-05-10 00:20:46,596  INFO  127.0.0.1 - - [10/May/2026 00:20:46] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:20:50,083  INFO  127.0.0.1 - - [10/May/2026 00:20:50] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 00:20:50,390  INFO  127.0.0.1 - - [10/May/2026 00:20:50] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:24:55,252 INFO QualityAnalyser loaded.
+2026-05-10 00:24:55,308 INFO IntentClassifier loaded.
+2026-05-10 00:24:55,312 INFO Prompt Lab | model=nvidia/nemotron-3-super-120b-a12b:free | port=5000 | key=set
+2026-05-10 00:24:55,329 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 00:24:55,330 INFO [33mPress CTRL+C to quit[0m
+2026-05-10 00:25:24,706 INFO 127.0.0.1 - - [10/May/2026 00:25:24] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:25:24,969 INFO 127.0.0.1 - - [10/May/2026 00:25:24] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:25:25,016 INFO 127.0.0.1 - - [10/May/2026 00:25:25] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:25:25,031 INFO 127.0.0.1 - - [10/May/2026 00:25:25] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:25:33,543 INFO 127.0.0.1 - - [10/May/2026 00:25:33] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:25:38,412 WARNING Tips failed (non-fatal): Unterminated string starting at: line 1 column 39 (char 38)
+2026-05-10 00:25:38,413 INFO 127.0.0.1 - - [10/May/2026 00:25:38] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:25:39,433 INFO 127.0.0.1 - - [10/May/2026 00:25:39] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:25:42,586 WARNING Tips failed (non-fatal): Unterminated string starting at: line 1 column 52 (char 51)
+2026-05-10 00:25:42,586 INFO 127.0.0.1 - - [10/May/2026 00:25:42] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:25:43,897 INFO 127.0.0.1 - - [10/May/2026 00:25:43] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:25:45,648 INFO 127.0.0.1 - - [10/May/2026 00:25:45] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:25:46,134 WARNING Tips failed (non-fatal): Unterminated string starting at: line 1 column 52 (char 51)
+2026-05-10 00:25:46,135 INFO 127.0.0.1 - - [10/May/2026 00:25:46] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:25:46,413 WARNING Tips failed (non-fatal): Unterminated string starting at: line 1 column 161 (char 160)
+2026-05-10 00:25:46,414 INFO 127.0.0.1 - - [10/May/2026 00:25:46] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:25:52,358 WARNING Tips failed (non-fatal): Unterminated string starting at: line 1 column 50 (char 49)
+2026-05-10 00:25:57,453 WARNING Tips failed (non-fatal): Unterminated string starting at: line 1 column 39 (char 38)
+2026-05-10 00:25:57,454 INFO 127.0.0.1 - - [10/May/2026 00:25:57] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:25:58,062 INFO 127.0.0.1 - - [10/May/2026 00:25:58] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:26:15,183 INFO 127.0.0.1 - - [10/May/2026 00:26:15] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:26:23,146 WARNING Tips failed (non-fatal): Expecting value: line 1 column 2 (char 1)
+2026-05-10 00:26:23,147 INFO 127.0.0.1 - - [10/May/2026 00:26:23] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:26:26,523 WARNING Tips failed (non-fatal): Expecting value: line 1 column 1 (char 0)
+2026-05-10 00:26:26,523 INFO 127.0.0.1 - - [10/May/2026 00:26:26] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:26:26,943 WARNING Tips failed (non-fatal): Unterminated string starting at: line 1 column 186 (char 185)
+2026-05-10 00:26:26,944 INFO 127.0.0.1 - - [10/May/2026 00:26:26] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:26:32,630 INFO 127.0.0.1 - - [10/May/2026 00:26:32] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 00:26:32,954 INFO 127.0.0.1 - - [10/May/2026 00:26:32] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:37:36,884 INFO QualityAnalyser loaded.
+2026-05-10 00:37:36,940 INFO IntentClassifier loaded.
+2026-05-10 00:37:36,943 INFO Prompt Lab | model=meta-llama/llama-3.3-70b-instruct:free | port=5000 | key=set
+2026-05-10 00:37:36,963 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 00:37:36,964 INFO [33mPress CTRL+C to quit[0m
+2026-05-10 00:37:52,876 INFO 127.0.0.1 - - [10/May/2026 00:37:52] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:37:53,120 INFO 127.0.0.1 - - [10/May/2026 00:37:53] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:37:53,184 INFO 127.0.0.1 - - [10/May/2026 00:37:53] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:37:53,213 INFO 127.0.0.1 - - [10/May/2026 00:37:53] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:37:59,437 INFO 127.0.0.1 - - [10/May/2026 00:37:59] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:01,334 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":18,"retry_after_seconds_raw":17.218,"headers":{"Retry-After":"18"
+2026-05-10 00:38:01,335 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:01,337 INFO 127.0.0.1 - - [10/May/2026 00:38:01] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:03,044 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":16,"retry_after_seconds_raw":15.497,"headers":{"Retry-After":"16"
+2026-05-10 00:38:03,044 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:03,045 INFO 127.0.0.1 - - [10/May/2026 00:38:03] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:05,233 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":14,"retry_after_seconds_raw":13.308,"headers":{"Retry-After":"14"
+2026-05-10 00:38:05,234 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:05,235 INFO 127.0.0.1 - - [10/May/2026 00:38:05] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:10,537 INFO 127.0.0.1 - - [10/May/2026 00:38:10] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:11,481 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":8,"retry_after_seconds_raw":7.068,"headers":{"Retry-After":"8"}}}
+2026-05-10 00:38:11,481 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:11,482 INFO 127.0.0.1 - - [10/May/2026 00:38:11] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:13,214 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":6,"retry_after_seconds_raw":5.329,"headers":{"Retry-After":"6"}}}
+2026-05-10 00:38:13,215 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:13,216 INFO 127.0.0.1 - - [10/May/2026 00:38:13] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:16,157 INFO 127.0.0.1 - - [10/May/2026 00:38:16] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:17,043 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":2,"retry_after_seconds_raw":1.498,"headers":{"Retry-After":"2"}}}
+2026-05-10 00:38:17,043 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:17,044 INFO 127.0.0.1 - - [10/May/2026 00:38:17] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:17,870 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":1,"retry_after_seconds_raw":0.698,"headers":{"Retry-After":"1"}}}
+2026-05-10 00:38:17,870 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:17,870 INFO 127.0.0.1 - - [10/May/2026 00:38:17] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:19,398 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":30,"retry_after_seconds_raw":29.207,"headers":{"Retry-After":"30"
+2026-05-10 00:38:19,398 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:19,398 INFO 127.0.0.1 - - [10/May/2026 00:38:19] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:38:21,814 INFO 127.0.0.1 - - [10/May/2026 00:38:21] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:38:22,424 ERROR OpenRouter 429: {"error":{"message":"Rate limit exceeded: limit_rpm/meta-llama/llama-3.3-70b-instruct/839b2e30-a1b4-4974-b980-3e534b5873b1. High demand for meta-llama/llama-3.3-70b-instruct:free on OpenRouter - limited to 8 requests per minute. Please retry shortly.","code":429,"metadata":{"headers":{"X-RateLimit-Limit":"8","X-RateLimit-Remaining":"0","X-RateLimit-Reset":"1778353740000"},"provider_name":null}},"u
+2026-05-10 00:38:22,425 ERROR Response failed: 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:22,425 INFO 127.0.0.1 - - [10/May/2026 00:38:22] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 00:38:22,431 INFO 127.0.0.1 - - [10/May/2026 00:38:22] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:38:22,434 ERROR OpenRouter 429: {"error":{"message":"Rate limit exceeded: limit_rpm/meta-llama/llama-3.3-70b-instruct/839b2e30-a1b4-4974-b980-3e534b5873b1. High demand for meta-llama/llama-3.3-70b-instruct:free on OpenRouter - limited to 8 requests per minute. Please retry shortly.","code":429,"metadata":{"headers":{"X-RateLimit-Limit":"8","X-RateLimit-Remaining":"0","X-RateLimit-Reset":"1778353740000"},"provider_name":null}},"u
+2026-05-10 00:38:22,435 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:30,210 INFO 127.0.0.1 - - [10/May/2026 00:38:30] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:38:30,801 ERROR OpenRouter 429: {"error":{"message":"Rate limit exceeded: limit_rpm/meta-llama/llama-3.3-70b-instruct/839b2e30-a1b4-4974-b980-3e534b5873b1. High demand for meta-llama/llama-3.3-70b-instruct:free on OpenRouter - limited to 8 requests per minute. Please retry shortly.","code":429,"metadata":{"headers":{"X-RateLimit-Limit":"8","X-RateLimit-Remaining":"0","X-RateLimit-Reset":"1778353740000"},"provider_name":null}},"u
+2026-05-10 00:38:30,801 ERROR Response failed: 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:38:30,802 INFO 127.0.0.1 - - [10/May/2026 00:38:30] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 00:38:30,810 INFO 127.0.0.1 - - [10/May/2026 00:38:30] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:38:30,826 ERROR OpenRouter 429: {"error":{"message":"Rate limit exceeded: limit_rpm/meta-llama/llama-3.3-70b-instruct/839b2e30-a1b4-4974-b980-3e534b5873b1. High demand for meta-llama/llama-3.3-70b-instruct:free on OpenRouter - limited to 8 requests per minute. Please retry shortly.","code":429,"metadata":{"headers":{"X-RateLimit-Limit":"8","X-RateLimit-Remaining":"0","X-RateLimit-Reset":"1778353740000"},"provider_name":null}},"u
+2026-05-10 00:38:30,826 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:40:50,084 INFO QualityAnalyser loaded.
+2026-05-10 00:40:50,142 INFO IntentClassifier loaded.
+2026-05-10 00:40:50,145 INFO Prompt Lab | model=meta-llama/llama-3.3-70b-instruct:free | port=5000 | key=set
+2026-05-10 00:40:50,164 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 00:40:50,164 INFO [33mPress CTRL+C to quit[0m
+2026-05-10 00:41:11,087 INFO 127.0.0.1 - - [10/May/2026 00:41:11] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:41:12,871 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":7,"retry_after_seconds_raw":6.142,"headers":{"Retry-After":"7"}}}
+2026-05-10 00:41:12,871 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":7,"retry_after_seconds_raw":6.149,"headers":{"Retry-After":"7"}}}
+2026-05-10 00:41:12,872 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:41:12,872 ERROR Response failed: 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:41:12,872 INFO 127.0.0.1 - - [10/May/2026 00:41:12] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 00:41:12,879 INFO 127.0.0.1 - - [10/May/2026 00:41:12] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:41:26,087 INFO 127.0.0.1 - - [10/May/2026 00:41:26] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:41:26,352 INFO 127.0.0.1 - - [10/May/2026 00:41:26] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:41:26,400 INFO 127.0.0.1 - - [10/May/2026 00:41:26] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:41:26,417 INFO 127.0.0.1 - - [10/May/2026 00:41:26] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:41:30,244 INFO 127.0.0.1 - - [10/May/2026 00:41:30] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:41:31,210 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":18,"retry_after_seconds_raw":17.898,"headers":{"Retry-After":"18"
+2026-05-10 00:41:31,211 ERROR Response failed: 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:41:31,211 INFO 127.0.0.1 - - [10/May/2026 00:41:31] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 00:41:31,217 INFO 127.0.0.1 - - [10/May/2026 00:41:31] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:41:31,217 ERROR OpenRouter 429: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":18,"retry_after_seconds_raw":17.899,"headers":{"Retry-After":"18"
+2026-05-10 00:41:31,218 WARNING Tips failed (non-fatal): 429 Client Error: Too Many Requests for url: https://openrouter.ai/api/v1/chat/completions
+2026-05-10 00:44:36,385 INFO QualityAnalyser loaded.
+2026-05-10 00:44:36,441 INFO IntentClassifier loaded.
+2026-05-10 00:44:36,444 INFO Prompt Lab | primary=meta-llama/llama-3.3-70b-instruct:free | port=5000 | key=set
+2026-05-10 00:44:36,462 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 00:44:36,463 INFO [33mPress CTRL+C to quit[0m
+2026-05-10 00:44:52,721 INFO 127.0.0.1 - - [10/May/2026 00:44:52] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:44:54,510 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:44:54,594 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:45:02,580 ERROR meta-llama/llama-3.1-8b-instruct:free error 404: {"error":{"message":"No endpoints found for meta-llama/llama-3.1-8b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:02,639 ERROR mistralai/mistral-7b-instruct:free error 404: {"error":{"message":"No endpoints found for mistralai/mistral-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:02,662 ERROR meta-llama/llama-3.1-8b-instruct:free error 404: {"error":{"message":"No endpoints found for meta-llama/llama-3.1-8b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:02,692 ERROR qwen/qwen-2-7b-instruct:free error 404: {"error":{"message":"No endpoints found for qwen/qwen-2-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:02,692 WARNING Tips failed (non-fatal): All models failed. Last error: qwen/qwen-2-7b-instruct:free HTTP 404
+2026-05-10 00:45:02,713 ERROR mistralai/mistral-7b-instruct:free error 404: {"error":{"message":"No endpoints found for mistralai/mistral-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:02,772 ERROR qwen/qwen-2-7b-instruct:free error 404: {"error":{"message":"No endpoints found for qwen/qwen-2-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:02,773 ERROR Response failed: All models failed. Last error: qwen/qwen-2-7b-instruct:free HTTP 404
+2026-05-10 00:45:02,773 INFO 127.0.0.1 - - [10/May/2026 00:45:02] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 00:45:02,784 INFO 127.0.0.1 - - [10/May/2026 00:45:02] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:45:06,224 INFO 127.0.0.1 - - [10/May/2026 00:45:06] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:45:07,178 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:45:07,182 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:45:15,238 ERROR meta-llama/llama-3.1-8b-instruct:free error 404: {"error":{"message":"No endpoints found for meta-llama/llama-3.1-8b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:15,242 ERROR meta-llama/llama-3.1-8b-instruct:free error 404: {"error":{"message":"No endpoints found for meta-llama/llama-3.1-8b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:15,296 ERROR mistralai/mistral-7b-instruct:free error 404: {"error":{"message":"No endpoints found for mistralai/mistral-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:15,302 ERROR mistralai/mistral-7b-instruct:free error 404: {"error":{"message":"No endpoints found for mistralai/mistral-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:15,347 ERROR qwen/qwen-2-7b-instruct:free error 404: {"error":{"message":"No endpoints found for qwen/qwen-2-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:15,348 WARNING Tips failed (non-fatal): All models failed. Last error: qwen/qwen-2-7b-instruct:free HTTP 404
+2026-05-10 00:45:15,354 ERROR qwen/qwen-2-7b-instruct:free error 404: {"error":{"message":"No endpoints found for qwen/qwen-2-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:15,355 ERROR Response failed: All models failed. Last error: qwen/qwen-2-7b-instruct:free HTTP 404
+2026-05-10 00:45:15,356 INFO 127.0.0.1 - - [10/May/2026 00:45:15] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 00:45:17,310 INFO 127.0.0.1 - - [10/May/2026 00:45:17] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:45:17,626 INFO 127.0.0.1 - - [10/May/2026 00:45:17] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:45:17,628 INFO 127.0.0.1 - - [10/May/2026 00:45:17] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:45:17,631 INFO 127.0.0.1 - - [10/May/2026 00:45:17] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:45:21,177 INFO 127.0.0.1 - - [10/May/2026 00:45:21] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:45:22,072 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:45:22,097 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:45:30,148 ERROR meta-llama/llama-3.1-8b-instruct:free error 404: {"error":{"message":"No endpoints found for meta-llama/llama-3.1-8b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:30,204 ERROR mistralai/mistral-7b-instruct:free error 404: {"error":{"message":"No endpoints found for mistralai/mistral-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:30,233 ERROR meta-llama/llama-3.1-8b-instruct:free error 404: {"error":{"message":"No endpoints found for meta-llama/llama-3.1-8b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:30,265 ERROR qwen/qwen-2-7b-instruct:free error 404: {"error":{"message":"No endpoints found for qwen/qwen-2-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:30,266 ERROR Response failed: All models failed. Last error: qwen/qwen-2-7b-instruct:free HTTP 404
+2026-05-10 00:45:30,266 INFO 127.0.0.1 - - [10/May/2026 00:45:30] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 00:45:30,271 INFO 127.0.0.1 - - [10/May/2026 00:45:30] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:45:30,289 ERROR mistralai/mistral-7b-instruct:free error 404: {"error":{"message":"No endpoints found for mistralai/mistral-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:30,352 ERROR qwen/qwen-2-7b-instruct:free error 404: {"error":{"message":"No endpoints found for qwen/qwen-2-7b-instruct:free.","code":404},"user_id":"user_3DUqjmsgD6TL8juBQiROAkUmImI"}
+2026-05-10 00:45:30,352 WARNING Tips failed (non-fatal): All models failed. Last error: qwen/qwen-2-7b-instruct:free HTTP 404
+2026-05-10 00:49:45,645 INFO QualityAnalyser loaded.
+2026-05-10 00:49:45,702 INFO IntentClassifier loaded.
+2026-05-10 00:49:45,705 INFO Prompt Lab | primary=meta-llama/llama-3.3-70b-instruct:free | port=5000 | key=set
+2026-05-10 00:49:45,729 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 00:49:45,729 INFO [33mPress CTRL+C to quit[0m
+2026-05-10 00:50:10,343 INFO 127.0.0.1 - - [10/May/2026 00:50:10] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:50:10,608 INFO 127.0.0.1 - - [10/May/2026 00:50:10] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 00:50:10,656 INFO 127.0.0.1 - - [10/May/2026 00:50:10] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:50:10,671 INFO 127.0.0.1 - - [10/May/2026 00:50:10] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 00:50:17,925 INFO 127.0.0.1 - - [10/May/2026 00:50:17] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:50:19,788 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 1s, trying next model...
+2026-05-10 00:50:20,061 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 1s, trying next model...
+2026-05-10 00:50:24,902 INFO Response from: openrouter/free
+2026-05-10 00:50:27,182 INFO Response from: openrouter/free
+2026-05-10 00:50:27,185 INFO 127.0.0.1 - - [10/May/2026 00:50:27] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 00:50:27,193 INFO 127.0.0.1 - - [10/May/2026 00:50:27] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:50:46,850 INFO 127.0.0.1 - - [10/May/2026 00:50:46] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:50:47,792 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 3s, trying next model...
+2026-05-10 00:50:48,716 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 2s, trying next model...
+2026-05-10 00:50:50,667 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:50:52,589 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:50:52,948 INFO 127.0.0.1 - - [10/May/2026 00:50:52] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:50:53,906 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:50:55,223 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:50:57,148 WARNING Tips failed (non-fatal): All models failed. Last error: openrouter/free returned null content
+2026-05-10 00:50:57,149 INFO 127.0.0.1 - - [10/May/2026 00:50:57] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:50:57,468 INFO 127.0.0.1 - - [10/May/2026 00:50:57] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:50:58,106 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 5s, trying next model...
+2026-05-10 00:50:58,118 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 5s, trying next model...
+2026-05-10 00:51:00,645 INFO Response from: openrouter/free
+2026-05-10 00:51:00,646 INFO 127.0.0.1 - - [10/May/2026 00:51:00] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:51:02,512 INFO Response from: openrouter/free
+2026-05-10 00:51:02,513 INFO 127.0.0.1 - - [10/May/2026 00:51:02] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:51:12,007 INFO Response from: openrouter/free
+2026-05-10 00:51:12,008 INFO 127.0.0.1 - - [10/May/2026 00:51:12] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:51:13,056 INFO Response from: openrouter/free
+2026-05-10 00:51:13,057 INFO 127.0.0.1 - - [10/May/2026 00:51:13] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:51:14,502 INFO Response from: openrouter/free
+2026-05-10 00:51:16,640 INFO Response from: openrouter/free
+2026-05-10 00:51:16,642 INFO 127.0.0.1 - - [10/May/2026 00:51:16] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:51:20,768 INFO Response from: openrouter/free
+2026-05-10 00:51:20,769 INFO 127.0.0.1 - - [10/May/2026 00:51:20] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 00:51:21,093 INFO 127.0.0.1 - - [10/May/2026 00:51:21] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 00:53:15,355 INFO 127.0.0.1 - - [10/May/2026 00:53:15] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:53:16,600 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 4s, trying next model...
+2026-05-10 00:53:19,065 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 2s, trying next model...
+2026-05-10 00:53:22,540 INFO 127.0.0.1 - - [10/May/2026 00:53:22] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:53:23,841 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:53:24,276 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:53:24,367 WARNING openrouter/free rate-limited (429) — waiting 5s, trying next model...
+2026-05-10 00:53:24,687 INFO Response from: openrouter/free
+2026-05-10 00:53:24,688 INFO 127.0.0.1 - - [10/May/2026 00:53:24] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:53:25,174 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:53:26,502 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:53:28,128 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 8s, trying next model...
+2026-05-10 00:53:29,367 WARNING Tips failed (non-fatal): All models failed. Last error: openrouter/free rate-limited
+2026-05-10 00:53:29,368 INFO 127.0.0.1 - - [10/May/2026 00:53:29] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:53:29,685 INFO 127.0.0.1 - - [10/May/2026 00:53:29] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 00:53:30,330 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 5s, trying next model...
+2026-05-10 00:53:30,336 WARNING meta-llama/llama-3.3-70b-instruct:free rate-limited (429) — waiting 5s, trying next model...
+2026-05-10 00:53:35,247 WARNING openrouter/free rate-limited (429) — waiting 5s, trying next model...
+2026-05-10 00:53:37,792 INFO Response from: openrouter/free
+2026-05-10 00:53:37,794 INFO 127.0.0.1 - - [10/May/2026 00:53:37] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:53:40,248 WARNING Tips failed (non-fatal): All models failed. Last error: openrouter/free rate-limited
+2026-05-10 00:53:40,249 INFO 127.0.0.1 - - [10/May/2026 00:53:40] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:53:40,417 INFO Response from: openrouter/free
+2026-05-10 00:53:40,419 INFO 127.0.0.1 - - [10/May/2026 00:53:40] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:53:43,300 INFO Response from: openrouter/free
+2026-05-10 00:53:43,302 INFO 127.0.0.1 - - [10/May/2026 00:53:43] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:53:43,383 INFO Response from: openrouter/free
+2026-05-10 00:53:43,384 INFO 127.0.0.1 - - [10/May/2026 00:53:43] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 00:53:44,469 INFO Response from: openrouter/free
+2026-05-10 00:53:44,673 INFO Response from: openrouter/free
+2026-05-10 00:53:44,674 INFO 127.0.0.1 - - [10/May/2026 00:53:44] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 00:53:44,997 INFO 127.0.0.1 - - [10/May/2026 00:53:44] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 01:26:09,537 INFO QualityAnalyser loaded.
+2026-05-10 01:26:09,589 INFO IntentClassifier loaded.
+2026-05-10 01:26:09,592 INFO Prompt Lab | primary=llama-3.3-70b-versatile | port=5000 | key=set
+2026-05-10 01:26:09,610 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 01:26:09,610 INFO [33mPress CTRL+C to quit[0m
+2026-05-10 01:26:34,667 INFO 127.0.0.1 - - [10/May/2026 01:26:34] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 01:26:34,931 INFO 127.0.0.1 - - [10/May/2026 01:26:34] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 01:26:34,978 INFO 127.0.0.1 - - [10/May/2026 01:26:34] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 01:26:34,993 INFO 127.0.0.1 - - [10/May/2026 01:26:34] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 01:26:40,119 INFO 127.0.0.1 - - [10/May/2026 01:26:40] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 01:26:41,076 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:26:41,413 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:26:41,416 INFO 127.0.0.1 - - [10/May/2026 01:26:41] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 01:26:41,421 INFO 127.0.0.1 - - [10/May/2026 01:26:41] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 01:26:53,482 INFO 127.0.0.1 - - [10/May/2026 01:26:53] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 01:26:54,248 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:26:54,250 INFO 127.0.0.1 - - [10/May/2026 01:26:54] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 01:26:54,275 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:26:54,277 INFO 127.0.0.1 - - [10/May/2026 01:26:54] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 01:26:55,418 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:26:55,419 INFO 127.0.0.1 - - [10/May/2026 01:26:55] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 01:26:57,371 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:26:57,373 INFO 127.0.0.1 - - [10/May/2026 01:26:57] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 01:26:57,854 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:26:57,855 INFO 127.0.0.1 - - [10/May/2026 01:26:57] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 01:26:59,163 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:26:59,164 INFO 127.0.0.1 - - [10/May/2026 01:26:59] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 01:27:00,738 INFO 127.0.0.1 - - [10/May/2026 01:27:00] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 01:27:01,467 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:27:01,469 INFO 127.0.0.1 - - [10/May/2026 01:27:01] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 01:27:02,688 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:27:02,689 INFO 127.0.0.1 - - [10/May/2026 01:27:02] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 01:27:03,540 INFO 127.0.0.1 - - [10/May/2026 01:27:03] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 01:27:04,379 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:27:04,667 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 01:27:04,667 INFO 127.0.0.1 - - [10/May/2026 01:27:04] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 01:27:04,675 INFO 127.0.0.1 - - [10/May/2026 01:27:04] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 13:29:50,914 WARNING OPENROUTER_API_KEY not set — run: set OPENROUTER_API_KEY=sk-or-v1-...
+2026-05-10 13:29:58,549 INFO QualityAnalyser loaded.
+2026-05-10 13:29:58,633 INFO IntentClassifier loaded.
+2026-05-10 13:29:58,636 INFO Prompt Lab | primary=llama-3.3-70b-versatile | port=5000 | key=MISSING
+2026-05-10 13:29:58,694 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 13:29:58,694 INFO [33mPress CTRL+C to quit[0m
+2026-05-10 13:30:51,229 INFO 127.0.0.1 - - [10/May/2026 13:30:51] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 13:30:51,490 INFO 127.0.0.1 - - [10/May/2026 13:30:51] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 13:30:51,540 INFO 127.0.0.1 - - [10/May/2026 13:30:51] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 13:30:51,572 INFO 127.0.0.1 - - [10/May/2026 13:30:51] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 13:30:58,576 INFO 127.0.0.1 - - [10/May/2026 13:30:58] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:30:59,486 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:30:59,548 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:30:59,605 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:30:59,605 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:30:59,606 INFO 127.0.0.1 - - [10/May/2026 13:30:59] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:00,344 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:00,415 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:00,475 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:00,476 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:00,477 INFO 127.0.0.1 - - [10/May/2026 13:31:00] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:02,725 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:02,788 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:02,846 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:02,846 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:02,847 INFO 127.0.0.1 - - [10/May/2026 13:31:02] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:03,657 INFO 127.0.0.1 - - [10/May/2026 13:31:03] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:04,086 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:04,143 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:04,200 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:04,200 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:04,201 INFO 127.0.0.1 - - [10/May/2026 13:31:04] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:04,999 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:05,068 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:05,126 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:05,126 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:05,127 INFO 127.0.0.1 - - [10/May/2026 13:31:05] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:06,455 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:06,515 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:06,573 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:06,574 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:06,574 INFO 127.0.0.1 - - [10/May/2026 13:31:06] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:08,056 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:08,106 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:08,164 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:08,165 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:08,165 INFO 127.0.0.1 - - [10/May/2026 13:31:08] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:09,047 INFO 127.0.0.1 - - [10/May/2026 13:31:09] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:09,404 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:09,466 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:09,527 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:09,527 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:09,528 INFO 127.0.0.1 - - [10/May/2026 13:31:09] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:09,828 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:09,886 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:09,945 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:09,945 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:09,946 INFO 127.0.0.1 - - [10/May/2026 13:31:09] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:11,251 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:11,306 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:11,365 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:11,365 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:11,366 INFO 127.0.0.1 - - [10/May/2026 13:31:11] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 13:31:11,698 INFO 127.0.0.1 - - [10/May/2026 13:31:11] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 13:31:12,125 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:12,184 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:12,246 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:12,246 ERROR Response failed: All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:12,247 INFO 127.0.0.1 - - [10/May/2026 13:31:12] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 13:31:12,275 INFO 127.0.0.1 - - [10/May/2026 13:31:12] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 13:31:12,528 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:12,588 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:12,649 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:12,649 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:18,719 INFO 127.0.0.1 - - [10/May/2026 13:31:18] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 13:31:19,155 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:19,155 ERROR llama-3.3-70b-versatile error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:19,220 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:19,223 ERROR llama-3.1-8b-instant error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:19,280 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:19,281 ERROR Response failed: All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:19,282 INFO 127.0.0.1 - - [10/May/2026 13:31:19] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-10 13:31:19,284 ERROR gemma2-9b-it error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+
+2026-05-10 13:31:19,285 WARNING Tips failed (non-fatal): All models failed. Last error: gemma2-9b-it HTTP 401
+2026-05-10 13:31:19,287 INFO 127.0.0.1 - - [10/May/2026 13:31:19] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 13:33:53,339 INFO QualityAnalyser loaded.
+2026-05-10 13:33:53,396 INFO IntentClassifier loaded.
+2026-05-10 13:33:53,399 INFO Prompt Lab | primary=llama-3.3-70b-versatile | port=5000 | key=set
+2026-05-10 13:33:53,425 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 13:33:53,426 INFO [33mPress CTRL+C to quit[0m
+2026-05-10 13:33:59,620 INFO 127.0.0.1 - - [10/May/2026 13:33:59] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 13:34:00,786 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 13:34:00,923 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 13:34:00,925 INFO 127.0.0.1 - - [10/May/2026 13:34:00] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 13:34:00,931 INFO 127.0.0.1 - - [10/May/2026 13:34:00] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 17:45:58,810 INFO QualityAnalyser loaded.
+2026-05-10 17:45:58,871 INFO IntentClassifier loaded.
+2026-05-10 17:45:58,875 INFO Prompt Lab | primary=llama-3.3-70b-versatile | port=5000 | key=set
+2026-05-10 17:45:58,898 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-10 17:45:58,899 INFO [33mPress CTRL+C to quit[0m
+2026-05-10 17:46:09,330 INFO 127.0.0.1 - - [10/May/2026 17:46:09] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 17:46:09,594 INFO 127.0.0.1 - - [10/May/2026 17:46:09] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 17:46:09,642 INFO 127.0.0.1 - - [10/May/2026 17:46:09] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 17:46:09,657 INFO 127.0.0.1 - - [10/May/2026 17:46:09] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 17:46:23,594 INFO 127.0.0.1 - - [10/May/2026 17:46:23] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 17:46:24,803 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 17:46:24,805 INFO 127.0.0.1 - - [10/May/2026 17:46:24] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 17:46:28,061 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 17:46:28,062 INFO 127.0.0.1 - - [10/May/2026 17:46:28] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 17:46:28,788 INFO 127.0.0.1 - - [10/May/2026 17:46:28] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 17:46:29,011 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 17:46:29,012 INFO 127.0.0.1 - - [10/May/2026 17:46:29] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 17:46:29,543 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 17:46:29,544 INFO 127.0.0.1 - - [10/May/2026 17:46:29] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 17:46:30,372 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 17:46:30,373 INFO 127.0.0.1 - - [10/May/2026 17:46:30] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 17:46:32,058 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 17:46:32,059 INFO 127.0.0.1 - - [10/May/2026 17:46:32] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 17:46:33,352 INFO 127.0.0.1 - - [10/May/2026 17:46:33] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 17:46:34,017 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 17:46:34,453 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 17:46:34,455 INFO 127.0.0.1 - - [10/May/2026 17:46:34] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 17:46:34,463 INFO 127.0.0.1 - - [10/May/2026 17:46:34] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 17:50:48,060 INFO 127.0.0.1 - - [10/May/2026 17:50:48] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 17:50:48,326 INFO 127.0.0.1 - - [10/May/2026 17:50:48] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 17:50:48,373 INFO 127.0.0.1 - - [10/May/2026 17:50:48] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 17:50:48,377 INFO 127.0.0.1 - - [10/May/2026 17:50:48] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 17:50:57,394 INFO 127.0.0.1 - - [10/May/2026 17:50:57] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 17:50:58,120 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 17:50:58,121 INFO 127.0.0.1 - - [10/May/2026 17:50:58] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 17:54:56,804 INFO 127.0.0.1 - - [10/May/2026 17:54:56] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 17:54:57,059 INFO 127.0.0.1 - - [10/May/2026 17:54:57] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 17:54:57,121 INFO 127.0.0.1 - - [10/May/2026 17:54:57] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 17:54:57,138 INFO 127.0.0.1 - - [10/May/2026 17:54:57] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 18:44:01,721 INFO 127.0.0.1 - - [10/May/2026 18:44:01] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 18:44:01,810 INFO 127.0.0.1 - - [10/May/2026 18:44:01] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 18:44:02,052 INFO 127.0.0.1 - - [10/May/2026 18:44:02] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 18:44:02,068 INFO 127.0.0.1 - - [10/May/2026 18:44:02] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 18:44:07,720 INFO 127.0.0.1 - - [10/May/2026 18:44:07] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 18:44:09,242 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 18:44:09,243 INFO 127.0.0.1 - - [10/May/2026 18:44:09] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 18:45:42,537 INFO 127.0.0.1 - - [10/May/2026 18:45:42] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 18:45:42,800 INFO 127.0.0.1 - - [10/May/2026 18:45:42] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 18:45:42,848 INFO 127.0.0.1 - - [10/May/2026 18:45:42] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 18:45:42,862 INFO 127.0.0.1 - - [10/May/2026 18:45:42] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 22:03:43,186 INFO 127.0.0.1 - - [10/May/2026 22:03:43] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 22:03:43,216 INFO 127.0.0.1 - - [10/May/2026 22:03:43] "GET /api/health HTTP/1.1" 200 -
+2026-05-10 22:03:43,510 INFO 127.0.0.1 - - [10/May/2026 22:03:43] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 22:03:43,517 INFO 127.0.0.1 - - [10/May/2026 22:03:43] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-10 22:04:14,127 INFO 127.0.0.1 - - [10/May/2026 22:04:14] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:15,609 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:15,610 INFO 127.0.0.1 - - [10/May/2026 22:04:15] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:17,430 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:17,433 INFO 127.0.0.1 - - [10/May/2026 22:04:17] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:18,944 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:18,946 INFO 127.0.0.1 - - [10/May/2026 22:04:18] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:19,568 INFO 127.0.0.1 - - [10/May/2026 22:04:19] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:20,495 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:20,496 INFO 127.0.0.1 - - [10/May/2026 22:04:20] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:22,401 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:22,403 INFO 127.0.0.1 - - [10/May/2026 22:04:22] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:23,389 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:23,390 INFO 127.0.0.1 - - [10/May/2026 22:04:23] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:24,880 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:24,881 INFO 127.0.0.1 - - [10/May/2026 22:04:24] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:25,834 INFO 127.0.0.1 - - [10/May/2026 22:04:25] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:26,494 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:26,495 INFO 127.0.0.1 - - [10/May/2026 22:04:26] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:27,719 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:27,720 INFO 127.0.0.1 - - [10/May/2026 22:04:27] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:29,639 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:29,640 INFO 127.0.0.1 - - [10/May/2026 22:04:29] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:32,219 INFO 127.0.0.1 - - [10/May/2026 22:04:32] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:33,020 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:33,023 INFO 127.0.0.1 - - [10/May/2026 22:04:33] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:34,574 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:34,575 INFO 127.0.0.1 - - [10/May/2026 22:04:34] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:36,215 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:36,216 INFO 127.0.0.1 - - [10/May/2026 22:04:36] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:36,885 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:36,885 INFO 127.0.0.1 - - [10/May/2026 22:04:36] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:37,764 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:37,765 INFO 127.0.0.1 - - [10/May/2026 22:04:37] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:40,829 INFO 127.0.0.1 - - [10/May/2026 22:04:40] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:41,668 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:41,669 INFO 127.0.0.1 - - [10/May/2026 22:04:41] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:42,394 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:42,395 INFO 127.0.0.1 - - [10/May/2026 22:04:42] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:44,400 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:44,401 INFO 127.0.0.1 - - [10/May/2026 22:04:44] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:45,547 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:45,549 INFO 127.0.0.1 - - [10/May/2026 22:04:45] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:46,205 INFO 127.0.0.1 - - [10/May/2026 22:04:46] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:47,161 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:47,161 INFO 127.0.0.1 - - [10/May/2026 22:04:47] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:51,146 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:51,147 INFO 127.0.0.1 - - [10/May/2026 22:04:51] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:51,579 INFO 127.0.0.1 - - [10/May/2026 22:04:51] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:52,659 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:52,662 INFO 127.0.0.1 - - [10/May/2026 22:04:52] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:53,274 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:53,275 INFO 127.0.0.1 - - [10/May/2026 22:04:53] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:56,114 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:56,115 INFO 127.0.0.1 - - [10/May/2026 22:04:56] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:57,775 INFO 127.0.0.1 - - [10/May/2026 22:04:57] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:58,650 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:58,651 INFO 127.0.0.1 - - [10/May/2026 22:04:58] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:04:59,505 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:04:59,505 INFO 127.0.0.1 - - [10/May/2026 22:04:59] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:00,969 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:00,970 INFO 127.0.0.1 - - [10/May/2026 22:05:00] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:01,715 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:01,716 INFO 127.0.0.1 - - [10/May/2026 22:05:01] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:03,116 INFO 127.0.0.1 - - [10/May/2026 22:05:03] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:04,089 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:04,090 INFO 127.0.0.1 - - [10/May/2026 22:05:04] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:04,466 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:04,466 INFO 127.0.0.1 - - [10/May/2026 22:05:04] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:05,717 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:05,718 INFO 127.0.0.1 - - [10/May/2026 22:05:05] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:06,436 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:06,437 INFO 127.0.0.1 - - [10/May/2026 22:05:06] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:07,684 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:07,685 INFO 127.0.0.1 - - [10/May/2026 22:05:07] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:08,226 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:08,227 INFO 127.0.0.1 - - [10/May/2026 22:05:08] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:12,473 INFO 127.0.0.1 - - [10/May/2026 22:05:12] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:13,094 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:13,094 INFO 127.0.0.1 - - [10/May/2026 22:05:13] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:14,127 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:14,128 INFO 127.0.0.1 - - [10/May/2026 22:05:14] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:15,070 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:15,070 INFO 127.0.0.1 - - [10/May/2026 22:05:15] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:15,697 INFO 127.0.0.1 - - [10/May/2026 22:05:15] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 22:05:16,266 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:16,405 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:16,410 INFO 127.0.0.1 - - [10/May/2026 22:05:16] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 22:05:16,417 INFO 127.0.0.1 - - [10/May/2026 22:05:16] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 22:05:32,046 INFO 127.0.0.1 - - [10/May/2026 22:05:32] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:32,704 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:32,705 INFO 127.0.0.1 - - [10/May/2026 22:05:32] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:32,745 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:32,746 INFO 127.0.0.1 - - [10/May/2026 22:05:32] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:34,245 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:34,245 INFO 127.0.0.1 - - [10/May/2026 22:05:34] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:35,579 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:35,581 INFO 127.0.0.1 - - [10/May/2026 22:05:35] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:35,906 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:35,907 INFO 127.0.0.1 - - [10/May/2026 22:05:35] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:36,650 INFO 127.0.0.1 - - [10/May/2026 22:05:36] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 22:05:37,198 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:37,412 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:37,413 INFO 127.0.0.1 - - [10/May/2026 22:05:37] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 22:05:37,418 INFO 127.0.0.1 - - [10/May/2026 22:05:37] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 22:05:47,574 INFO 127.0.0.1 - - [10/May/2026 22:05:47] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:48,434 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:48,435 INFO 127.0.0.1 - - [10/May/2026 22:05:48] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:51,523 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:51,524 INFO 127.0.0.1 - - [10/May/2026 22:05:51] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:53,118 INFO 127.0.0.1 - - [10/May/2026 22:05:53] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:53,946 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:53,947 INFO 127.0.0.1 - - [10/May/2026 22:05:53] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:54,410 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:54,411 INFO 127.0.0.1 - - [10/May/2026 22:05:54] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:58,065 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:58,065 INFO 127.0.0.1 - - [10/May/2026 22:05:58] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:58,476 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:05:58,476 INFO 127.0.0.1 - - [10/May/2026 22:05:58] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:05:59,552 INFO 127.0.0.1 - - [10/May/2026 22:05:59] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 22:06:00,054 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:00,280 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:00,281 INFO 127.0.0.1 - - [10/May/2026 22:06:00] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 22:06:00,287 INFO 127.0.0.1 - - [10/May/2026 22:06:00] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 22:06:37,188 INFO 127.0.0.1 - - [10/May/2026 22:06:37] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:38,007 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:38,009 INFO 127.0.0.1 - - [10/May/2026 22:06:38] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:39,342 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:39,343 INFO 127.0.0.1 - - [10/May/2026 22:06:39] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:41,056 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:41,057 INFO 127.0.0.1 - - [10/May/2026 22:06:41] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:42,404 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:42,405 INFO 127.0.0.1 - - [10/May/2026 22:06:42] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:43,301 INFO 127.0.0.1 - - [10/May/2026 22:06:43] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:44,216 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:44,217 INFO 127.0.0.1 - - [10/May/2026 22:06:44] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:44,845 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:44,846 INFO 127.0.0.1 - - [10/May/2026 22:06:44] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:46,896 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:46,897 INFO 127.0.0.1 - - [10/May/2026 22:06:46] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:47,216 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:47,216 INFO 127.0.0.1 - - [10/May/2026 22:06:47] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:48,204 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:48,205 INFO 127.0.0.1 - - [10/May/2026 22:06:48] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:48,725 INFO 127.0.0.1 - - [10/May/2026 22:06:48] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 22:06:49,326 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:49,461 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:49,462 INFO 127.0.0.1 - - [10/May/2026 22:06:49] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 22:06:49,469 INFO 127.0.0.1 - - [10/May/2026 22:06:49] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 22:06:57,208 INFO 127.0.0.1 - - [10/May/2026 22:06:57] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:58,021 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:58,022 INFO 127.0.0.1 - - [10/May/2026 22:06:58] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:06:58,926 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:06:58,927 INFO 127.0.0.1 - - [10/May/2026 22:06:58] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:07:00,185 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:07:00,186 INFO 127.0.0.1 - - [10/May/2026 22:07:00] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:07:01,839 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:07:01,840 INFO 127.0.0.1 - - [10/May/2026 22:07:01] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:07:02,676 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:07:02,677 INFO 127.0.0.1 - - [10/May/2026 22:07:02] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-10 22:07:03,256 INFO 127.0.0.1 - - [10/May/2026 22:07:03] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-10 22:07:03,751 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:07:03,956 INFO Response from: llama-3.3-70b-versatile
+2026-05-10 22:07:03,958 INFO 127.0.0.1 - - [10/May/2026 22:07:03] "POST /api/generate HTTP/1.1" 200 -
+2026-05-10 22:07:03,963 INFO 127.0.0.1 - - [10/May/2026 22:07:03] "GET /api/history HTTP/1.1" 200 -
+2026-05-10 22:07:19,172 INFO 127.0.0.1 - - [10/May/2026 22:07:19] "OPTIONS /api/history/save HTTP/1.1" 200 -
+2026-05-10 22:07:19,440 INFO 127.0.0.1 - - [10/May/2026 22:07:19] "POST /api/history/save HTTP/1.1" 200 -
+2026-05-10 22:07:19,485 INFO 127.0.0.1 - - [10/May/2026 22:07:19] "GET /api/history/saved HTTP/1.1" 200 -
