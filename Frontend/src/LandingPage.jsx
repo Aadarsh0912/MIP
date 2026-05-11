@@ -2164,12 +2164,20 @@ const CHALLENGES = [
     title:"Spot the Vague Words I",
     subtitle:"Tap every word that makes this prompt fail",
     type:"TAP TO SELECT", difficulty:"Starter", xp:30, color:"#A8A9AD",
-    timeLimit:90,
+    timeLimit:420,
     scenario:"A product manager sent this to an AI before a board meeting. The AI returned a confusing off-topic response. Tap every word or phrase that is too vague to work.",
     prompt:"Can you help me put together something useful for the important meeting we have coming up soon about the stuff we discussed?",
     words:["Can","you","help","me","put","together","something","useful","for","the","important","meeting","we","have","coming","up","soon","about","the","stuff","we","discussed"],
     vagueWords:["something","useful","important","soon","stuff","discussed"],
     explanation:"Six words are fatally vague: 'something' (what deliverable?), 'useful' (useful how?), 'important' (every meeting feels important), 'soon' (when exactly?), 'stuff' (what topic?), 'discussed' (when, with whom?). Each forces the AI to guess — and every guess diverges from your intent.",
+    vagueReasons:{
+      "something":{ why:"A content type with zero specificity. The AI must choose a deliverable — slide deck, bullet points, talking points, email, report? Each is a completely different output. Without knowing the deliverable, it will default to whatever format appears most frequently in its training data for 'board meeting' contexts.", fix:"Replace with the specific deliverable: 'a 10-slide executive summary'." },
+      "useful":{ why:"Useful to whom, for what purpose, in what way? This word describes an intended outcome without defining it. The AI cannot operationalise 'useful' — it has no way to evaluate whether its output meets this criterion. It becomes invisible guidance that influences nothing.", fix:"Replace with a measurable outcome: 'that enables the board to make a go/no-go decision on the Q4 plan'." },
+      "important":{ why:"Every meeting is described as important by the person convening it. This word adds zero information to the prompt. Worse, it implies urgency without specifying what matters — so the AI may over-include content, producing something bloated rather than focused.", fix:"Remove entirely, or replace with what makes it important: 'where the board will vote on the Q4 budget'." },
+      "soon":{ why:"'Soon' is a relative term that means anything from tomorrow to next quarter depending on context. The AI cannot infer your calendar. Without a specific date, it cannot factor in preparation time, draft count, or urgency level. This single word is the most common cause of missed-deadline prompts.", fix:"Replace with a specific date: 'on 15 August' or 'in 3 days'." },
+      "stuff":{ why:"'Stuff' is a placeholder for a concept the writer could not articulate. To the AI, it is a null value masquerading as a noun. The model must hallucinate the topic entirely — and has no basis for choosing correctly among the infinite possibilities.", fix:"Replace with the actual topic: 'our Q3 revenue miss and recovery plan'." },
+      "discussed":{ why:"This word implies a prior conversation the AI has no access to. It creates a dangling reference — 'discussed' by whom, when, about what? The AI cannot retrieve meeting history or context. It will fabricate content based on surrounding words, or produce something so generic it matches no real discussion.", fix:"Replace with an explicit summary: 'our October pipeline review where we agreed to cut the enterprise tier'." },
+    },
     rewrite:"Prepare a 10-slide executive summary for the Q3 board meeting on 15 August, covering our revenue miss, three root causes, and the recovery plan. Tone: direct. One chart recommendation per root cause.",
   },
 
@@ -2190,22 +2198,6 @@ const CHALLENGES = [
       {id:"f6", text:"Tone: authoritative but conversational. No jargon. No buzzwords like 'synergy' or 'leverage'.", correct:5},
     ],
     explanation:"The optimal prompt order is: Role → Task → Audience → Angle/Context → Format → Tone/Constraints. This mirrors how a human expert briefs a writer — establish who they are, what to create, who it's for, the specific hook, how to structure it, and finally the guardrails.",
-  },
-
-  // ── 3 ── WORD SURGEON ── Starter ──────────────────────────────────────────────
-  {
-    id:"ct3", trail:"Clarity Trail",
-    title:"Word Surgeon I",
-    subtitle:"Change exactly 3 words to transform this failing prompt",
-    type:"WORD SURGEON", difficulty:"Starter", xp:40, color:"#7EC8A4",
-    timeLimit:120,
-    scenario:"A recruiter wrote this prompt to generate a job description. The AI produced generic filler. You can change, add, or delete exactly 3 words — no more, no fewer. Make every edit count.",
-    prompt:"Write a job description for a developer role at our company.",
-    maxEdits:3,
-    hints:["The role type is undefined — be specific.", "The company has no identity — name it or describe it.", "'Job description' gives no format — add a structural instruction."],
-    modelAnswer:"Write a job description for a senior backend engineer at a Series A fintech startup. Include: responsibilities, required skills, and a 'Why join us' section.",
-    modelChanges:["'developer role' → 'senior backend engineer'", "added 'Series A fintech startup'", "added 'Include: responsibilities, required skills, and a Why join us section'"],
-    explanation:"Three targeted edits transform a generic request into a specific brief: specifying seniority and stack, defining the company stage and sector, and adding structural requirements. The AI now has enough signal to produce a real output without inventing details.",
   },
 
   // ── 4 ── DIAGNOSE & REWRITE ── Medium ─────────────────────────────────────────
@@ -2258,8 +2250,17 @@ const CHALLENGES = [
     scenario:"A content lead wrote this prompt during a rushed meeting. It works — barely — but 52 words of filler confuse the AI. Compress to 15 words or fewer without losing topic, audience, format, or tone.",
     original:"I was thinking it would be really great if you could possibly write something for us — specifically a short email that we could send to our customers who have been with us for more than a year, to let them know about our new loyalty programme in a friendly and warm way.",
     targetWords:15,
+    topicKeywords:["loyalty","programme","retention","email"],
     modelAnswer:"Write a warm 100-word retention email announcing our loyalty programme to customers of 1+ years.",
     modelWordCount:15,
+    explanation:"Removed: courtesy opener ('I was thinking it would be really great if you could possibly'), filler ('something for us'), and redundant phrase ('to let them know about'). Kept: task (write an email), audience (customers 1+ year), topic (loyalty programme), tone (warm).",
+    elements:[
+      { id:"topic",    label:"The topic (loyalty programme)" },
+      { id:"audience", label:"The audience (long-term customers)" },
+      { id:"task",     label:"The task (write an email)" },
+      { id:"tone",     label:"The tone (warm / friendly)" },
+      { id:"nofiller", label:"No filler or padding words" },
+    ],
   },
 
   // ── 7 ── DRAG & ORDER ── Medium ───────────────────────────────────────────────
@@ -2288,12 +2289,21 @@ const CHALLENGES = [
     title:"Spot the Vague Words II — The Inbox",
     subtitle:"A second set — harder, more subtle ambiguities",
     type:"TAP TO SELECT", difficulty:"Starter", xp:35, color:"#A8A9AD",
-    timeLimit:100,
+    timeLimit:420,
     scenario:"A startup founder sent this to write a fundraising email. The AI produced a generic three-paragraph pitch that could have been for any company. Identify every vague or ambiguous word.",
     prompt:"Write a nice email to investors that explains what we do and why they should be interested in supporting our exciting company at this stage.",
     words:["Write","a","nice","email","to","investors","that","explains","what","we","do","and","why","they","should","be","interested","in","supporting","our","exciting","company","at","this","stage"],
     vagueWords:["nice","investors","what we do","interested","supporting","exciting","this stage"],
     explanation:"'Nice' gives no tone direction. 'Investors' — what type, stage, sector? 'What we do' is the entire pitch, left undefined. 'Interested' — in what outcome? 'Supporting' — equity, SAFE, grant? 'Exciting' is filler. 'This stage' — pre-seed, Series A? Each vague word hides a decision the AI cannot make for you.",
+    vagueReasons:{
+      "nice":{ why:"'Nice' is a tone instruction with no definition. Nice can mean warm and conversational, polished and formal, brief and punchy, or enthusiastic and energetic — all are 'nice' to different people. The AI will default to a bland middle-ground tone that is distinctive to no one and memorable to nobody.", fix:"Replace with a specific tone: 'confident and concise, no jargon, direct ask in the final sentence'." },
+      "investors":{ why:"'Investors' is not a person — it is a category spanning angel investors, pre-seed VCs, Series A funds, family offices, and corporate strategists. Each has different vocabulary, risk appetite, portfolio thesis, and decision criteria. An email optimised for an angel sounds amateurish to a Series A fund.", fix:"Specify the exact investor type: 'a pre-seed SaaS-focused VC partner at a London fund'." },
+      "what we do":{ why:"This is the entire substance of the pitch, and it has been left completely undefined. The AI has no company name, no product description, no market, no customer, no differentiation. It will fabricate a generic company description that fits any startup — which is exactly what happened.", fix:"Replace with a concrete company description: 'Flowlane, an AI scheduling tool for remote engineering teams with £180k ARR'." },
+      "interested":{ why:"Interested in what outcome? Reading more? Booking a call? Wiring money? Each outcome requires a different email structure, a different CTA, and a different length. Without a defined outcome, the AI writes an email that gestures at interest without converting it into any specific action.", fix:"Replace with a specific desired action: 'to book a 20-minute call this week'." },
+      "supporting":{ why:"'Supporting' hides a critical legal and financial distinction: equity investment, convertible SAFE note, revenue-based financing, grant, or advisory role? These are completely different relationships with different paperwork, risk profiles, and conversations. The AI cannot choose — and should not.", fix:"Replace with the specific instrument: 'investing via SAFE at a £4M cap'." },
+      "exciting":{ why:"'Exciting' is the most common filler word in startup copy. It is pure positive sentiment with no informational content. The AI cannot make something exciting — it can only use the word 'exciting', which makes the email sound like every other pitch email the investor has received today.", fix:"Remove entirely. Replace with the specific fact that is exciting: '40% month-on-month growth for six consecutive months'." },
+      "this stage":{ why:"'This stage' is a term that only makes sense if you already know the stage. Pre-seed, seed, Series A, and growth all carry completely different valuation expectations, dilution norms, board dynamics, and investor profiles. The AI must guess — and a wrong guess makes the email look naive to the reader.", fix:"Replace with the explicit stage and round: 'our £500k pre-seed round, currently 60% committed'." },
+    },
     rewrite:"Write a 150-word cold email to a pre-seed SaaS-focused VC partner at a London fund. We are Flowlane, an AI scheduling tool for remote engineering teams. Ask for a 20-minute call. Tone: confident, concise, no jargon. Mention our £180k ARR and 40% MoM growth.",
   },
 
@@ -2314,22 +2324,6 @@ const CHALLENGES = [
       {id:"f6", text:"Calibrate language for a senior in-house counsel with 10+ years in financial services contracts.", correct:5},
     ],
     explanation:"This prompt leads with Task, then Format-per-item, then Context, then Structure, then Scope constraint, then Audience calibration. The role is deliberately last because it is a style instruction, not a framing instruction. Understanding when role comes first vs last is an advanced prompting skill.",
-  },
-
-  // ── 10 ── WORD SURGEON ── Medium ─────────────────────────────────────────────
-  {
-    id:"ct10", trail:"Clarity Trail",
-    title:"Word Surgeon II — The Marketing Brief",
-    subtitle:"Maximum impact with exactly 4 word changes",
-    type:"WORD SURGEON", difficulty:"Medium", xp:55, color:"#7EC8A4",
-    timeLimit:150,
-    scenario:"A marketing manager wrote this prompt to generate a product announcement. The AI produced a generic, tone-deaf draft. You have exactly 4 word-level edits (change, add, or delete). Make them count.",
-    prompt:"Write an announcement for our new feature that we can post on social media for our audience.",
-    maxEdits:4,
-    hints:["Which feature? Name it.", "Which platform? LinkedIn ≠ Twitter ≠ Instagram.", "Who exactly is your audience?", "'Announcement' is vague — what format and length?"],
-    modelAnswer:"Write a 120-character LinkedIn announcement for Flowspace's new AI Sprint Planner feature, targeting operations managers. Hook with a metric. End with a link CTA.",
-    modelChanges:["added 'LinkedIn'","added '120-character'","added 'Flowspace's AI Sprint Planner'","added 'targeting operations managers. Hook with a metric.'"],
-    explanation:"Four edits, four transformations: platform (LinkedIn changes everything about format and tone), length (120 characters is a real constraint), product name (grounds the AI), and audience + hook instruction (defines purpose). The AI now has enough to write something real.",
   },
 
   // ── 11 ── DIAGNOSE & REWRITE ── Medium ────────────────────────────────────────
@@ -2382,8 +2376,16 @@ const CHALLENGES = [
     scenario:"An engineer wrote this to generate API docs. It is bloated with hedging and commentary that confused the AI about which part was the actual task. Compress to 18 words or fewer.",
     original:"So what I need here, if possible, is for you to maybe help me by writing some kind of API documentation for the endpoint that handles user authentication in our system, ideally in a way that another developer who might be new to our codebase could understand without too much trouble.",
     targetWords:18,
+    topicKeywords:["api","authentication","endpoint","documentation","docs"],
     modelAnswer:"Write developer-friendly API docs for our user authentication endpoint. Audience: engineers new to the codebase.",
     modelWordCount:17,
+    explanation:"Removed: 'So what I need here, if possible', 'maybe help me by', 'some kind of', 'ideally in a way that', 'without too much trouble'. Kept: task (write API docs), subject (user auth endpoint), audience (new engineers), tone (developer-friendly).",
+    elements:[
+      { id:"task",     label:"The task (write API documentation)" },
+      { id:"subject",  label:"The subject (user authentication endpoint)" },
+      { id:"audience", label:"The audience (engineers new to the codebase)" },
+      { id:"nofiller", label:"No hedging or filler phrases" },
+    ],
   },
 
   // ── 14 ── JIGSAW ── Hard ──────────────────────────────────────────────────────
@@ -2404,22 +2406,6 @@ const CHALLENGES = [
       {id:"decoy", text:"Include all statistical methodology and p-values so the analysis is academically rigorous.", correct:-1},
     ],
     explanation:"The decoy is the last fragment about 'statistical methodology and p-values'. It contradicts the established audience (a non-technical CCO presenting to a board). Academic rigour framing directly conflicts with plain-English explanations and board-level communication. Inserting it would break the coherence of the prompt and produce an output that satisfies neither audience.",
-  },
-
-  // ── 15 ── WORD SURGEON ── Hard ────────────────────────────────────────────────
-  {
-    id:"ct15", trail:"Clarity Trail",
-    title:"Word Surgeon III — The Research Brief",
-    subtitle:"Only 3 edits — but the flaw is structural, not lexical",
-    type:"WORD SURGEON", difficulty:"Hard", xp:70, color:"#7EC8A4",
-    timeLimit:180,
-    scenario:"A researcher used this prompt and the AI confidently fabricated two citations and invented a statistic. The flaw is not a single bad word — it is a missing structural constraint. Use exactly 3 edits to add anti-hallucination guardrails.",
-    prompt:"Summarise this research paper and tell me what the main findings mean for my industry.",
-    maxEdits:3,
-    hints:["The AI has no instruction to stay within the paper — add a grounding constraint.", "The AI has no fallback for uncertainty — add one.", "The phrase 'my industry' is undefined — specify it."],
-    modelAnswer:"Using only facts stated in this paper, summarise the main findings and their implications for B2B SaaS companies. If anything is unclear in the paper, write 'Not stated in source'.",
-    modelChanges:["added 'Using only facts stated in this paper'","replaced 'my industry' with 'B2B SaaS companies'","added 'If anything is unclear in the paper, write Not stated in source'"],
-    explanation:"Three edits, three hallucination prevention mechanisms: a grounding constraint ('only facts stated in this paper'), an audience definition that removes ambiguity, and an explicit uncertainty fallback ('Not stated in source') that prevents the model from filling gaps with confident inventions.",
   },
 
   // ── 16 ── DRAG & ORDER ── Hard ────────────────────────────────────────────────
@@ -2494,8 +2480,17 @@ const CHALLENGES = [
     scenario:"A researcher wrote this prompt to summarise a paper. It is wrapped in academic hedging that obscures the actual request. Cut through all of it. Compress to 12 words or fewer while preserving every meaningful element.",
     original:"I would appreciate it if you could, drawing upon the content of the research paper I have provided, attempt to produce a condensed summary that captures the primary findings, the methodology employed by the researchers, and the implications of the study for practitioners working in the field, all within a reasonable word count and in language accessible to a non-specialist reader.",
     targetWords:12,
+    topicKeywords:["paper","findings","methodology","implications","summary","research"],
     modelAnswer:"Summarise this paper: key findings, methodology, and practitioner implications. Plain English, 200 words.",
     modelWordCount:13,
+    explanation:"Stripped 60 words of academic hedging to 13. Removed: 'I would appreciate it if you could', 'attempt to produce a condensed', 'all within a reasonable word count'. Kept: task (summarise), content (findings, methodology, implications), audience (non-specialist), and added a concrete word limit.",
+    elements:[
+      { id:"task",     label:"The task (summarise the paper)" },
+      { id:"content",  label:"Content: findings, methodology, implications" },
+      { id:"audience", label:"The audience (non-specialist reader)" },
+      { id:"format",   label:"A concrete output constraint (word count)" },
+      { id:"nofiller", label:"No academic hedging or filler" },
+    ],
   },
 
   // ── 20 ── JIGSAW ── Expert ────────────────────────────────────────────────────
@@ -2543,34 +2538,25 @@ const CHALLENGES = [
     ],
   },
 
-  // ── 22 ── WORD SURGEON ── Expert ──────────────────────────────────────────────
-  {
-    id:"ct22", trail:"Clarity Trail",
-    title:"Word Surgeon IV — The Scope Creep",
-    subtitle:"5 edits only — stop the AI from expanding beyond the brief",
-    type:"WORD SURGEON", difficulty:"Expert", xp:85, color:"#7EC8A4",
-    timeLimit:200,
-    scenario:"A strategist wrote this prompt and the AI produced a 2,000-word strategic report when they needed a 3-slide executive summary. The prompt has no scope boundaries. Add exactly 5 edits to constrain the output precisely.",
-    prompt:"Analyse our competitive position in the UK HR tech market and recommend how we should respond to recent moves by our main competitors.",
-    maxEdits:5,
-    hints:["Add an output format (slides, not prose).", "Add a slide count.", "Add a word limit per slide.", "Define which competitors to analyse.", "Add a decision-focus instruction — what is this for?"],
-    modelAnswer:"Produce a 3-slide executive summary analysing Hireflow's competitive position against Workday and Greenhouse in UK HR tech. Each slide: max 60 words. Frame for a board decision on Q3 product roadmap prioritisation.",
-    modelChanges:["'Analyse' → 'Produce a 3-slide executive summary analysing'","added 'Hireflow's'","added 'against Workday and Greenhouse'","added 'Each slide: max 60 words'","added 'Frame for a board decision on Q3 product roadmap prioritisation'"],
-    explanation:"Five targeted edits install five scope boundaries: output type (slides, not prose), quantity (3), length per unit (60 words), named subject (Hireflow), named competitors (Workday, Greenhouse), and decision context (Q3 roadmap). Without these, 'analyse' is an invitation to write everything the AI knows.",
-  },
-
   // ── 23 ── TAP TO SELECT ── Medium ────────────────────────────────────────────
   {
     id:"ct23", trail:"Clarity Trail",
     title:"Spot the Vague Words III — The Strategy Brief",
     subtitle:"More subtle this time — the vagueness is structural, not lexical",
     type:"TAP TO SELECT", difficulty:"Medium", xp:45, color:"#A8A9AD",
-    timeLimit:110,
+    timeLimit:420,
     scenario:"A consultant sent this to generate a strategy document. The AI produced an 8-page generic framework document. Find the structural vagueness — some of these look specific but aren't.",
     prompt:"Write a go-to-market strategy for our product targeting the enterprise segment with a focus on growth and a timeline that works for our launch.",
     words:["Write","a","go-to-market","strategy","for","our","product","targeting","the","enterprise","segment","with","a","focus","on","growth","and","a","timeline","that","works","for","our","launch"],
     vagueWords:["our product","enterprise segment","focus on growth","timeline that works","our launch"],
     explanation:"'Our product' gives the AI nothing to work with. 'Enterprise segment' is 5,000+ employees? 500+? UK only? 'Focus on growth' is tautological — all strategies focus on growth. 'Timeline that works' is undefined — 3 months? 18 months? 'Our launch' has no date. Five phrases that sound specific but contain zero information the AI can act on.",
+    vagueReasons:{
+      "our product":{ why:"The AI has no product name, no category, no feature set, no price point, no customer, and no differentiation. 'Our product' is a pronoun pointing to nothing. The strategy document will be a generic framework that could have been written for any software company in any market — because that is literally all the AI has to work with.", fix:"Replace with a concrete description: 'Hireflow (AI CV screening software for enterprise HR teams, £299/month per recruiter seat)'." },
+      "enterprise segment":{ why:"'Enterprise' means wildly different things across industries and geographies. Does it mean 50+ employees, 500+, 5000+? UK only or global? Does it mean enterprise buyers (procurement-led) or enterprise users (self-serve within a company)? Each definition implies a completely different sales motion, pricing model, and go-to-market channel.", fix:"Replace with a precise definition: 'UK companies with 500+ employees, centrally procured by HR leadership'." },
+      "focus on growth":{ why:"Every go-to-market strategy focuses on growth. This phrase is pure tautology — it restates the goal of a GTM strategy without adding any constraint or direction. The AI cannot distinguish a growth strategy focused on acquisition vs retention vs expansion vs new markets from this instruction.", fix:"Replace with the specific growth lever: 'focused on reducing sales cycle length from 90 to 45 days for enterprise deals'." },
+      "timeline that works":{ why:"'A timeline that works' is a circular instruction — it defines success as achieving success, without specifying what the timeline is, what it must accommodate, or how to evaluate whether it 'works'. The AI will invent a timeline (likely 90 days, because it is a common default) with no basis in your actual constraints.", fix:"Replace with actual constraints: 'a 90-day timeline ending before our Series A roadshow in September'." },
+      "our launch":{ why:"'Our launch' is a future event defined by three missing specifics: a date, a geography, and a launch type (soft launch, public launch, partner launch, press launch). The AI cannot build a backwards-planned strategy around a launch that has no date or definition. Every milestone in the strategy will be fictional.", fix:"Replace with a specific event: 'our UK public launch on 1 September, anchored by a Product Hunt feature and three press placements'." },
+    },
     rewrite:"Write a 90-day go-to-market strategy for Hireflow (AI CV screening for enterprise HR teams, targeting UK companies of 500+ employees). Focus on: channel prioritisation (inbound vs outbound), pricing strategy for enterprise deals, and first 10 customer acquisition playbook. Launch date: 1 September.",
   },
 
@@ -2613,22 +2599,6 @@ const CHALLENGES = [
       {id:"decoy", text:"Write in a warm, encouraging tone that prioritises the employee's feelings and avoids any negative framing.", correct:-1},
     ],
     explanation:"The decoy ('warm, encouraging tone that prioritises feelings and avoids negative framing') directly contradicts the established tone ('specific, evidence-based, constructive') and would prevent the AI from addressing the development area (missed meetings). In a legally defensible performance review, evidence-based directness is required. The decoy sounds humane but produces a review that cannot be used for HR purposes.",
-  },
-
-  // ── 26 ── WORD SURGEON ── Medium ─────────────────────────────────────────────
-  {
-    id:"ct26", trail:"Clarity Trail",
-    title:"Word Surgeon V — The Customer Survey",
-    subtitle:"3 edits — but the flaw is leading language that biases responses",
-    type:"WORD SURGEON", difficulty:"Medium", xp:55, color:"#7EC8A4",
-    timeLimit:150,
-    scenario:"A product manager wrote this prompt to generate customer survey questions. The AI produced leading, biased questions that would skew results. Use exactly 3 edits to make the prompt produce neutral, methodologically sound questions.",
-    prompt:"Write 5 survey questions to find out how much customers love our new dashboard feature and what they think is great about it.",
-    maxEdits:3,
-    hints:["'Love' presupposes a positive reaction — remove the assumption.", "'Great about it' only allows positive feedback — add balance.", "The question count and format are fine — focus on the bias."],
-    modelAnswer:"Write 5 neutral survey questions to evaluate customer sentiment about our new dashboard feature, covering both positive and negative experiences. Use a Likert scale for quantitative questions.",
-    modelChanges:["'how much customers love' → 'customer sentiment about'","'what they think is great about it' → 'covering both positive and negative experiences'","added 'Use a Likert scale for quantitative questions'"],
-    explanation:"Three edits remove three sources of bias: 'love' presupposes positive sentiment (replaced with 'sentiment'), 'what they think is great' forecloses negative feedback (replaced with 'both positive and negative'), and adding a Likert scale instruction prevents free-text only responses that are hard to analyse at scale.",
   },
 
   // ── 27 ── FILL GAP ── Medium ──────────────────────────────────────────────────
@@ -2678,8 +2648,16 @@ const CHALLENGES = [
     scenario:"A strategy consultant wrote this prompt for a competitive analysis. It is full of managerial hedging and redundant qualifiers. Compress to 20 words or fewer without losing any information the AI actually needs.",
     original:"What I am really trying to understand here is whether it might be possible for you to provide some kind of analysis or overview of what our main competitors are currently doing in the market, particularly with respect to their pricing strategies and any recent product changes they may have made.",
     targetWords:20,
+    topicKeywords:["competitor","pricing","product","market","strategy","analysis"],
     modelAnswer:"Analyse Hireflow's top 3 competitors: current pricing strategies and product changes in the last 6 months.",
     modelWordCount:18,
+    explanation:"Removed: 'What I am really trying to understand here is', 'whether it might be possible for you to', 'some kind of', 'currently', 'particularly with respect to', 'any recent'. Kept: task (analyse competitors), scope (pricing + product changes), timeframe (last 6 months).",
+    elements:[
+      { id:"task",      label:"The task (competitive analysis)" },
+      { id:"scope",     label:"Scope: pricing strategies and product changes" },
+      { id:"timeframe", label:"A specific timeframe" },
+      { id:"nofiller",  label:"No managerial hedging or filler" },
+    ],
   },
 
   // ── 30 ── JIGSAW ── Hard ──────────────────────────────────────────────────────
@@ -2709,12 +2687,21 @@ const CHALLENGES = [
     title:"Spot the Vague Words IV — The System Prompt",
     subtitle:"Vague words in a system prompt cause compounding failures",
     type:"TAP TO SELECT", difficulty:"Hard", xp:55, color:"#A8A9AD",
-    timeLimit:120,
+    timeLimit:420,
     scenario:"This system prompt was deployed for a customer service AI. Within a week, it was giving refunds it wasn't authorised to give, sharing internal pricing data, and answering questions outside its scope. Find every vague word that allowed this to happen.",
     prompt:"You are a helpful customer service agent for our company. Answer customer questions as best you can and try to resolve their issues in a friendly and efficient way.",
     words:["You","are","a","helpful","customer","service","agent","for","our","company","Answer","customer","questions","as","best","you","can","and","try","to","resolve","their","issues","in","a","friendly","and","efficient","way"],
     vagueWords:["helpful","our company","as best you can","try to resolve","their issues","friendly","efficient"],
     explanation:"Every vague word became a failure mode: 'helpful' had no scope, so the AI helped with anything. 'Our company' gave no product scope. 'As best you can' had no limits, so it tried everything. 'Try to resolve' meant it attempted refunds and escalations it wasn't authorised for. 'Their issues' had no topic boundary. 'Friendly and efficient' are personality traits, not operational constraints. A working system prompt defines scope, forbidden actions, escalation rules, and fallback behaviour explicitly.",
+    vagueReasons:{
+      "helpful":{ why:"'Helpful' is the most dangerous word in a system prompt. It instructs the AI to assist — but with no defined scope, 'helpful' means helping with anything the customer asks: issuing refunds, revealing internal pricing, discussing unreleased features, or handling legal queries. The AI was doing exactly what it was told. It was helpful.", fix:"Replace with a scoped action list: 'Handle only: billing questions, account access issues, and feature FAQs for Flowspace Pro and Team plans'." },
+      "our company":{ why:"The AI has no product name, no product scope, no feature list, and no service boundary. 'Our company' is a reference to an entity the AI cannot identify. When customers ask about products or policies, the AI must guess or fabricate details — which is exactly how internal pricing data got shared (it guessed based on similar SaaS companies).", fix:"Replace with a specific product context: 'Flowspace (project management SaaS, Pro and Team plans only)'." },
+      "as best you can":{ why:"This phrase removes all limits on effort and method. It instructs the AI to exhaust every possible approach to help — which is why it issued refunds and escalated tickets it had no authority to escalate. A system prompt must define what the AI is authorised to do, not how hard it should try.", fix:"Replace with explicit authority limits: 'You may only provide information. You may not issue refunds, adjust accounts, or make commitments on behalf of the company'." },
+      "try to resolve":{ why:"'Resolve' is an outcome word with no method constraint. To resolve an issue, the AI will use any available tool — including ones it is not authorised to use. 'Try' compounds this by implying effort and escalation. Together, they authorised the AI to attempt anything, including authorised actions it should have escalated to humans.", fix:"Replace with a defined scope: 'Answer questions only. For any account change, escalation, or refund request, say: I will connect you with our team'." },
+      "their issues":{ why:"'Issues' is an unbounded category covering technical problems, billing disputes, legal questions, product feedback, abuse reports, and anything else a customer might raise. Without a defined topic boundary, the AI will attempt to address all of these — including areas with legal or financial risk where human oversight is required.", fix:"Replace with a specific topic list: 'Scope: billing queries, login/access issues, and FAQs about published features only'." },
+      "friendly":{ why:"'Friendly' is a personality descriptor, not an operational constraint. It does not tell the AI when to escalate, what to refuse, or how to handle hostile customers. A system prompt built on personality traits produces an AI with a pleasant tone that does exactly the wrong things politely.", fix:"Remove as a primary instruction. If tone matters, add it as a style note at the end: 'Tone: professional and concise. Resolve in under 3 messages where possible'." },
+      "efficient":{ why:"'Efficient' has the same problem as 'friendly' — it describes a quality of execution, not a rule of behaviour. Worse, in a customer service context, 'efficient' can be interpreted as 'close tickets fast', which incentivises quick answers over accurate ones. It provides no constraint on the AI's scope or authority.", fix:"Remove as a primary instruction and replace with a measurable behaviour: 'Aim to resolve in under 3 messages. If unresolved after 3 messages, route to human support'." },
+    },
     rewrite:"You are a Tier 1 customer support agent for Flowspace (project management SaaS). Handle only: billing questions, account access, and feature FAQs.\n\nForbidden: issuing refunds, discussing unreleased features, sharing pricing not on the public website, commenting on competitor products.\n\nFor any query outside this scope: 'I'll connect you with our specialist team — one moment.'\n\nTone: professional, concise. Resolve in under 3 messages where possible.",
   },
 
@@ -2737,22 +2724,6 @@ const CHALLENGES = [
     ],
     explanation:"Three words do the damage: 'valuable', 'satisfying', and 'highlight'. Together they instruct the AI to curate positives. A genuine UX research analysis must surface frictions, drop-off points, unmet needs, and confusions — the exact things that drive product decisions. The AI followed the brief perfectly. The brief was wrong.",
     rewrite:"Analyse these 12 user interview transcripts and identify all key themes — both positive (what users value) and negative (frustrations, confusions, unmet needs, drop-off moments).\n\nFor each theme:\n- Frequency (how many of 12 interviews mentioned it)\n- Representative quote\n- Implication for product decisions\n\nOrganise into two sections: Strengths and Friction Points. Do not omit negative themes.",
-  },
-
-  // ── 33 ── WORD SURGEON ── Hard ────────────────────────────────────────────────
-  {
-    id:"ct33", trail:"Clarity Trail",
-    title:"Word Surgeon VI — The Persona Trap",
-    subtitle:"4 edits — the role is causing the AI to be too confident",
-    type:"WORD SURGEON", difficulty:"Hard", xp:75, color:"#7EC8A4",
-    timeLimit:180,
-    scenario:"A healthcare startup used this prompt for an AI health information chatbot. The role assignment caused the AI to give diagnosis-level confident answers with zero hedging or safety disclaimers. Patients acted on its advice without seeing a doctor. Use exactly 4 edits to make this prompt safe without making the bot useless.",
-    prompt:"You are a doctor. Answer patient questions about symptoms and provide guidance on what they should do.",
-    maxEdits:4,
-    hints:["The role 'doctor' removes all hedging — soften it.", "Add a scope limitation on what types of questions to answer.", "Add a mandatory safety disclaimer instruction.", "Add a referral instruction for serious symptoms."],
-    modelAnswer:"You are a medical information assistant, not a doctor. Provide general health information only — never diagnose. Always end responses with: 'Please consult a qualified healthcare professional for personal medical advice.' For symptoms suggesting emergency (chest pain, difficulty breathing, severe bleeding): immediately direct to emergency services.",
-    modelChanges:["'a doctor' → 'a medical information assistant, not a doctor'","added 'Provide general health information only — never diagnose'","added mandatory disclaimer instruction","added emergency referral rule"],
-    explanation:"Four edits transform a dangerous prompt into a responsible one: softening the role (removes the authority that suppresses hedging), adding a scope boundary (information vs diagnosis), mandating a safety disclaimer (every response), and adding an emergency referral rule (life safety). The bot is still useful — it can still provide general information. It is now also safe.",
   },
 
   // ── 34 ── DRAG & ORDER ── Medium ─────────────────────────────────────────────
@@ -2863,12 +2834,22 @@ const CHALLENGES = [
     title:"Spot the Vague Words V — The Chain Prompt",
     subtitle:"Vague words in a multi-step prompt cascade into compound failure",
     type:"TAP TO SELECT", difficulty:"Expert", xp:65, color:"#A8A9AD",
-    timeLimit:130,
+    timeLimit:420,
     scenario:"A growth analyst wrote this multi-step prompt for a market analysis. At step 2, the AI had no idea what 'the above' referred to. At step 3, 'actionable recommendations' produced a 6-page strategy document. Find every word that causes cascading failure.",
     prompt:"First analyse our market position then based on the above create a summary and finally provide some actionable recommendations that our team can use going forward.",
     words:["First","analyse","our","market","position","then","based","on","the","above","create","a","summary","and","finally","provide","some","actionable","recommendations","that","our","team","can","use","going","forward"],
     vagueWords:["analyse","our market position","based on the above","a summary","some","actionable","our team","going forward"],
     explanation:"Eight failure modes: 'analyse' without scope, 'our market position' without naming a company or market, 'based on the above' is a reference to nothing defined, 'a summary' has no length or format, 'some' is indefinite, 'actionable' means anything from a post-it note to a strategy overhaul, 'our team' is undefined, and 'going forward' is a corporate filler phrase with no temporal meaning. In a multi-step prompt, each vagueness compounds the next.",
+    vagueReasons:{
+      "analyse":{ why:"'Analyse' without a defined scope is the most common expert-level vague instruction. Analyse what, using what framework, at what level of depth, for what purpose? A market analysis can be 200 words or 20,000. It can be a SWOT, a Porter's Five Forces, a competitive pricing matrix, or a customer segmentation. The AI will choose — and it will not choose the one you needed.", fix:"Replace with a scoped instruction: 'Analyse Hireflow's competitive position against Workday and Greenhouse on three dimensions: pricing, AI capabilities, and implementation time'." },
+      "our market position":{ why:"This phrase contains three undefined elements: 'our' (which company?), 'market' (which market?), and 'position' (measured how?). The AI has no company name, no market definition, and no metric by which to assess position. In a multi-step chain, this undefined reference cascades — every subsequent step inherits this ambiguity and compounds it.", fix:"Replace with a fully specified reference: 'Hireflow's competitive position in UK enterprise HR tech (500+ employee companies)'." },
+      "based on the above":{ why:"This is the most dangerous phrase in multi-step prompting. It creates a dependency on the previous step's output — but that output does not exist when the prompt is written. The AI must interpret what 'the above' will contain, then work from that interpretation. In a chain, each 'based on the above' multiplies the error surface.", fix:"Replace with an explicit reference: 'Based on the three-competitor analysis from Step 1'." },
+      "a summary":{ why:"'A summary' has no length, no format, no required elements, and no audience. It can be one sentence or five paragraphs. It can be prose, bullets, or a table. Without constraints, the AI defaults to its statistical average for 'summary' — which in this context produced a 400-word narrative the analyst then had to manually compress.", fix:"Replace with a constrained summary instruction: 'A 150-word summary — one paragraph per competitor, covering only pricing and AI capability delta'." },
+      "some":{ why:"'Some' is mathematically undefined. Some recommendations means two, three, ten, or twenty — the AI will choose based on what fills the space it has allotted for this response. In a strategic context, an undefined count produces either an overwhelming list that cannot be prioritised, or a superficial set that misses critical actions.", fix:"Replace with a specific count: 'exactly 3 recommendations, each a single actionable sentence'." },
+      "actionable":{ why:"'Actionable' is one of the most overused words in business prompting. It describes a quality of recommendation without defining what action looks like. An 'actionable recommendation' can be 'hire a sales team', 'run a 2-week experiment with 10 customers', or 'change one word in the pricing page'. These are completely different levels of specificity.", fix:"Replace with a defined action format: 'each recommendation must specify: the action, the owner role responsible, and the timeframe'." },
+      "our team":{ why:"The AI does not know your team. Team size, function, seniority, capacity, and specialisation all determine what recommendations are realistic. A 3-person startup team cannot execute the same playbook as a 50-person growth team. Without this context, every recommendation is fictional in its assumptions.", fix:"Replace with a specific description: 'a 4-person growth team (2 salespeople, 1 marketer, 1 CSM) with no engineering resource available'." },
+      "going forward":{ why:"'Going forward' is the emptiest temporal phrase in business English. It means nothing beyond 'in the future'. Without a timeframe, the AI cannot prioritise recommendations, sequence actions, or distinguish between 30-day quick wins and 12-month structural changes. It is corporate filler that sounds purposeful while saying nothing.", fix:"Replace with an explicit timeframe: 'for the next 90 days, prioritised by impact and organised into weeks 1-4, 5-8, and 9-12'." },
+    },
     rewrite:"Step 1: Analyse Hireflow's competitive position in UK enterprise HR tech against Workday and Greenhouse. Focus: pricing, AI capabilities, implementation time.\nStep 2: Summarise in 150 words — one paragraph per competitor.\nStep 3: Recommend 3 specific product or GTM actions for Hireflow's next 90 days, each in one sentence.",
   },
 
@@ -2889,22 +2870,6 @@ const CHALLENGES = [
       {id:"m5", label:"Length constraint per field", hint:"How long should each field be to ensure conciseness?", placeholder:"Max ... words per field..."},
     ],
     modelAnswer:"Analyse this company's website and extract competitive intelligence.\n\nExtract exactly these 6 fields: Target customer segment, Core value proposition, Pricing model (if public), Top 3 features highlighted, Integration ecosystem, Trust signals (customers, certifications, case studies).\n\nFormat: structured table, one row per field, two columns (Field | Finding).\n\nIf a field is not findable on the website, write 'Not publicly available' — do not infer.\n\nOnly report what is explicitly stated on the site. Do not draw conclusions not supported by the text.\n\nMax 20 words per field.",
-  },
-
-  // ── 41 ── WORD SURGEON ── Expert ─────────────────────────────────────────────
-  {
-    id:"ct41", trail:"Clarity Trail",
-    title:"Word Surgeon VII — The Feedback Loop",
-    subtitle:"5 edits — the prompt is causing the AI to agree with everything",
-    type:"WORD SURGEON", difficulty:"Expert", xp:90, color:"#7EC8A4",
-    timeLimit:200,
-    scenario:"A product team used this prompt to evaluate their product strategy. The AI responded positively to every idea, even weak ones. It never pushed back. This is sycophancy — caused by the prompt. Use exactly 5 edits to make the AI a genuine critical evaluator.",
-    prompt:"Review our product strategy and give us your thoughts on how we can improve and build on the good ideas we have developed.",
-    maxEdits:5,
-    hints:["'Build on the good ideas' pre-approves everything — remove the positive framing.", "Add an explicit instruction to challenge assumptions.", "Add an instruction to identify the weakest element.", "Add a steelmanning instruction — argue the opposing case.", "Add a specific output format that forces critical structure."],
-    modelAnswer:"Critically evaluate this product strategy. For each element: state your honest assessment including weaknesses, not just improvements. Identify the single weakest assumption. Steelman the strongest counter-argument to our overall direction. Format: strength, weakness, and critical question for each section.",
-    modelChanges:["'give us your thoughts on' → 'Critically evaluate'","removed 'build on the good ideas we have developed'","added 'including weaknesses, not just improvements'","added 'Identify the single weakest assumption. Steelman the strongest counter-argument'","added format instruction forcing critical structure"],
-    explanation:"Five edits dismantle five sycophancy triggers: 'give us your thoughts' (too soft) → 'critically evaluate', 'build on the good ideas' (pre-approves) → removed, no weakness instruction → added, no challenge instruction → added steelmanning, no format → added critical structure. A prompt that asks for improvement on 'good ideas' will never get honest pushback.",
   },
 
   // ── 42 ── DIAGNOSE & REWRITE ── Expert ───────────────────────────────────────
@@ -2938,8 +2903,16 @@ const CHALLENGES = [
     scenario:"This is the hardest compression challenge in the trail. A non-technical founder wrote this prompt. It contains every prompting anti-pattern: over-politeness, hedging, redundancy, vagueness, and filler. Compress to 10 words or fewer while preserving every element that actually matters.",
     original:"Hi, I was just wondering if it might be at all possible for you to perhaps help me out by writing a fairly brief overview or introduction type of thing about what machine learning is for someone who doesn't really have a technical background and might find all the jargon a bit confusing and overwhelming.",
     targetWords:10,
+    topicKeywords:["machine learning","machine","learning","ml","explain"],
     modelAnswer:"Explain machine learning simply for a non-technical reader. 150 words.",
     modelWordCount:10,
+    explanation:"Stripped 70 words to 10. Removed: 'Hi', 'I was just wondering if it might be at all possible for you to perhaps help me out by', 'fairly brief overview or introduction type of thing', 'doesn't really', 'might find all the jargon a bit confusing and overwhelming'. Kept: topic (machine learning), audience (non-technical), tone (simply), output length.",
+    elements:[
+      { id:"topic",    label:"The topic (machine learning)" },
+      { id:"audience", label:"The audience (non-technical)" },
+      { id:"task",     label:"The task (explain / describe)" },
+      { id:"nofiller", label:"No filler or padding words" },
+    ],
   },
 
   // ── 44 ── JIGSAW ── Medium ────────────────────────────────────────────────────
@@ -2960,22 +2933,6 @@ const CHALLENGES = [
       {id:"f7", text:"Format: one section per lens plus a Conclusion section. Max 400 words total.", correct:6},
     ],
     explanation:"The correct order follows the structure of a sound business analysis: define the decision, establish current state, define the proposed alternative, set the evaluation framework, define the output format for each evaluation, define the conclusion format, then set the length constraint. Each fragment depends on the previous one — the evaluation framework (f4) only makes sense after both the current state (f2) and proposed model (f3) are established.",
-  },
-
-  // ── 45 ── WORD SURGEON ── Expert ─────────────────────────────────────────────
-  {
-    id:"ct45", trail:"Clarity Trail",
-    title:"Word Surgeon VIII — The Final Cut",
-    subtitle:"The hardest surgical challenge — 2 edits only, maximum impact",
-    type:"WORD SURGEON", difficulty:"Expert", xp:100, color:"#7EC8A4",
-    timeLimit:240,
-    scenario:"A founder used this prompt to generate a one-sentence company positioning statement. The AI produced a generic sentence that could describe any SaaS company. You have only 2 edits — the fewest of any challenge. Make them count. Think carefully before you edit.",
-    prompt:"Write a positioning statement for our software company that clearly explains what we do and who we are for.",
-    maxEdits:2,
-    hints:["The entire prompt is about a hypothetical company — the AI has nothing real to work with.", "One edit should anchor the company. One edit should anchor the differentiator or category."],
-    modelAnswer:"Write a one-sentence positioning statement for Hireflow: AI CV screening that reduces enterprise time-to-hire by 60%.",
-    modelChanges:["replaced 'our software company' with 'Hireflow: AI CV screening that reduces enterprise time-to-hire by 60%'","added 'one-sentence' to constrain the output length"],
-    explanation:"With only 2 edits, every word must earn its place. Edit 1: replace the generic company reference with real product identity — without this, the AI invents a generic SaaS company. Edit 2: add 'one-sentence' as a format constraint — without it, 'positioning statement' can mean anything from a tagline to a paragraph. Two edits, two transformations. Less is the test.",
   },
 
   // ── TONE DOJO ────────────────────────────────────────────────────────────────
@@ -3312,7 +3269,7 @@ const ChallengeRunner = ({ ch, onBack, onComplete }) => {
       {ch.type==="RANK"             && <RankChallenge           ch={ch} onDone={handleDone}/>}
       {ch.type==="FILL GAP"         && <FillGapChallenge        ch={ch} onDone={handleDone}/>}
       {ch.type==="JIGSAW"           && <JigsawChallenge         ch={ch} onDone={handleDone}/>}
-      {ch.type==="WORD SURGEON"     && <WordSurgeonChallenge    ch={ch} onDone={handleDone}/>}
+      
       {ch.type==="IMPOSTOR"         && <ImpostorChallenge       ch={ch} onDone={handleDone}/>}
     </motion.div>
   );
@@ -3322,14 +3279,20 @@ const ChallengeRunner = ({ ch, onBack, onComplete }) => {
 const TapToSelectChallenge = ({ ch, onDone }) => {
   const [selected, setSelected] = useState(new Set());
   const [checked, setChecked] = useState(false);
+  const [expandedWord, setExpandedWord] = useState(null);
 
   const toggle = (w) => { if(checked) return; setSelected(p=>{ const n=new Set(p); n.has(w)?n.delete(w):n.add(w); return n; }); };
-  const check = () => setChecked(true);
+  const check = () => { setChecked(true); setExpandedWord(null); };
   const getScore = () => {
     let correct=0, wrong=0;
     selected.forEach(w=>{ if(ch.vagueWords.includes(w)) correct++; else wrong++; });
     ch.vagueWords.forEach(w=>{ if(!selected.has(w)) wrong++; });
     return Math.max(0, Math.round((correct/(ch.vagueWords.length+wrong))*100));
+  };
+
+  const toggleWordExpand = (w) => {
+    if (!checked || !ch.vagueWords.includes(w)) return;
+    setExpandedWord(prev => prev === w ? null : w);
   };
 
   return (
@@ -3341,24 +3304,93 @@ const TapToSelectChallenge = ({ ch, onDone }) => {
             const isSelected=selected.has(w);
             const isCorrect=checked&&ch.vagueWords.includes(w);
             const isWrong=checked&&isSelected&&!ch.vagueWords.includes(w);
+            const isExpanded=checked&&expandedWord===w;
+            const hasReason=checked&&ch.vagueReasons&&ch.vagueReasons[w];
             return (
               <motion.span key={i} whileHover={{scale:1.06}} whileTap={{scale:0.94}}
-                onClick={()=>toggle(w)}
-                style={{padding:"4px 10px",borderRadius:"6px",cursor:checked?"default":"pointer",fontFamily:"'Cormorant Garamond', serif",fontSize:"15px",fontWeight:600,transition:"all 0.15s",
-                  background: isCorrect?"rgba(100,200,150,0.18)" : isWrong?"rgba(196,127,160,0.18)" : isSelected?`rgba(${hexToRgb(ch.color)},0.18)`:"rgba(168,169,173,0.05)",
-                  border: isCorrect?"1px solid rgba(100,200,150,0.4)" : isWrong?"1px solid rgba(196,127,160,0.4)" : isSelected?`1px solid rgba(${hexToRgb(ch.color)},0.4)`:"1px solid rgba(168,169,173,0.1)",
-                  color: isCorrect?"#7EC8A4" : isWrong?"#C47FA0" : isSelected?ch.color : S.mutedMd}}>
-                {w}
+                onClick={()=>{ if(checked) toggleWordExpand(w); else toggle(w); }}
+                style={{padding:"4px 10px",borderRadius:"6px",cursor:(checked&&hasReason)?"pointer":checked?"default":"pointer",fontFamily:"'Cormorant Garamond', serif",fontSize:"15px",fontWeight:600,transition:"all 0.15s",
+                  background: isExpanded?"rgba(100,200,150,0.28)" : isCorrect?"rgba(100,200,150,0.18)" : isWrong?"rgba(196,127,160,0.18)" : isSelected?`rgba(${hexToRgb(ch.color)},0.18)`:"rgba(168,169,173,0.05)",
+                  border: isExpanded?"1px solid rgba(100,200,150,0.7)" : isCorrect?"1px solid rgba(100,200,150,0.4)" : isWrong?"1px solid rgba(196,127,160,0.4)" : isSelected?`1px solid rgba(${hexToRgb(ch.color)},0.4)`:"1px solid rgba(168,169,173,0.1)",
+                  color: isCorrect?"#7EC8A4" : isWrong?"#C47FA0" : isSelected?ch.color : S.mutedMd,
+                  position:"relative"}}>
+                {w}{hasReason && <span style={{marginLeft:"3px",fontSize:"9px",opacity:0.6}}>{isExpanded?"▲":"▼"}</span>}
               </motion.span>
             );
           })}
         </div>
+        {checked && ch.vagueReasons && (
+          <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",color:S.muted,marginTop:"12px",fontStyle:"italic"}}>
+            Tap any highlighted word to see exactly why it fails.
+          </p>
+        )}
       </div>
+
+      {/* Per-word deep explanation panel */}
+      <AnimatePresence>
+        {checked && expandedWord && ch.vagueReasons && ch.vagueReasons[expandedWord] && (
+          <motion.div key={expandedWord} initial={{opacity:0,y:-6,height:0}} animate={{opacity:1,y:0,height:"auto"}} exit={{opacity:0,y:-6,height:0}} transition={{duration:0.22}}
+            style={{background:"rgba(8,20,14,0.97)",border:"1px solid rgba(100,200,150,0.28)",borderRadius:"14px",padding:"20px 24px",marginBottom:"16px",overflow:"hidden"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"14px"}}>
+              <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"16px",fontWeight:700,color:"#7EC8A4",background:"rgba(100,200,150,0.12)",border:"1px solid rgba(100,200,150,0.3)",padding:"3px 12px",borderRadius:"6px"}}>"{expandedWord}"</span>
+              <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:"rgba(126,200,164,0.6)"}}>Why this word fails</div>
+            </div>
+            <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"14px",color:"rgba(255,255,255,0.75)",lineHeight:1.85,marginBottom:"14px"}}>
+              {ch.vagueReasons[expandedWord].why}
+            </p>
+            <div style={{display:"flex",gap:"8px",alignItems:"flex-start",background:"rgba(100,200,150,0.06)",border:"1px solid rgba(100,200,150,0.15)",borderRadius:"9px",padding:"12px 14px"}}>
+              <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.18em",textTransform:"uppercase",color:"#7EC8A4",flexShrink:0,paddingTop:"2px"}}>Fix →</span>
+              <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:"rgba(126,200,164,0.85)",lineHeight:1.75,margin:0}}>
+                {ch.vagueReasons[expandedWord].fix}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {checked && (() => {
+        const totalVague = ch.vagueWords.length;
+        const foundCorrect = [...selected].filter(w => ch.vagueWords.includes(w)).length;
+        const missed = totalVague - foundCorrect;
+        const allFound = missed === 0;
+        return (
+          <motion.div initial={{opacity:0,y:-6}} animate={{opacity:1,y:0}} transition={{duration:0.25}}
+            style={{display:"flex",alignItems:"center",gap:"12px",background: allFound ? "rgba(100,200,150,0.1)" : "rgba(196,127,160,0.08)",border: allFound ? "1px solid rgba(100,200,150,0.35)" : "1px solid rgba(196,127,160,0.3)",borderRadius:"10px",padding:"12px 18px",marginBottom:"16px"}}>
+            <span style={{fontSize:"18px"}}>{allFound ? "✓" : "◈"}</span>
+            <div>
+              <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"15px",fontWeight:700,color: allFound ? "#7EC8A4" : "#C47FA0",lineHeight:1.3}}>
+                {allFound
+                  ? `Perfect — all ${totalVague}/${totalVague} vague words found!`
+                  : `You missed ${missed}/${totalVague} vague word${missed === 1 ? "" : "s"}`}
+              </div>
+              <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color: allFound ? "rgba(126,200,164,0.65)" : "rgba(196,127,160,0.65)",marginTop:"2px"}}>
+                {allFound
+                  ? "Every failure point identified correctly."
+                  : `${foundCorrect} identified · ${missed} missed · highlighted in green below`}
+              </div>
+            </div>
+          </motion.div>
+        );
+      })()}
 
       {checked && (
         <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} style={{background:"rgba(13,13,22,0.97)",border:`1px solid rgba(${hexToRgb(ch.color)},0.2)`,borderRadius:"14px",padding:"22px 26px",marginBottom:"20px"}}>
-          <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:ch.color,marginBottom:"10px"}}>Why These Words Failed</div>
+          <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:ch.color,marginBottom:"10px"}}>Overall Analysis</div>
           <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"14px",color:S.mutedMd,lineHeight:1.8,marginBottom:"16px"}}>{ch.explanation}</p>
+          {/* Word summary chips */}
+          {ch.vagueReasons && (
+            <div style={{marginBottom:"16px"}}>
+              <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:S.muted,marginBottom:"10px"}}>Vague Words at a Glance</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
+                {ch.vagueWords.map(w => (
+                  <motion.button key={w} onClick={()=>setExpandedWord(prev=>prev===w?null:w)} whileHover={{scale:1.03}} whileTap={{scale:0.97}}
+                    style={{background:expandedWord===w?"rgba(100,200,150,0.18)":"rgba(168,169,173,0.05)",border:expandedWord===w?"1px solid rgba(100,200,150,0.4)":"1px solid rgba(168,169,173,0.15)",borderRadius:"7px",padding:"5px 12px",cursor:"pointer",fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",fontWeight:600,color:expandedWord===w?"#7EC8A4":S.mutedMd,transition:"all 0.15s"}}>
+                    "{w}"
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
           <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:S.muted,marginBottom:"8px"}}>Model Rewrite</div>
           <pre style={{fontFamily:"'Courier New',monospace",fontSize:"12px",color:S.mutedMd,lineHeight:1.7,whiteSpace:"pre-wrap",background:"rgba(168,169,173,0.04)",padding:"14px 16px",borderRadius:"9px",border:"1px solid rgba(168,169,173,0.1)"}}>{ch.rewrite}</pre>
         </motion.div>
@@ -3383,24 +3415,137 @@ const TapToSelectChallenge = ({ ch, onDone }) => {
 
 // ─── Diagnose Challenge ───────────────────────────────────────────────────────
 const DiagnoseChallenge = ({ ch, onDone }) => {
-  const [selected, setSelected] = useState(new Set());
-  const [rewrite, setRewrite] = useState("");
-  const [phase, setPhase] = useState("diagnose"); // diagnose | rewrite | reveal
-  const [checked, setChecked] = useState(false);
+  const [selected, setSelected]               = useState(new Set());
+  const [diagResult, setDiagResult]           = useState(null);  // null | "correct" | "wrong"
+  const [rewrite, setRewrite]                 = useState("");
+  const [rewriteAttempts, setRewriteAttempts] = useState(0);
+  const [rewriteResult, setRewriteResult]     = useState(null); // null | "strong" | "weak"
+  const [rewriteFeedback, setRewriteFeedback] = useState([]);
+  const [phase, setPhase]                     = useState("diagnose"); // diagnose | rewrite | reveal
 
-  const toggle = (id) => { if(checked) return; setSelected(p=>{ const n=new Set(p); n.has(id)?n.delete(id):n.add(id); return n; }); };
   const correctFlaws = ch.flaws.filter(f=>f.correct).map(f=>f.id);
 
-  const checkDiagnosis = () => { setChecked(true); setTimeout(()=>setPhase("rewrite"), 1200); };
-  const submit = () => setPhase("reveal");
-  const score = () => {
-    let s=60;
-    let correctHits = [...selected].filter(id=>correctFlaws.includes(id)).length;
-    let wrongHits = [...selected].filter(id=>!correctFlaws.includes(id)).length;
-    s += Math.round((correctHits/correctFlaws.length)*25);
-    s -= wrongHits*5;
-    if(rewrite.length > 80) s += 15;
-    return Math.max(0,Math.min(100,s));
+  const toggle = (id) => {
+    if (diagResult === "correct") return;
+    setSelected(p=>{ const n=new Set(p); n.has(id)?n.delete(id):n.add(id); return n; });
+  };
+
+  // Check flaw selection — must match exactly
+  const checkDiagnosis = () => {
+    const sel = [...selected];
+    const allCorrectSelected = correctFlaws.every(id => sel.includes(id));
+    const noWrongSelected    = sel.every(id => correctFlaws.includes(id));
+    if (allCorrectSelected && noWrongSelected) {
+      setDiagResult("correct");
+      setTimeout(() => setPhase("rewrite"), 900);
+    } else {
+      setDiagResult("wrong");
+      setTimeout(() => { setDiagResult(null); setSelected(new Set()); }, 1800);
+    }
+  };
+
+  // Professional evaluation — ALL 5 elements must be genuinely present
+  const evaluateRewrite = () => {
+    const text = rewrite.trim();
+    const lower = text.toLowerCase();
+    const missing = [];
+
+    // ── ROLE ──────────────────────────────────────────────────────────────────
+    // Needs "You are a/an [2+ meaningful words]" — generic labels like "expert", "writer", "AI" alone don't count
+    const GENERIC_ROLE = /^(role|expert|person|someone|assistant|ai|model|professional|specialist|writer|analyst|helper)(\s|,|\.)*$/i;
+    const roleMatch = text.match(/you\s+are\s+(?:a\s+|an\s+)?([^.,\n]{5,})/i)
+                   || text.match(/act\s+as\s+(?:a\s+|an\s+)?([^.,\n]{5,})/i)
+                   || text.match(/as\s+a\s+(?:senior|junior|experienced|expert|certified|lead|principal|chief|head)\s+\S+/i);
+    const rolePhrase = roleMatch ? roleMatch[1].trim() : "";
+    const hasRole = rolePhrase.split(/\s+/).length >= 2 && !GENERIC_ROLE.test(rolePhrase);
+    if (!hasRole) missing.push("Role — needs 'You are a [specific title]', e.g. 'You are a senior technical writer' or 'You are a UX researcher with 5 years experience'. Bare words like 'expert' or 'writer' don't count.");
+
+    // ── TASK ──────────────────────────────────────────────────────────────────
+    // Action verb + at least 15 chars of real substance describing WHAT to produce
+    const FILLER_TASK = /^(something|content|text|copy|output|a response|a reply|a prompt|a result)\b/i;
+    const taskMatch = text.match(/\b(write|create|produce|generate|draft|analyse|analyze|summarise|summarize|explain|build|design|develop|prepare|compose|construct|outline|list|identify|evaluate|review)\b([\s\S]{15,})/i);
+    const taskSubstance = taskMatch ? taskMatch[2].replace(/\n/g, " ").trim() : "";
+    const hasTask = !!taskMatch && !FILLER_TASK.test(taskSubstance);
+    if (!hasTask) missing.push("Task — describe exactly what to produce, e.g. 'Write a 3-section onboarding guide that covers account setup, team roles, and first-week goals'. A verb alone is not enough.");
+
+    // ── FORMAT ────────────────────────────────────────────────────────────────
+    // Must describe output structure with specifics — not just mention "format" or "bullet" as a lone word
+    // Passes: "3 bullet points", "numbered list of steps", "a table with columns X Y Z", "JSON with fields"
+    // Fails: "bullet points", "use a format", "formatted response", "in list format"
+    const FORMAT_PATTERNS = [
+      /\d+\s+(bullet|paragraph|section|slide|step|point|sentence)s?/i,
+      /bullet\s+points?\s+(covering|with|for|listing|that|about|on|including|each|address)/i,
+      /numbered\s+(list|steps?|points?)/i,
+      /json\s+(object|array|with\s+field|schema|format\s+with)/i,
+      /markdown\s+(table|list|format)/i,
+      /\b(two|three|four|2|3|4)[- ]column\s+(table|layout|format)/i,
+      /table\s+with\s+(column|field|header|row)/i,
+      /format\s*:\s*.{15,}/i,
+      /structured\s+(as|like|in)\s+a\s+\w/i,
+      /output\s+(as|in)\s+(a\s+)?(json|table|list|numbered|bulleted)/i,
+    ];
+    const hasFormat = FORMAT_PATTERNS.some(p => p.test(text));
+    if (!hasFormat) missing.push("Format — specify the output structure with real detail, e.g. '3 bullet points each covering X' or 'a table with columns: Problem, Root Cause, Fix'. Just saying 'bullet points' or 'format' without context doesn't count.");
+
+    // ── AUDIENCE ──────────────────────────────────────────────────────────────
+    // Must explicitly name WHO this is for — a real person type, role, or described group
+    // Passes: "for a junior developer", "for non-technical stakeholders", "for a CFO", "for new employees"
+    // Fails: no mention of who, "for the reader", "for the audience", "audience:" with nothing after
+    const AUDIENCE_PATTERNS = [
+      /\bfor\s+(a\s+|an\s+|the\s+)?(junior|senior|mid-level|entry[- ]level|non-?technical|technical|first[- ]time|new|experienced|executive|c-suite)\s+\w+/i,
+      /\bfor\s+(a\s+|an\s+)?(cfo|cto|ceo|coo|vp|director|manager|developer|engineer|designer|marketer|recruiter|hr|product\s+manager|project\s+manager|data\s+scientist|analyst|researcher|writer|editor|student|intern|founder|investor|stakeholder|client|customer|end\s+user|team\s+lead|hiring\s+manager|board\s+member|sales\s+rep)\b/i,
+      /\btargeting\s+[a-z].{6,}/i,
+      /\baimed\s+at\s+[a-z].{6,}/i,
+      /\baudience\s*:\s*.{10,}/i,
+      /\bwho\s+(has|have|lacks?|understand|know|need)\s+.{6,}/i,
+      /\bwith\s+no\s+(technical|coding|prior|background|knowledge|experience)\b/i,
+      /\bwithout\s+(technical|coding|prior|background|knowledge|experience)\b/i,
+      /\bfor\s+(teams?|companies|organisations?|organizations?|startups?|enterprises?)\s+(that|who|with)\b/i,
+      /\b(readers?|users?|audience)\s+who\s+.{8,}/i,
+    ];
+    const hasAudience = AUDIENCE_PATTERNS.some(p => p.test(text));
+    if (!hasAudience) missing.push("Audience — state explicitly who this is for, e.g. 'for a non-technical CFO', 'for junior developers', 'for new hires with no coding background'. Without this, the audience check fails even if your prompt looks detailed.");
+
+    // ── CONSTRAINT ────────────────────────────────────────────────────────────
+    // Must have a real constraint paired with a qualifier — not just the word "tone" or "limit" alone
+    // Passes: "formal tone", "max 200 words", "no jargon", "avoid buzzwords", "must include examples"
+    // Fails: "tone", "keep it short", "be concise", "add constraints"
+    const CONSTRAINT_PATTERNS = [
+      /\bmax(imum)?\s+\d+\s*(words?|sentences?|bullet|points?|paragraphs?|characters?)/i,
+      /\bno\s+more\s+than\s+\d+\s*(words?|sentences?|lines?)/i,
+      /\bin\s+(exactly|under|within)\s+\d+\s*words?/i,
+      /\d+\s*words?\s+or\s+(fewer|less)\b/i,
+      /\b(formal|professional|casual|conversational|direct|neutral|authoritative|persuasive|friendly|academic|technical|plain)\s+tone\b/i,
+      /\btone\s*:\s*(formal|professional|casual|conversational|direct|neutral|authoritative|persuasive|friendly|academic|technical|plain|warm|confident|clear)\b/i,
+      /\bno\s+(jargon|buzzwords?|passive\s+voice|emojis?|slang|filler|fluff|acronyms?|technical\s+terms?)\b/i,
+      /\bavoid\s+(jargon|buzzwords?|passive|emojis?|slang|filler|fluff|clich|generic|vague|using)\b/i,
+      /\bdo\s+not\s+(use|include|add|mention|write|rely)\b.{5,}/i,
+      /\bdon'?t\s+(use|include|add|mention|write|rely)\b.{5,}/i,
+      /\bmust\s+(include|contain|cover|mention|use|reference|start|end|begin)\b.{5,}/i,
+      /\bonly\s+(use|include|output|write|reference)\b.{5,}/i,
+      /\bkeep\s+(it\s+)?(under|below|within|to)\s+\d+/i,
+      /\b\d+\s+words?\s+max\b/i,
+      /\bno\s+more\s+than\s+\d+/i,
+    ];
+    const hasConstraint = CONSTRAINT_PATTERNS.some(p => p.test(text));
+    if (!hasConstraint) missing.push("Constraint — add a real limit or rule with a specific value, e.g. 'formal tone', 'max 200 words', 'no jargon', 'must include one real example'. Just writing 'tone' or 'keep it short' doesn't pass.");
+
+    // ALL 5 must pass — no lenient threshold
+    const isStrong = missing.length === 0;
+
+    setRewriteAttempts(a => a + 1);
+    setRewriteFeedback(missing);
+    setRewriteResult(isStrong ? "strong" : "weak");
+    if (isStrong) setTimeout(() => setPhase("reveal"), 1400);
+  };
+
+  const retryRewrite = () => { setRewriteResult(null); setRewrite(""); setRewriteFeedback([]); };
+
+  const finalScore = () => {
+    // Diagnosis was perfect (required to reach here). Score based on rewrite quality + speed.
+    const base = 75;
+    const bonus = rewriteAttempts === 1 ? 25 : rewriteAttempts === 2 ? 15 : 5;
+    return Math.min(100, base + bonus);
   };
 
   return (
@@ -3411,26 +3556,77 @@ const DiagnoseChallenge = ({ ch, onDone }) => {
         <p style={{fontFamily:"'Courier New',monospace",fontSize:"14px",color:"rgba(255,170,170,0.75)",lineHeight:1.7,fontStyle:"italic"}}>"{ch.prompt}"</p>
       </div>
 
-      {/* Flaw diagnosis */}
+      {/* ── FLAW GRID — always visible across all phases ── */}
       <div style={{background:"rgba(13,13,22,0.97)",border:"1px solid rgba(168,169,173,0.12)",borderRadius:"14px",padding:"20px 24px",marginBottom:"20px"}}>
-        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:S.muted,marginBottom:"14px"}}>Select every flaw — do not guess. Think carefully.</div>
+        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:S.muted,marginBottom:"14px"}}>
+          {phase === "diagnose"
+            ? <>Select <strong style={{color:S.silverLt}}>every</strong> flaw — you must get them all exactly right to proceed.</>
+            : <span style={{color:"rgba(126,200,164,0.7)"}}>✓ Flaws identified — these were the issues with the original prompt.</span>}
+        </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px"}}>
           {ch.flaws.map(f=>{
-            const sel=selected.has(f.id);
-            const isCorrect=checked&&f.correct;
-            const isWrong=checked&&sel&&!f.correct;
+            const sel = selected.has(f.id);
+            const showing = diagResult === "wrong";
+            const isCorrectFlaw   = f.correct;
+            const isSelectedWrong = showing && sel && !isCorrectFlaw;
+            const isSelectedRight = showing && sel && isCorrectFlaw;
+            const isMissed        = showing && !sel && isCorrectFlaw;
+            // In rewrite/reveal phase: highlight correct flaws as confirmed, grey out wrong ones
+            const isConfirmedCorrect = phase !== "diagnose" && isCorrectFlaw;
+            const isConfirmedWrong   = phase !== "diagnose" && !isCorrectFlaw;
             return (
-              <motion.div key={f.id} whileHover={{scale:1.02}} whileTap={{scale:0.97}}
-                onClick={()=>toggle(f.id)}
-                style={{padding:"11px 14px",borderRadius:"10px",cursor:checked?"default":"pointer",transition:"all 0.15s",
-                  background: isCorrect?"rgba(100,200,150,0.1)" : isWrong?"rgba(196,127,160,0.1)" : sel?`rgba(${hexToRgb(ch.color)},0.1)`:"rgba(168,169,173,0.04)",
-                  border: isCorrect?"1px solid rgba(100,200,150,0.35)" : isWrong?"1px solid rgba(196,127,160,0.3)" : sel?`1px solid rgba(${hexToRgb(ch.color)},0.3)`:"1px solid rgba(168,169,173,0.1)"}}>
-                <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color: isCorrect?"#7EC8A4" : isWrong?"#C47FA0" : sel?ch.color : S.mutedMd,lineHeight:1.4}}>{f.label}</span>
+              <motion.div key={f.id}
+                animate={isSelectedWrong ? {x:[-4,4,-4,4,0]} : {}}
+                transition={{duration:0.3}}
+                whileHover={phase==="diagnose" ? {scale:1.02} : {}}
+                whileTap={phase==="diagnose" ? {scale:0.97} : {}}
+                onClick={()=>phase==="diagnose" && toggle(f.id)}
+                style={{padding:"11px 14px",borderRadius:"10px",cursor:phase==="diagnose"?"pointer":"default",transition:"all 0.15s",
+                  background: isConfirmedCorrect ? "rgba(100,200,150,0.10)"
+                            : isConfirmedWrong   ? "rgba(168,169,173,0.02)"
+                            : isSelectedRight    ? "rgba(100,200,150,0.12)"
+                            : isSelectedWrong    ? "rgba(196,127,160,0.12)"
+                            : isMissed           ? "rgba(100,200,150,0.06)"
+                            : sel                ? `rgba(${hexToRgb(ch.color)},0.1)`
+                            :                      "rgba(168,169,173,0.04)",
+                  border:     isConfirmedCorrect ? "1px solid rgba(100,200,150,0.35)"
+                            : isConfirmedWrong   ? "1px solid rgba(168,169,173,0.06)"
+                            : isSelectedRight    ? "1px solid rgba(100,200,150,0.4)"
+                            : isSelectedWrong    ? "1px solid rgba(196,127,160,0.4)"
+                            : isMissed           ? "1px solid rgba(100,200,150,0.2)"
+                            : sel                ? `1px solid rgba(${hexToRgb(ch.color)},0.3)`
+                            :                      "1px solid rgba(168,169,173,0.1)"}}>
+                <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",lineHeight:1.4,
+                  color: isConfirmedCorrect ? "#7EC8A4"
+                       : isConfirmedWrong   ? "rgba(168,169,173,0.28)"
+                       : isSelectedRight    ? "#7EC8A4"
+                       : isSelectedWrong    ? "#C47FA0"
+                       : isMissed           ? "rgba(100,200,150,0.5)"
+                       : sel                ? ch.color
+                       :                     S.mutedMd}}>
+                  {(isSelectedRight || isMissed || isConfirmedCorrect) && <span style={{marginRight:"6px"}}>✓</span>}
+                  {isSelectedWrong && <span style={{marginRight:"6px"}}>✗</span>}
+                  {f.label}
+                </span>
               </motion.div>
             );
           })}
         </div>
-        {!checked && (
+
+        {/* Feedback banner — diagnose phase only */}
+        {phase === "diagnose" && (
+          <AnimatePresence>
+            {diagResult === "wrong" && (
+              <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}} exit={{opacity:0}}
+                style={{marginTop:"12px",padding:"10px 14px",borderRadius:"9px",background:"rgba(196,127,160,0.1)",border:"1px solid rgba(196,127,160,0.3)",display:"flex",alignItems:"center",gap:"10px"}}>
+                <span style={{fontSize:"16px"}}>✗</span>
+                <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:"#C47FA0"}}>Not quite — either you missed a flaw or selected an incorrect one. Selection cleared — try again.</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
+
+        {phase === "diagnose" && (
           <div style={{marginTop:"14px",display:"flex",justifyContent:"flex-end"}}>
             <motion.button onClick={checkDiagnosis} disabled={selected.size===0} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
               style={{padding:"10px 28px",borderRadius:"9px",border:"none",cursor:selected.size===0?"not-allowed":"pointer",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.14em",textTransform:"uppercase",opacity:selected.size===0?0.4:1}}>
@@ -3440,29 +3636,73 @@ const DiagnoseChallenge = ({ ch, onDone }) => {
         )}
       </div>
 
-      {/* Rewrite section */}
-      {(phase==="rewrite"||phase==="reveal") && (
+      {/* ── PHASE: REWRITE ── */}
+      {phase === "rewrite" && (
         <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} style={{marginBottom:"20px"}}>
+          {/* Diagnosis passed banner */}
+          <motion.div initial={{opacity:0,scale:0.97}} animate={{opacity:1,scale:1}}
+            style={{marginBottom:"16px",padding:"12px 16px",borderRadius:"10px",background:"rgba(100,200,150,0.08)",border:"1px solid rgba(100,200,150,0.3)",display:"flex",alignItems:"center",gap:"10px"}}>
+            <span style={{fontSize:"16px"}}>✓</span>
+            <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:"#7EC8A4"}}>Diagnosis correct — you identified every flaw. Now fix it.</span>
+          </motion.div>
+
           <div style={{background:"rgba(13,13,22,0.97)",border:`1px solid rgba(${hexToRgb(ch.color)},0.18)`,borderRadius:"14px",padding:"20px 24px",marginBottom:"16px"}}>
-            <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:ch.color,marginBottom:"6px"}}>Now fix it — rewrite the prompt addressing all the flaws you found</div>
-            <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:S.muted,marginBottom:"12px",lineHeight:1.6}}>Include: what the AI is, what to write, who it's for, what format, what tone, what constraints.</p>
-            <textarea value={rewrite} onChange={e=>setRewrite(e.target.value)} disabled={phase==="reveal"}
+            <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:ch.color,marginBottom:"6px"}}>Rewrite the prompt — address every flaw you identified</div>
+            <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:S.muted,marginBottom:"12px",lineHeight:1.6}}>Include: role, task, audience, format, tone, constraints. The more precise, the better.</p>
+            <textarea value={rewrite} onChange={e=>{setRewrite(e.target.value);setRewriteResult(null);}}
               placeholder="You are a senior technical writer. Write a..."
-              style={{width:"100%",minHeight:"110px",padding:"12px 14px",borderRadius:"9px",border:"1px solid rgba(168,169,173,0.14)",background:"rgba(168,169,173,0.04)",color:S.mutedMd,fontFamily:"'Courier New',monospace",fontSize:"13px",lineHeight:1.7,resize:"vertical",outline:"none"}}/>
+              style={{width:"100%",minHeight:"110px",padding:"12px 14px",borderRadius:"9px",border:`1px solid ${rewriteResult==="weak"?"rgba(196,127,160,0.4)":"rgba(168,169,173,0.14)"}`,background:"rgba(168,169,173,0.04)",color:S.mutedMd,fontFamily:"'Courier New',monospace",fontSize:"13px",lineHeight:1.7,resize:"vertical",outline:"none",transition:"border 0.2s"}}/>
           </div>
-          {phase==="rewrite" && (
-            <div style={{display:"flex",justifyContent:"flex-end"}}>
-              <motion.button onClick={submit} disabled={rewrite.length<40} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
-                style={{padding:"12px 32px",borderRadius:"10px",border:"none",cursor:rewrite.length<40?"not-allowed":"pointer",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase",opacity:rewrite.length<40?0.4:1}}>
-                Submit Rewrite
+
+          {/* Rewrite feedback */}
+          <AnimatePresence>
+            {rewriteResult === "strong" && (
+              <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}} exit={{opacity:0}}
+                style={{marginBottom:"12px",padding:"12px 16px",borderRadius:"10px",background:"rgba(100,200,150,0.08)",border:"1px solid rgba(100,200,150,0.3)",display:"flex",alignItems:"center",gap:"10px"}}>
+                <span style={{fontSize:"16px"}}>✓</span>
+                <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:"#7EC8A4"}}>This prompt will work — it addresses the core flaws. Revealing the model answer…</span>
+              </motion.div>
+            )}
+            {rewriteResult === "weak" && (
+              <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}} exit={{opacity:0}}
+                style={{marginBottom:"12px",padding:"12px 16px",borderRadius:"10px",background:"rgba(196,127,160,0.08)",border:"1px solid rgba(196,127,160,0.3)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:rewriteFeedback.length>0?"10px":"0"}}>
+                  <span style={{fontSize:"16px"}}>✗</span>
+                  <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",fontWeight:600,color:"#C47FA0"}}>This prompt won't work — it's still too vague or incomplete.</span>
+                </div>
+                {rewriteFeedback.length > 0 && (
+                  <div style={{marginLeft:"26px",display:"flex",flexDirection:"column",gap:"5px"}}>
+                    {rewriteFeedback.map((item,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"flex-start",gap:"8px"}}>
+                        <span style={{color:"#C47FA0",fontSize:"10px",marginTop:"2px",flexShrink:0}}>▸</span>
+                        <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:S.muted,lineHeight:1.55}}>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div style={{display:"flex",justifyContent:"flex-end",gap:"10px"}}>
+            {rewriteResult === "weak" && (
+              <motion.button onClick={retryRewrite} whileHover={{scale:1.03}} whileTap={{scale:0.97}}
+                style={{padding:"12px 24px",borderRadius:"10px",border:"1px solid rgba(168,169,173,0.16)",background:"rgba(168,169,173,0.06)",cursor:"pointer",color:S.muted,fontFamily:"'Cormorant Garamond', serif",fontWeight:600,fontSize:"11px",letterSpacing:"0.14em",textTransform:"uppercase"}}>
+                ↺  Try Again
               </motion.button>
-            </div>
-          )}
+            )}
+            {rewriteResult !== "strong" && (
+              <motion.button onClick={evaluateRewrite} disabled={rewrite.length<40} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+                style={{padding:"12px 32px",borderRadius:"10px",border:"none",cursor:rewrite.length<40?"not-allowed":"pointer",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase",opacity:rewrite.length<40?0.4:1}}>
+                Analyse My Prompt
+              </motion.button>
+            )}
+          </div>
         </motion.div>
       )}
 
-      {/* Model answer reveal */}
-      {phase==="reveal" && (
+      {/* ── PHASE: REVEAL ── */}
+      {phase === "reveal" && (
         <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}}>
           <div style={{background:`rgba(${hexToRgb(ch.color)},0.05)`,border:`1px solid rgba(${hexToRgb(ch.color)},0.2)`,borderRadius:"14px",padding:"20px 24px",marginBottom:"20px"}}>
             <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:ch.color,marginBottom:"10px"}}>Why the original failed — full explanation</div>
@@ -3471,7 +3711,7 @@ const DiagnoseChallenge = ({ ch, onDone }) => {
             <pre style={{fontFamily:"'Courier New',monospace",fontSize:"12px",color:S.mutedMd,lineHeight:1.7,whiteSpace:"pre-wrap",background:"rgba(168,169,173,0.04)",padding:"14px 16px",borderRadius:"9px",border:"1px solid rgba(168,169,173,0.1)"}}>{ch.rewrite}</pre>
           </div>
           <div style={{display:"flex",justifyContent:"flex-end"}}>
-            <motion.button onClick={()=>onDone(score())} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+            <motion.button onClick={()=>onDone(finalScore())} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
               style={{padding:"12px 32px",borderRadius:"10px",border:"none",cursor:"pointer",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
               Complete →
             </motion.button>
@@ -3483,57 +3723,540 @@ const DiagnoseChallenge = ({ ch, onDone }) => {
 };
 
 // ─── Compress Challenge ───────────────────────────────────────────────────────
+
+// Per-element live detectors: each returns { pass: bool, error: string|null }
+const ELEMENT_DETECTORS = {
+
+  // ── TOPIC ──────────────────────────────────────────────────────────────────
+  // Must contain a meaningful subject noun from the challenge's domain — not just any word
+  topic: (text, ch) => {
+    const t = text.toLowerCase();
+    // Build a keyword set from the challenge data's own defined topic keywords
+    // Each challenge has a `topicKeywords` array; fall back to extracting from original
+    const keywords = ch.topicKeywords || [];
+    if (keywords.length > 0) {
+      const found = keywords.some(k => t.includes(k.toLowerCase()));
+      if (found) return { pass: true, error: null };
+      return { pass: false, error: `Missing the topic — your prompt must mention: ${keywords.slice(0,3).join(", ")}. Don't drop the subject entirely while compressing.` };
+    }
+    // Fallback: generic topic check — needs at least one non-trivial noun (6+ chars, not a stopword)
+    const STOPWORDS = new Set(["should","really","would","could","please","something","possibly","perhaps","anyone","those","their","there","which","while","since","where","quite","every","being","these","other","might","great","write","email","words","using","going","maybe","fairly","simply","really","easily","always","things","people","about","just","very","that","this","with","from","have","will","your","into","what","when","they","been","also","were","more","than","then","some","them"]);
+    const nouns = t.match(/\b[a-z]{6,}\b/g)?.filter(w => !STOPWORDS.has(w)) || [];
+    if (nouns.length >= 1) return { pass: true, error: null };
+    return { pass: false, error: "Missing the core topic — name what this is about (e.g. 'loyalty programme', 'machine learning', 'user authentication')." };
+  },
+
+  // ── AUDIENCE ───────────────────────────────────────────────────────────────
+  // Must explicitly describe WHO this is for — a real person type or described group
+  audience: (text) => {
+    const t = text.toLowerCase();
+    const patterns = [
+      // Named roles
+      /\bfor\s+(a\s+|an\s+|the\s+)?(non-?technical|technical|junior|senior|new|experienced|first-?time|c-suite|executive|entry[- ]level)\b/,
+      /\bfor\s+(a\s+|an\s+)?(cfo|cto|ceo|vp|director|manager|developer|engineer|designer|researcher|marketer|recruiter|investor|founder|analyst|student|client|customer|stakeholder|reader|user|team\s+lead)\b/,
+      /\bfor\s+(customers?|users?|readers?|developers?|engineers?|managers?|students?|teams?|employees?|subscribers?|members?)\b/,
+      // Qualifiers that describe the audience
+      /\b(non-?technical|non-specialist|non-expert|non-specialist)\b/,
+      /\bwho\s+(don'?t|doesn'?t|has\s+no|have\s+no|lack|can'?t|cannot)\b/,
+      /\bwithout\s+(technical|coding|prior|background|specialist|experience)\b/,
+      /\bnew\s+to\s+(the|our|this)\b/,
+      /\b\d[\+]?\s*years?\s+(of\s+)?(experience|tenure|subscription|loyalty)\b/,
+      /\bcustomers\s+of\s+\d/,  // "customers of 1+ years"
+      /\bengineers?\s+new\b/,
+      /\btargeting\s+[a-z]{4,}/,
+      /\baimed\s+at\s+[a-z]{4,}/,
+      /\baudience\s*:\s*[a-z]{4,}/,
+    ];
+    if (patterns.some(p => p.test(t))) return { pass: true, error: null };
+    return {
+      pass: false,
+      error: "Missing the audience — your compressed prompt must say who this is for. E.g. 'for a non-technical reader', 'for junior developers', 'for customers of 1+ years'. Don't strip the audience when compressing."
+    };
+  },
+
+  // ── TASK ───────────────────────────────────────────────────────────────────
+  // Must have an action verb AND at least 3 meaningful words of substance after it
+  task: (text) => {
+    const t = text.toLowerCase();
+    const TASK_VERBS = /\b(write|create|produce|generate|draft|explain|summarise|summarize|analyse|analyze|describe|compare|list|outline|build|design|prepare|compose|evaluate|identify|review|document)\b/;
+    if (!TASK_VERBS.test(t)) {
+      return { pass: false, error: "No task verb found — start with what to produce: 'Write', 'Explain', 'Summarise', 'Analyse', etc." };
+    }
+    const match = t.match(/\b(?:write|create|produce|generate|draft|explain|summarise|summarize|analyse|analyze|describe|compare|list|outline|build|design|prepare|compose|evaluate|identify|review|document)\b\s*(.+)/);
+    const afterVerb = (match?.[1] || "").trim();
+    const meaningfulWords = afterVerb.split(/\s+/).filter(w => w.length > 2);
+    if (meaningfulWords.length < 3) {
+      return { pass: false, error: `Task too bare — add what exactly to produce after the verb. E.g. 'Write a warm retention email' not just 'Write an email'.` };
+    }
+    return { pass: true, error: null };
+  },
+
+  // ── SUBJECT (API docs specific) ────────────────────────────────────────────
+  subject: (text) => {
+    const t = text.toLowerCase();
+    const SUBJECT_PATTERNS = [/\bapi\b/, /\bendpoint\b/, /\bauthentication\b/, /\bauth\b/, /\bdocumentation\b/, /\bdocs\b/];
+    if (SUBJECT_PATTERNS.some(p => p.test(t))) return { pass: true, error: null };
+    return { pass: false, error: "Missing the subject — specify what the docs are for: 'user authentication endpoint' or 'auth API'. Don't drop the subject while compressing." };
+  },
+
+  // ── TONE ───────────────────────────────────────────────────────────────────
+  // Must contain a real tone descriptor — not implied, explicitly stated
+  tone: (text) => {
+    const t = text.toLowerCase();
+    const TONE_WORDS = /\b(warm|friendly|formal|professional|casual|conversational|direct|simple|clear|empathetic|upbeat|authoritative|persuasive|plain|neutral|sincere|confident|engaging|concise|accessible|approachable)\b/;
+    if (TONE_WORDS.test(t)) return { pass: true, error: null };
+    return { pass: false, error: "Missing the tone — the original specified a tone that must survive compression. Add it explicitly: 'warm', 'friendly', 'professional', 'plain English', etc." };
+  },
+
+  // ── CONTENT SCOPE (paper summary specific) ─────────────────────────────────
+  // Must mention at least 2 of the required content elements
+  content: (text) => {
+    const t = text.toLowerCase();
+    const CONTENT_TERMS = [/\bfindings?\b/, /\bmethodology\b/, /\bimplication/, /\bresult/, /\bconclusion/, /\bapproach\b/];
+    const hits = CONTENT_TERMS.filter(p => p.test(t));
+    if (hits.length >= 2) return { pass: true, error: null };
+    if (hits.length === 1) return { pass: false, error: "Only 1 content element — need at least 2 of: findings, methodology, implications, conclusions. Each represents a distinct part of the paper." };
+    return { pass: false, error: "Missing content scope — specify what to cover: 'key findings, methodology, and implications'. All three were in the original." };
+  },
+
+  // ── FORMAT / OUTPUT CONSTRAINT ─────────────────────────────────────────────
+  // Must include a real format or length constraint — not just implied brevity
+  format: (text) => {
+    const t = text.toLowerCase();
+    const FORMAT_PATTERNS = [
+      /\b\d+\s*words?\b/,           // "200 words", "150 words"
+      /\bmax\s+\d+\b/,              // "max 300"
+      /\bunder\s+\d+\b/,            // "under 200 words"
+      /\bplain\s+english\b/,        // "plain English"
+      /\bbullet\s+point/,           // "bullet points"
+      /\bnumbered\s+(list|steps?)/,  // "numbered list"
+      /\btable\b/,
+      /\bjson\b/,
+      /\bmarkdown\b/,
+      /\bparagraph\b/,
+      /\bone[- ]page\b/,
+      /\bword\s*limit\b/,
+    ];
+    if (FORMAT_PATTERNS.some(p => p.test(t))) return { pass: true, error: null };
+    return { pass: false, error: "Missing a format or length constraint — the original hinted at one. Add it explicitly: '200 words', 'plain English', 'bullet points', etc." };
+  },
+
+  // ── SCOPE (competitor analysis specific) ───────────────────────────────────
+  scope: (text) => {
+    const t = text.toLowerCase();
+    const SCOPE_PATTERNS = [/\bpricing\b/, /\bcompetitor/, /\bproduct\s+change/, /\bmarket\b/, /\bstrategy\b/, /\banalys/, /\bcompetitive\b/, /\bcompar/];
+    if (SCOPE_PATTERNS.some(p => p.test(t))) return { pass: true, error: null };
+    return { pass: false, error: "Missing the scope — specify what to analyse: 'pricing strategies', 'product changes', 'competitor positioning'. The scope defines what the AI actually looks at." };
+  },
+
+  // ── TIMEFRAME (competitor analysis specific) ───────────────────────────────
+  timeframe: (text) => {
+    const t = text.toLowerCase();
+    const TIME_PATTERNS = [/\d+\s*(month|week|year|day)s?\b/, /\blast\s+\d+/, /\brecent\b/, /\bq[1-4]\b/, /\b202\d\b/, /\bthis\s+(year|quarter|month)\b/];
+    if (TIME_PATTERNS.some(p => p.test(t))) return { pass: true, error: null };
+    return { pass: false, error: "Missing a timeframe — specify how recent: 'last 6 months', 'Q4 2024', 'recent changes'. Without this the AI has no scope boundary." };
+  },
+
+  // ── NO FILLER ──────────────────────────────────────────────────────────────
+  // Detects common filler phrases that inflate word count without meaning
+  nofiller: (text) => {
+    const FILLER_PHRASES = [
+      { re: /\bi was (just |)wondering\b/i,                              label: "I was wondering" },
+      { re: /\bif (it|you) (might|could|would) (be |)(at all |)possible\b/i, label: "if possible" },
+      { re: /\bperhaps\b/i,                                              label: "perhaps" },
+      { re: /\bmaybe\b/i,                                                label: "maybe" },
+      { re: /\bif possible\b/i,                                          label: "if possible" },
+      { re: /\bwould (really |)appreciate\b/i,                           label: "would appreciate" },
+      { re: /\bcould you possibly\b/i,                                   label: "could you possibly" },
+      { re: /\bkindly\b/i,                                               label: "kindly" },
+      { re: /\bplease (help|assist) me\b/i,                              label: "please help me" },
+      { re: /\bi (just |)need(ed)? (you to |)(help|assist)\b/i,          label: "I need you to help" },
+      { re: /\bfairly\s+(brief|short|simple|easy)\b/i,                   label: "fairly brief/short" },
+      { re: /\bsort of\b/i,                                              label: "sort of" },
+      { re: /\bkind of\b/i,                                              label: "kind of" },
+      { re: /\btype of (thing|document|content|overview)\b/i,            label: "type of thing" },
+      { re: /\bor something\b/i,                                         label: "or something" },
+      { re: /\bif that('s| is) (ok|okay|alright|possible)\b/i,           label: "if that's ok" },
+      { re: /\bi think (it|this|that) (might|could|would)\b/i,           label: "I think it might" },
+      { re: /\bso what i (need|want)\b/i,                                label: "so what I need" },
+      { re: /\bwhat i am (really |)trying to\b/i,                        label: "what I am trying to" },
+      { re: /\bhelp me (out |)by\b/i,                                    label: "help me out by" },
+      { re: /\bsome kind of\b/i,                                         label: "some kind of" },
+      { re: /\bideally\b/i,                                              label: "ideally" },
+      { re: /\bif at all possible\b/i,                                   label: "if at all possible" },
+      { re: /\breally (great|good|helpful|useful|nice|wonderful)\b/i,    label: "really great/good" },
+      { re: /\bwould be (great|good|helpful|wonderful|nice)\b/i,         label: "would be great" },
+      { re: /^hi[,\s]/i,                                                 label: "Hi," },
+      { re: /^hello[,\s]/i,                                              label: "Hello," },
+      { re: /^hey[,\s]/i,                                                label: "Hey," },
+    ];
+    const found = FILLER_PHRASES.find(f => f.re.test(text));
+    if (found) {
+      return { pass: false, error: `Remove filler phrase: "${found.label}" — this adds words without changing the AI's output. Cut it entirely.` };
+    }
+    return { pass: true, error: null };
+  },
+};
+
+// Run all element detectors against current text — called on every keystroke
+const analyseElements = (text, elements, ch) => {
+  if (!text.trim()) return elements.map(el => ({ ...el, pass: false, error: null }));
+  return elements.map(el => {
+    const detector = ELEMENT_DETECTORS[el.id];
+    if (!detector) return { ...el, pass: true, error: null }; // unknown id — treated as passing
+    return { ...el, ...detector(text, ch) };
+  });
+};
+
 const CompressChallenge = ({ ch, onDone }) => {
-  const [text, setText] = useState("");
-  const [phase, setPhase] = useState("write"); // write | reveal
-  const wc = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const [text, setText]         = useState("");
+  const [phase, setPhase]       = useState("write"); // write | verdict | reveal
+  const [showHint, setShowHint] = useState(false);
+  const [verdict, setVerdict]   = useState(null);   // null | "perfect" | "good" | "incomplete"
+
+  const originalWC = ch.original.trim().split(/\s+/).length;
+  const wc         = text.trim() ? text.trim().split(/\s+/).length : 0;
   const underLimit = wc <= ch.targetWords && wc > 0;
-  const barPct = Math.min(100, Math.round((wc / ch.targetWords)*100));
-  const barColor = wc===0?"rgba(168,169,173,0.2)" : underLimit?"#7EC8A4" : "#C47FA0";
-  const score = () => { let s=50; if(underLimit) s+=30; if(wc<=10) s+=20; else if(wc<=ch.targetWords) s+=10; return Math.min(100,s); };
+  const barPct     = Math.min(100, wc === 0 ? 0 : Math.round((wc / ch.targetWords) * 100));
+  const barColor   = wc === 0 ? "rgba(168,169,173,0.15)" : underLimit ? "#7EC8A4" : "#C47FA0";
+
+  const elements = ch.elements || [
+    { id:"topic",    label:"The topic / subject matter" },
+    { id:"audience", label:"The audience or recipient" },
+    { id:"task",     label:"The core task (what to produce)" },
+    { id:"nofiller", label:"No filler or padding words" },
+  ];
+
+  // Live analysis — runs on every keystroke
+  const analysed  = analyseElements(text, elements, ch);
+  const allPass   = analysed.every(el => el.pass);
+  const passCount = analysed.filter(el => el.pass).length;
+  const failCount = analysed.length - passCount;
+
+  // Compression quality score (0-100)
+  const compressionRatio = originalWC > 0 && wc > 0 ? Math.round((1 - wc / originalWC) * 100) : 0;
+
+  // "Perfect" = under limit AND all pass AND compressed to ≤70% of target
+  // "Good"    = under limit AND all pass (but not ultra-compressed)
+  // "Incomplete" = failed criteria or over limit
+  const getVerdict = () => {
+    if (!underLimit)  return "incomplete";
+    if (!allPass)     return "incomplete";
+    if (wc <= Math.ceil(ch.targetWords * 0.75)) return "perfect";
+    return "good";
+  };
+
+  const score = () => {
+    const v = getVerdict();
+    if (v === "perfect")    return 100;
+    if (v === "good")       return 80;
+    return Math.max(20, Math.round((passCount / analysed.length) * 50));
+  };
+
+  const handleSubmit = () => {
+    const v = getVerdict();
+    setVerdict(v);
+    setPhase("verdict");
+  };
+
+  const VERDICT_CONFIG = {
+    perfect: {
+      icon: "✦",
+      color: "#7EC8A4",
+      bg: "rgba(100,200,150,0.07)",
+      border: "rgba(100,200,150,0.25)",
+      headline: "Excellent — that's a clean compression.",
+      sub: "All meaning preserved, no filler, well under the limit. Compare your version to the model answer below.",
+    },
+    good: {
+      icon: "◈",
+      color: "#C4A5E0",
+      bg: "rgba(196,165,224,0.07)",
+      border: "rgba(196,165,224,0.25)",
+      headline: "Good — it works, but it can be tighter.",
+      sub: "All elements are there and you're within the limit, but there's still room to cut. See the model answer for how far it goes.",
+    },
+    incomplete: {
+      icon: "✗",
+      color: "#C47FA0",
+      bg: "rgba(196,127,160,0.07)",
+      border: "rgba(196,127,160,0.25)",
+      headline: "Not quite — something important is missing.",
+      sub: "Check the criteria below. Every element from the original must survive compression.",
+    },
+  };
 
   return (
     <div>
-      <div style={{background:"rgba(255,60,60,0.04)",border:"1px solid rgba(255,80,80,0.12)",borderRadius:"14px",padding:"20px 24px",marginBottom:"20px"}}>
-        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:"rgba(255,110,110,0.6)",marginBottom:"8px"}}>Original — {ch.original.trim().split(/\s+/).length} words</div>
-        <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"14px",color:"rgba(255,170,170,0.7)",lineHeight:1.85,fontStyle:"italic"}}>"{ch.original}"</p>
-      </div>
 
-      <div style={{background:"rgba(13,13,22,0.97)",border:"1px solid rgba(168,169,173,0.12)",borderRadius:"14px",padding:"20px 24px",marginBottom:"20px"}}>
-        <div style={{display:"flex",alignItems:"center",gap:"12px",marginBottom:"14px"}}>
-          <div style={{flex:1,height:"6px",background:"rgba(168,169,173,0.08)",borderRadius:"3px",overflow:"hidden"}}>
-            <motion.div animate={{width:`${barPct}%`}} transition={{duration:0.2}} style={{height:"100%",background:barColor,borderRadius:"3px"}}/>
-          </div>
-          <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",fontWeight:600,color:barColor,minWidth:"70px",textAlign:"right",fontVariantNumeric:"tabular-nums"}}>{wc} / {ch.targetWords} words</span>
+      {/* ── STEP 1 — Bloated prompt ─────────────────────────────────────────── */}
+      <div style={{marginBottom:"8px",display:"flex",alignItems:"center",gap:"8px"}}>
+        <div style={{width:"22px",height:"22px",borderRadius:"50%",background:`rgba(${hexToRgb(ch.color)},0.18)`,border:`1px solid rgba(${hexToRgb(ch.color)},0.35)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",fontWeight:700,color:ch.color}}>1</span>
         </div>
-        <textarea value={text} onChange={e=>setText(e.target.value)} disabled={phase==="reveal"}
-          placeholder={`Compress to ${ch.targetWords} words or fewer...`}
-          style={{width:"100%",minHeight:"80px",padding:"12px 14px",borderRadius:"9px",border:`1px solid ${underLimit&&wc>0?"rgba(100,200,150,0.3)":wc>ch.targetWords&&wc>0?"rgba(196,127,160,0.3)":"rgba(168,169,173,0.14)"}`,background:"rgba(168,169,173,0.04)",color:S.mutedMd,fontFamily:"'Courier New',monospace",fontSize:"13px",lineHeight:1.7,resize:"vertical",outline:"none"}}/>
-        {!underLimit && wc > ch.targetWords && <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"#C47FA0",marginTop:"6px"}}>Still {wc - ch.targetWords} words over — keep cutting. Remove courtesy phrases, redundant adjectives, filler verbs.</p>}
-        {underLimit && <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"#7EC8A4",marginTop:"6px"}}>Within limit ✓ — check you've kept the meaning before submitting.</p>}
+        <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",letterSpacing:"0.2em",textTransform:"uppercase",color:S.muted}}>
+          The bloated prompt — {originalWC} words
+        </span>
       </div>
 
-      {phase==="reveal" && (
-        <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} style={{background:`rgba(${hexToRgb(ch.color)},0.05)`,border:`1px solid rgba(${hexToRgb(ch.color)},0.2)`,borderRadius:"14px",padding:"20px 24px",marginBottom:"20px"}}>
-          <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:ch.color,marginBottom:"8px"}}>Model answer ({ch.modelWordCount} words)</div>
-          <p style={{fontFamily:"'Courier New',monospace",fontSize:"13px",color:S.mutedMd,lineHeight:1.7,fontStyle:"italic",marginBottom:"14px"}}>"{ch.modelAnswer}"</p>
-          <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.muted,lineHeight:1.7}}>Filler removed: courtesy openers, hedging verbs ("was thinking", "would be great if"), redundant adjectives ("really", "possibly"), and repetitive phrases ("let them know about"). The core meaning — who, what, tone, constraints — survived intact.</p>
-        </motion.div>
-      )}
+      <div style={{background:"rgba(255,60,60,0.04)",border:"1px solid rgba(255,80,80,0.14)",borderRadius:"14px",padding:"20px 24px",marginBottom:"22px"}}>
+        <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"14px",color:"rgba(255,170,170,0.78)",lineHeight:1.9,fontStyle:"italic",marginBottom:"12px"}}>
+          "{ch.original}"
+        </p>
+        <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"rgba(255,120,120,0.5)",lineHeight:1.65}}>
+          Packed with filler, over-politeness, and redundant phrases — the core intent is buried.
+          Compress to <strong style={{color:"rgba(255,150,150,0.8)"}}>{ch.targetWords} words or fewer</strong> while keeping every element that matters.
+        </p>
+      </div>
 
-      <div style={{display:"flex",justifyContent:"flex-end",gap:"10px"}}>
-        {phase==="write" ? (
-          <motion.button onClick={()=>setPhase("reveal")} disabled={!underLimit} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
-            style={{padding:"12px 32px",borderRadius:"10px",border:"none",cursor:underLimit?"pointer":"not-allowed",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase",opacity:underLimit?1:0.4}}>
-            Submit
-          </motion.button>
-        ) : (
-          <motion.button onClick={()=>onDone(score())} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
-            style={{padding:"12px 32px",borderRadius:"10px",border:"none",cursor:"pointer",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
-            Complete →
-          </motion.button>
+      {/* ── STEP 2 — Write + Live Checklist ─────────────────────────────────── */}
+      <div style={{marginBottom:"8px",display:"flex",alignItems:"center",gap:"8px"}}>
+        <div style={{width:"22px",height:"22px",borderRadius:"50%",background:phase==="reveal"?"rgba(126,200,164,0.15)":`rgba(${hexToRgb(ch.color)},0.18)`,border:`1px solid ${phase==="reveal"?"rgba(126,200,164,0.4)":`rgba(${hexToRgb(ch.color)},0.35)`}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",fontWeight:700,color:phase==="reveal"?"#7EC8A4":ch.color}}>
+            {phase==="reveal" ? "✓" : "2"}
+          </span>
+        </div>
+        <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",letterSpacing:"0.2em",textTransform:"uppercase",color:S.muted}}>Write your compressed version</span>
+        {text.trim() && (
+          <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",color:allPass&&underLimit?"#7EC8A4":"#C47FA0",marginLeft:"auto"}}>
+            {passCount}/{analysed.length} criteria met
+          </span>
         )}
       </div>
+
+      <div style={{background:"rgba(13,13,22,0.97)",border:`1px solid ${phase==="reveal"?"rgba(126,200,164,0.2)":"rgba(168,169,173,0.12)"}`,borderRadius:"14px",padding:"20px 24px",marginBottom:"16px"}}>
+
+        {/* Word count bar */}
+        <div style={{display:"flex",alignItems:"center",gap:"12px",marginBottom:"14px"}}>
+          <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",letterSpacing:"0.14em",textTransform:"uppercase",color:S.muted,flexShrink:0}}>Word count</span>
+          <div style={{flex:1,height:"5px",background:"rgba(168,169,173,0.08)",borderRadius:"3px",overflow:"hidden"}}>
+            <motion.div animate={{width:`${barPct}%`}} transition={{duration:0.2,ease:"easeOut"}} style={{height:"100%",background:barColor,borderRadius:"3px"}}/>
+          </div>
+          <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",fontWeight:700,color:barColor,minWidth:"52px",textAlign:"right",fontVariantNumeric:"tabular-nums",flexShrink:0}}>
+            {wc} / {ch.targetWords}
+          </span>
+        </div>
+
+        <textarea
+          value={text}
+          onChange={e => { setText(e.target.value); if(phase==="verdict") setPhase("write"); }}
+          disabled={phase === "reveal"}
+          placeholder={`Compress to ${ch.targetWords} words or fewer — keep every element that matters.`}
+          style={{
+            width:"100%", minHeight:"88px", padding:"13px 15px", borderRadius:"10px",
+            border:`1px solid ${allPass&&underLimit?"rgba(100,200,150,0.35)":wc>ch.targetWords&&wc>0?"rgba(196,127,160,0.3)":"rgba(168,169,173,0.13)"}`,
+            background:phase==="reveal"?"rgba(168,169,173,0.03)":"rgba(168,169,173,0.04)",
+            color:S.mutedMd, fontFamily:"'Courier New',monospace", fontSize:"13px",
+            lineHeight:1.75, resize:"vertical", outline:"none", transition:"border 0.2s",
+          }}
+        />
+
+        {/* Over-limit inline nudge */}
+        <AnimatePresence>
+          {wc > ch.targetWords && wc > 0 && (
+            <motion.p initial={{opacity:0,y:-3}} animate={{opacity:1,y:0}} exit={{opacity:0}}
+              style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"#C47FA0",marginTop:"8px",lineHeight:1.6}}>
+              ✗ <strong>{wc - ch.targetWords}</strong> word{wc-ch.targetWords!==1?"s":""} over — cut courtesy phrases, hedging verbs ("was thinking", "possibly"), redundant adjectives.
+            </motion.p>
+          )}
+        </AnimatePresence>
+
+        {/* Hint */}
+        <div style={{marginTop:"12px"}}>
+          <motion.button onClick={()=>setShowHint(p=>!p)} whileHover={{scale:1.03}} whileTap={{scale:0.97}}
+            style={{padding:"5px 14px",borderRadius:"8px",border:"1px solid rgba(168,169,173,0.16)",background:"rgba(168,169,173,0.05)",cursor:"pointer",color:S.muted,fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",letterSpacing:"0.12em",textTransform:"uppercase",display:"flex",alignItems:"center",gap:"6px"}}>
+            <span style={{fontSize:"11px"}}>✦</span>{showHint?"Hide hint":"Hint"}
+          </motion.button>
+          <AnimatePresence>
+            {showHint && (
+              <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} exit={{opacity:0,height:0}} style={{overflow:"hidden"}}>
+                <div style={{marginTop:"10px",padding:"11px 14px",borderRadius:"9px",background:`rgba(${hexToRgb(ch.color)},0.06)`,border:`1px solid rgba(${hexToRgb(ch.color)},0.18)`}}>
+                  <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:S.muted,lineHeight:1.7}}>
+                    Strip every word that doesn't change the AI's output. Remove openers ("I was thinking"), hedges ("possibly", "maybe", "if at all possible"), and duplicated ideas. Keep: <em>who</em>, <em>what</em>, <em>tone</em>, <em>any named constraints</em>.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* ── LIVE CHECKLIST ───────────────────────────────────────────────────── */}
+      <div style={{marginBottom:"8px",display:"flex",alignItems:"center",gap:"8px"}}>
+        <div style={{width:"22px",height:"22px",borderRadius:"50%",background:allPass&&underLimit?"rgba(126,200,164,0.15)":"rgba(168,169,173,0.08)",border:`1px solid ${allPass&&underLimit?"rgba(126,200,164,0.4)":"rgba(168,169,173,0.18)"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",fontWeight:700,color:allPass&&underLimit?"#7EC8A4":S.muted}}>3</span>
+        </div>
+        <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",letterSpacing:"0.2em",textTransform:"uppercase",color:S.muted}}>Meaning check</span>
+        <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",color:"rgba(168,169,173,0.4)",marginLeft:"4px"}}>— updates as you type</span>
+      </div>
+
+      <div style={{background:"rgba(13,13,22,0.97)",border:`1px solid rgba(${hexToRgb(ch.color)},0.12)`,borderRadius:"14px",padding:"20px 24px",marginBottom:"20px"}}>
+
+        {/* Checklist rows */}
+        <div style={{display:"flex",flexDirection:"column",gap:"7px",marginBottom:"16px"}}>
+          {analysed.map((el) => {
+            const isEmpty = !text.trim();
+            const status  = isEmpty ? "idle" : el.pass ? "pass" : "fail";
+            return (
+              <motion.div key={el.id} initial={false}
+                animate={{
+                  background: status==="pass"?"rgba(100,200,150,0.07)":status==="fail"?"rgba(196,127,160,0.05)":"rgba(168,169,173,0.03)",
+                  borderColor:status==="pass"?"rgba(100,200,150,0.28)":status==="fail"?"rgba(196,127,160,0.22)":"rgba(168,169,173,0.1)",
+                }}
+                transition={{duration:0.18}}
+                style={{borderRadius:"10px",border:"1px solid",overflow:"hidden"}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:"12px",padding:"10px 14px"}}>
+                  {/* Status dot */}
+                  <div style={{
+                    width:"18px",height:"18px",borderRadius:"50%",flexShrink:0,marginTop:"1px",
+                    display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.18s",
+                    background:status==="pass"?"rgba(100,200,150,0.18)":status==="fail"?"rgba(196,127,160,0.14)":"rgba(168,169,173,0.08)",
+                    border:status==="pass"?"1.5px solid rgba(100,200,150,0.5)":status==="fail"?"1.5px solid rgba(196,127,160,0.38)":"1.5px solid rgba(168,169,173,0.2)",
+                  }}>
+                    {status==="pass" && <span style={{fontSize:"9px",color:"#7EC8A4",lineHeight:1}}>✓</span>}
+                    {status==="fail" && <span style={{fontSize:"9px",color:"#C47FA0",lineHeight:1}}>✗</span>}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",lineHeight:1.4,transition:"color 0.18s",
+                      color:status==="pass"?"#7EC8A4":status==="fail"?"#C47FA0":S.mutedMd}}>
+                      {el.label}
+                    </span>
+                    {/* Error message — expands when failing */}
+                    <AnimatePresence>
+                      {status==="fail" && el.error && (
+                        <motion.p
+                          initial={{opacity:0,height:0,marginTop:0}} animate={{opacity:1,height:"auto",marginTop:5}} exit={{opacity:0,height:0,marginTop:0}}
+                          style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",color:"rgba(196,127,160,0.72)",lineHeight:1.55,margin:0,overflow:"hidden"}}>
+                          {el.error}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Bottom status + submit */}
+        {phase === "write" && (
+          <div style={{borderTop:"1px solid rgba(168,169,173,0.08)",paddingTop:"14px"}}>
+            <div style={{marginBottom:"12px"}}>
+              {!text.trim() && (
+                <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:S.muted,lineHeight:1.6}}>Start typing — the checklist updates automatically as you write.</p>
+              )}
+              {text.trim() && !underLimit && wc > 0 && (
+                <div style={{padding:"9px 13px",borderRadius:"9px",background:"rgba(196,127,160,0.06)",border:"1px solid rgba(196,127,160,0.18)"}}>
+                  <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"#C47FA0",lineHeight:1.55}}>
+                    ✗ <strong>{wc - ch.targetWords}</strong> word{wc-ch.targetWords!==1?"s":""} over the {ch.targetWords}-word limit — target the phrases marked red above.
+                  </p>
+                </div>
+              )}
+              {text.trim() && underLimit && !allPass && (
+                <div style={{padding:"9px 13px",borderRadius:"9px",background:"rgba(196,127,160,0.06)",border:"1px solid rgba(196,127,160,0.18)"}}>
+                  <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"#C47FA0",lineHeight:1.55,marginBottom:failCount>0?"7px":"0"}}>
+                    ✗ Within the word limit but <strong>{failCount}</strong> element{failCount!==1?"s are":" is"} still missing:
+                  </p>
+                  {analysed.filter(e=>!e.pass).map(e=>(
+                    <p key={e.id} style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",color:"rgba(196,127,160,0.75)",lineHeight:1.5,marginLeft:"12px"}}>▸ {e.error}</p>
+                  ))}
+                </div>
+              )}
+              {allPass && underLimit && (
+                <div style={{padding:"9px 13px",borderRadius:"9px",background:"rgba(100,200,150,0.06)",border:"1px solid rgba(100,200,150,0.18)"}}>
+                  <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"#7EC8A4",lineHeight:1.55}}>
+                    ✓ All {analysed.length} criteria met — {compressionRatio}% compression. Submit when ready.
+                  </p>
+                </div>
+              )}
+            </div>
+            <div style={{display:"flex",justifyContent:"flex-end"}}>
+              <motion.button
+                onClick={handleSubmit}
+                disabled={!underLimit}
+                whileHover={{scale:underLimit?1.04:1}} whileTap={{scale:underLimit?0.97:1}}
+                style={{padding:"11px 28px",borderRadius:"9px",border:"none",cursor:underLimit?"pointer":"not-allowed",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase",opacity:underLimit?1:0.32}}>
+                Submit ↗
+              </motion.button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── VERDICT ──────────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {phase === "verdict" && verdict && (() => {
+          const cfg = VERDICT_CONFIG[verdict];
+          return (
+            <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0}}>
+
+              {/* Verdict banner */}
+              <div style={{padding:"18px 22px",borderRadius:"14px",background:cfg.bg,border:`1px solid ${cfg.border}`,marginBottom:"16px"}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:"14px"}}>
+                  <span style={{fontSize:"22px",color:cfg.color,lineHeight:1,marginTop:"1px",flexShrink:0}}>{cfg.icon}</span>
+                  <div>
+                    <p style={{fontFamily:"'Playfair Display', serif",fontSize:"16px",fontWeight:700,color:cfg.color,marginBottom:"5px"}}>{cfg.headline}</p>
+                    <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.muted,lineHeight:1.65}}>{cfg.sub}</p>
+                    {verdict === "incomplete" && (
+                      <div style={{marginTop:"10px",display:"flex",flexDirection:"column",gap:"4px"}}>
+                        {analysed.filter(e=>!e.pass).map(e=>(
+                          <p key={e.id} style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"rgba(196,127,160,0.8)",lineHeight:1.5}}>▸ {e.error || e.label + " — not found in your version."}</p>
+                        ))}
+                        {!underLimit && (
+                          <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"rgba(196,127,160,0.8)",lineHeight:1.5}}>▸ Still {wc - ch.targetWords} word{wc-ch.targetWords!==1?"s":""} over the {ch.targetWords}-word limit.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Compression stats */}
+              <div style={{display:"flex",gap:"10px",marginBottom:"16px",flexWrap:"wrap"}}>
+                {[
+                  { label:"Your version",  val:`${wc} words`,          color: underLimit?"#7EC8A4":"#C47FA0" },
+                  { label:"Compression",   val:`${compressionRatio}%`, color: compressionRatio>=60?"#7EC8A4":S.silverLt },
+                  { label:"Model answer",  val:`${ch.modelWordCount} words`, color: S.silverLt },
+                ].map((s,i)=>(
+                  <div key={i} style={{flex:1,minWidth:"90px",padding:"12px 14px",background:"rgba(168,169,173,0.04)",border:"1px solid rgba(168,169,173,0.1)",borderRadius:"10px",textAlign:"center"}}>
+                    <div style={{fontFamily:"'Playfair Display', serif",fontSize:"17px",fontWeight:700,color:s.color,marginBottom:"2px"}}>{s.val}</div>
+                    <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",letterSpacing:"0.12em",textTransform:"uppercase",color:S.muted}}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Model answer */}
+              <div style={{background:`rgba(${hexToRgb(ch.color)},0.05)`,border:`1px solid rgba(${hexToRgb(ch.color)},0.2)`,borderRadius:"14px",padding:"20px 24px",marginBottom:"16px"}}>
+                <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:ch.color,marginBottom:"10px"}}>
+                  Model answer — {ch.modelWordCount} words
+                </div>
+                <p style={{fontFamily:"'Courier New',monospace",fontSize:"14px",color:S.mutedMd,lineHeight:1.8,fontStyle:"italic",marginBottom:"14px"}}>
+                  "{ch.modelAnswer}"
+                </p>
+                <div style={{height:"1px",background:`rgba(${hexToRgb(ch.color)},0.12)`,marginBottom:"14px"}}/>
+                <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.muted,lineHeight:1.75}}>
+                  {ch.explanation || "Filler removed: courtesy openers, hedging verbs, redundant adjectives. Core meaning — topic, audience, task, constraints — survived intact."}
+                </p>
+              </div>
+
+              <div style={{display:"flex",justifyContent:"space-between",gap:"10px"}}>
+                {verdict === "incomplete" && (
+                  <motion.button
+                    onClick={()=>{ setPhase("write"); setVerdict(null); }}
+                    whileHover={{scale:1.03}} whileTap={{scale:0.97}}
+                    style={{padding:"11px 24px",borderRadius:"9px",border:"1px solid rgba(168,169,173,0.18)",background:"rgba(168,169,173,0.06)",cursor:"pointer",color:S.muted,fontFamily:"'Cormorant Garamond', serif",fontWeight:600,fontSize:"11px",letterSpacing:"0.14em",textTransform:"uppercase",display:"flex",alignItems:"center",gap:"8px"}}>
+                    ↺ Try Again
+                  </motion.button>
+                )}
+                <motion.button onClick={()=>onDone(score())} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+                  style={{padding:"11px 28px",borderRadius:"9px",border:"none",cursor:"pointer",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase",marginLeft:"auto"}}>
+                  Complete →
+                </motion.button>
+              </div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 };
@@ -4098,11 +4821,42 @@ const JigsawChallenge = ({ ch, onDone }) => {
   const [checked, setChecked] = useState(false);
   const [selected, setSelected] = useState(null);
 
+  // drag state
+  const [draggingId, setDraggingId]       = useState(null); // fragId being dragged
+  const [draggingFrom, setDraggingFrom]   = useState(null); // "pool" | slotIndex (number)
+  const [dragOverPool, setDragOverPool]   = useState(false);
+  const [dragOverSlot, setDragOverSlot]   = useState(null); // slot index hovered
+
   const slotCount = realFragments.length;
 
+  // ── helpers ────────────────────────────────────────────────────────────────
+  const placeFragInSlot = (fragId, slotIdx, fromPool, fromSlotIdx) => {
+    const frag = ch.fragments.find(f => f.id === fragId);
+    if (!frag || frag.correct === -1) return;
+    const newSlots = [...slots];
+    // If coming from another slot, clear it first
+    if (!fromPool && fromSlotIdx !== null && fromSlotIdx !== undefined) newSlots[fromSlotIdx] = null;
+    // If target slot already filled, return displaced frag to pool
+    const displaced = newSlots[slotIdx];
+    newSlots[slotIdx] = fragId;
+    setSlots(newSlots);
+    setPool(p => {
+      let next = p.filter(f => f.id !== fragId);
+      if (displaced) next = [...next, ch.fragments.find(f => f.id === displaced)];
+      if (!fromPool && fromSlotIdx !== null && fromSlotIdx !== undefined) next = next.filter(f => f.id !== fragId);
+      return next;
+    });
+  };
+
+  const returnFragToPool = (fragId, slotIdx) => {
+    const newSlots = [...slots]; newSlots[slotIdx] = null; setSlots(newSlots);
+    setPool(p => [...p, ch.fragments.find(f => f.id === fragId)]);
+  };
+
+  // ── click interaction (fallback / tap) ─────────────────────────────────────
   const handlePoolClick = (frag) => {
     if (checked) return;
-    if (frag.correct === -1) return; // decoy — not placeable
+    if (frag.correct === -1) return;
     setSelected(frag.id === selected ? null : frag.id);
   };
 
@@ -4111,21 +4865,49 @@ const JigsawChallenge = ({ ch, onDone }) => {
     if (selected) {
       const frag = ch.fragments.find(f => f.id === selected);
       if (!frag || frag.correct === -1) { setSelected(null); return; }
-      const newSlots = [...slots];
-      const prevSlot = newSlots.indexOf(selected);
-      if (prevSlot !== -1) newSlots[prevSlot] = null;
-      if (newSlots[slotIdx]) setPool(p => [...p, ch.fragments.find(f => f.id === newSlots[slotIdx])]);
-      newSlots[slotIdx] = selected;
-      setSlots(newSlots);
-      setPool(p => p.filter(f => f.id !== selected));
+      const fromSlot = slots.indexOf(selected);
+      placeFragInSlot(selected, slotIdx, fromSlot === -1, fromSlot === -1 ? null : fromSlot);
       setSelected(null);
     } else if (slots[slotIdx]) {
-      const fragId = slots[slotIdx];
-      const newSlots = [...slots]; newSlots[slotIdx] = null; setSlots(newSlots);
-      setPool(p => [...p, ch.fragments.find(f => f.id === fragId)]);
+      returnFragToPool(slots[slotIdx], slotIdx);
     }
   };
 
+  // ── drag handlers ──────────────────────────────────────────────────────────
+  const onDragStartPool = (e, frag) => {
+    if (checked || frag.correct === -1) { e.preventDefault(); return; }
+    setDraggingId(frag.id); setDraggingFrom("pool"); setSelected(null);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", frag.id);
+  };
+
+  const onDragStartSlot = (e, fragId, slotIdx) => {
+    if (checked) { e.preventDefault(); return; }
+    setDraggingId(fragId); setDraggingFrom(slotIdx); setSelected(null);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", fragId);
+  };
+
+  const onDragEnd = () => { setDraggingId(null); setDraggingFrom(null); setDragOverPool(false); setDragOverSlot(null); };
+
+  const onDropSlot = (e, slotIdx) => {
+    e.preventDefault();
+    const fragId = e.dataTransfer.getData("text/plain") || draggingId;
+    if (!fragId) return;
+    placeFragInSlot(fragId, slotIdx, draggingFrom === "pool", draggingFrom !== "pool" ? draggingFrom : null);
+    setDraggingId(null); setDraggingFrom(null); setDragOverSlot(null);
+  };
+
+  const onDropPool = (e) => {
+    e.preventDefault();
+    const fragId = e.dataTransfer.getData("text/plain") || draggingId;
+    if (!fragId || draggingFrom === "pool") return; // already in pool
+    const fromSlotIdx = draggingFrom;
+    if (fromSlotIdx !== null && fromSlotIdx !== undefined) returnFragToPool(fragId, fromSlotIdx);
+    setDraggingId(null); setDraggingFrom(null); setDragOverPool(false);
+  };
+
+  // ── score ──────────────────────────────────────────────────────────────────
   const score = () => {
     let correct = 0;
     slots.forEach((id, i) => { if (id && ch.fragments.find(f => f.id === id)?.correct === i) correct++; });
@@ -4134,62 +4916,127 @@ const JigsawChallenge = ({ ch, onDone }) => {
 
   const allFilled = slots.every(s => s !== null);
 
+  // ── render ─────────────────────────────────────────────────────────────────
   return (
     <div>
+      {/* Hint bar */}
+      <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"14px",padding:"8px 14px",background:"rgba(133,183,235,0.06)",border:"1px solid rgba(133,183,235,0.15)",borderRadius:"8px"}}>
+        <span style={{fontSize:"14px"}}>↕</span>
+        <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",color:"rgba(133,183,235,0.7)",letterSpacing:"0.06em"}}>
+          Drag fragments into the numbered slots — or tap a fragment then tap a slot
+        </span>
+      </div>
+
       {/* Pool */}
-      <div style={{background:"rgba(168,169,173,0.04)",border:"1px solid rgba(168,169,173,0.1)",borderRadius:"14px",padding:"16px 18px",marginBottom:"18px"}}>
+      <div
+        onDragOver={e => { e.preventDefault(); setDragOverPool(true); }}
+        onDragLeave={() => setDragOverPool(false)}
+        onDrop={onDropPool}
+        style={{background: dragOverPool && draggingFrom !== "pool" ? "rgba(133,183,235,0.07)" : "rgba(168,169,173,0.04)",
+          border: dragOverPool && draggingFrom !== "pool" ? "1px solid rgba(133,183,235,0.35)" : "1px solid rgba(168,169,173,0.1)",
+          borderRadius:"14px",padding:"16px 18px",marginBottom:"18px",transition:"all 0.15s"}}>
         <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:S.muted,marginBottom:"12px"}}>
-          Fragment pool — click a fragment, then click a slot to place it
+          Fragment pool
           {decoyFragments.length > 0 && <span style={{color:"#C47FA0",marginLeft:"10px"}}>⚠ Contains {decoyFragments.length} decoy{decoyFragments.length>1?"s":""} — do not place them</span>}
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
           {pool.map(frag => {
             const isDecoy = frag.correct === -1;
             const isSel = selected === frag.id;
+            const isDragging = draggingId === frag.id;
             return (
-              <motion.div key={frag.id} whileHover={{scale: isDecoy ? 1 : 1.01}} whileTap={{scale: isDecoy ? 1 : 0.99}}
+              <motion.div key={frag.id}
+                draggable={!isDecoy && !checked}
+                onDragStart={e => onDragStartPool(e, frag)}
+                onDragEnd={onDragEnd}
                 onClick={() => handlePoolClick(frag)}
-                style={{padding:"10px 14px",borderRadius:"9px",cursor:isDecoy?"not-allowed":"pointer",transition:"all 0.15s",
-                  background: isDecoy?"rgba(196,127,160,0.06)": isSel?`rgba(${hexToRgb(ch.color)},0.14)`:"rgba(168,169,173,0.05)",
-                  border: isDecoy?"1px solid rgba(196,127,160,0.2)": isSel?`1px solid rgba(${hexToRgb(ch.color)},0.4)`:"1px solid rgba(168,169,173,0.1)",
-                  opacity: isDecoy ? 0.5 : 1}}>
-                <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color: isDecoy?"#C47FA0": isSel?ch.color:S.mutedMd,lineHeight:1.55}}>
-                  {isDecoy && <span style={{fontSize:"10px",marginRight:"8px",letterSpacing:"0.1em",textTransform:"uppercase"}}>DECOY — </span>}
-                  {frag.text}
-                </span>
+                animate={{ opacity: isDragging ? 0.35 : 1, scale: isDragging ? 0.97 : 1 }}
+                whileHover={!isDecoy && !checked ? { scale:1.015, y:-1 } : {}}
+                whileTap={!isDecoy && !checked ? { scale:0.98 } : {}}
+                style={{padding:"10px 14px",borderRadius:"9px",
+                  cursor: isDecoy ? "not-allowed" : checked ? "default" : "grab",
+                  userSelect:"none", transition:"background 0.15s, border 0.15s",
+                  background: isDecoy ? "rgba(196,127,160,0.06)" : isSel ? `rgba(${hexToRgb(ch.color)},0.14)` : "rgba(168,169,173,0.05)",
+                  border: isDecoy ? "1px solid rgba(196,127,160,0.2)" : isSel ? `1px solid rgba(${hexToRgb(ch.color)},0.4)` : "1px solid rgba(168,169,173,0.1)",
+                  opacity: isDecoy ? 0.5 : 1,
+                  boxShadow: isSel ? `0 0 0 2px rgba(${hexToRgb(ch.color)},0.2)` : "none"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+                  {!isDecoy && !checked && (
+                    <span style={{fontSize:"12px",color:"rgba(168,169,173,0.35)",flexShrink:0,lineHeight:1}}>⠿</span>
+                  )}
+                  <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",
+                    color: isDecoy ? "#C47FA0" : isSel ? ch.color : S.mutedMd, lineHeight:1.55}}>
+                    {isDecoy && <span style={{fontSize:"10px",marginRight:"8px",letterSpacing:"0.1em",textTransform:"uppercase"}}>DECOY — </span>}
+                    {frag.text}
+                  </span>
+                </div>
               </motion.div>
             );
           })}
-          {pool.length === 0 && <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.muted,fontStyle:"italic"}}>All fragments placed</span>}
+          {pool.length === 0 && (
+            <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.muted,fontStyle:"italic"}}>
+              All fragments placed — drag back here to return one
+            </span>
+          )}
         </div>
       </div>
 
       {/* Slots */}
       <div style={{marginBottom:"18px"}}>
-        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:S.muted,marginBottom:"12px"}}>Your order — click a filled slot to return it to the pool</div>
+        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:S.muted,marginBottom:"12px"}}>
+          Build the structure — drag into order or tap to place
+        </div>
         <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
           {slots.map((id, i) => {
             const frag = id ? ch.fragments.find(f => f.id === id) : null;
             const isCorrect = checked && frag && frag.correct === i;
-            const isWrong = checked && frag && frag.correct !== i;
+            const isWrong   = checked && frag && frag.correct !== i;
+            const isOver    = dragOverSlot === i;
+            const isEmpty   = !frag;
             return (
               <div key={i} style={{display:"flex",alignItems:"flex-start",gap:"12px"}}>
-                <div style={{width:"22px",height:"22px",borderRadius:"50%",background:`rgba(${hexToRgb(ch.color)},0.1)`,border:`1px solid rgba(${hexToRgb(ch.color)},0.25)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"10px"}}>
-                  <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",fontWeight:700,color:ch.color}}>{i+1}</span>
+                {/* Slot number badge */}
+                <div style={{width:"22px",height:"22px",borderRadius:"50%",
+                  background: isCorrect ? "rgba(100,200,150,0.15)" : isWrong ? "rgba(196,127,160,0.15)" : `rgba(${hexToRgb(ch.color)},0.1)`,
+                  border: isCorrect ? "1px solid rgba(100,200,150,0.4)" : isWrong ? "1px solid rgba(196,127,160,0.4)" : `1px solid rgba(${hexToRgb(ch.color)},0.25)`,
+                  display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"11px"}}>
+                  <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",fontWeight:700,
+                    color: isCorrect ? "#7EC8A4" : isWrong ? "#C47FA0" : ch.color}}>{i+1}</span>
                 </div>
-                <motion.div whileHover={!checked&&frag?{scale:1.005}:{}} onClick={() => handleSlotClick(i)}
-                  style={{flex:1,padding:"11px 15px",borderRadius:"10px",minHeight:"44px",cursor:frag&&!checked?"pointer":"default",transition:"all 0.15s",
-                    background: isCorrect?"rgba(100,200,150,0.09)": isWrong?"rgba(196,127,160,0.08)": selected&&!frag?`rgba(${hexToRgb(ch.color)},0.07)`:"rgba(168,169,173,0.04)",
-                    border: isCorrect?"1px solid rgba(100,200,150,0.35)": isWrong?"1px solid rgba(196,127,160,0.3)": selected&&!frag?`1px solid rgba(${hexToRgb(ch.color)},0.3)`:"1px dashed rgba(168,169,173,0.18)"}}>
-                  {frag
-                    ? <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color: isCorrect?"#7EC8A4": isWrong?"#C47FA0":S.mutedMd,lineHeight:1.55}}>
-                        {frag.text} {checked && (isCorrect ? "✓" : "✗")}
+
+                {/* Drop zone */}
+                <div
+                  onDragOver={e => { e.preventDefault(); setDragOverSlot(i); }}
+                  onDragLeave={() => setDragOverSlot(null)}
+                  onDrop={e => onDropSlot(e, i)}
+                  onClick={() => handleSlotClick(i)}
+                  style={{flex:1,minHeight:"46px",borderRadius:"10px",transition:"all 0.15s",
+                    cursor: frag && !checked ? "pointer" : isEmpty && !checked ? "copy" : "default",
+                    background: isCorrect ? "rgba(100,200,150,0.09)" : isWrong ? "rgba(196,127,160,0.08)" :
+                      isOver ? `rgba(${hexToRgb(ch.color)},0.12)` : selected && isEmpty ? `rgba(${hexToRgb(ch.color)},0.06)` : "rgba(168,169,173,0.04)",
+                    border: isCorrect ? "1px solid rgba(100,200,150,0.35)" : isWrong ? "1px solid rgba(196,127,160,0.3)" :
+                      isOver ? `2px solid rgba(${hexToRgb(ch.color)},0.55)` : selected && isEmpty ? `1px solid rgba(${hexToRgb(ch.color)},0.3)` : "1px dashed rgba(168,169,173,0.18)",
+                    boxShadow: isOver ? `0 0 12px rgba(${hexToRgb(ch.color)},0.15)` : "none",
+                    padding: isOver ? "10px 14px" : "11px 15px"}}>
+                  {frag ? (
+                    <div style={{display:"flex",alignItems:"center",gap:"8px"}}
+                      draggable={!checked}
+                      onDragStart={e => onDragStartSlot(e, frag.id, i)}
+                      onDragEnd={onDragEnd}>
+                      {!checked && <span style={{fontSize:"12px",color:"rgba(168,169,173,0.3)",flexShrink:0,cursor:"grab"}}>⠿</span>}
+                      <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",
+                        color: isCorrect ? "#7EC8A4" : isWrong ? "#C47FA0" : S.mutedMd, lineHeight:1.55}}>
+                        {frag.text}
+                        {checked && <span style={{marginLeft:"8px",fontWeight:700}}>{isCorrect ? " ✓" : " ✗"}</span>}
                       </span>
-                    : <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color: selected?"rgba(133,183,235,0.5)":"rgba(168,169,173,0.25)",fontStyle:"italic"}}>
-                        {selected ? "Click to place here" : "Empty — click a fragment first"}
-                      </span>
-                  }
-                </motion.div>
+                    </div>
+                  ) : (
+                    <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",fontStyle:"italic",
+                      color: isOver ? `rgba(${hexToRgb(ch.color)},0.7)` : selected ? "rgba(133,183,235,0.45)" : "rgba(168,169,173,0.22)"}}>
+                      {isOver ? "Drop here" : selected ? "Tap to place here" : "Drag or tap a fragment…"}
+                    </span>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -4205,7 +5052,7 @@ const JigsawChallenge = ({ ch, onDone }) => {
       )}
 
       <div style={{display:"flex",justifyContent:"flex-end",gap:"10px"}}>
-        <motion.button onClick={() => { setPool(shuffle(ch.fragments)); setSlots(realFragments.map(() => null)); setChecked(false); setSelected(null); }}
+        <motion.button onClick={() => { setPool(shuffle(ch.fragments)); setSlots(realFragments.map(() => null)); setChecked(false); setSelected(null); setDraggingId(null); setDragOverSlot(null); setDragOverPool(false); }}
           whileHover={{scale:1.03}} whileTap={{scale:0.97}}
           style={{padding:"10px 18px",borderRadius:"9px",background:"rgba(168,169,173,0.07)",border:"1px solid rgba(168,169,173,0.16)",color:S.muted,fontFamily:"'Cormorant Garamond', serif",fontWeight:600,fontSize:"11px",letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>
           Reset
@@ -4225,167 +5072,6 @@ const JigsawChallenge = ({ ch, onDone }) => {
   );
 };
 
-// ─── Word Surgeon Challenge ───────────────────────────────────────────────────
-const WordSurgeonChallenge = ({ ch, onDone }) => {
-  const words = ch.prompt.split(' ');
-  const [editedWords, setEditedWords] = useState([...words]);
-  const [editingIdx, setEditingIdx] = useState(null);
-  const [editVal, setEditVal] = useState('');
-  const [editsUsed, setEditsUsed] = useState(0);
-  const [editedIdxs, setEditedIdxs] = useState(new Set());
-  const [phase, setPhase] = useState('edit'); // edit | hint | reveal
-  const [showHints, setShowHints] = useState(false);
-  const atLimit = editsUsed >= ch.maxEdits;
-
-  const startEdit = (i) => {
-    if (atLimit && !editedIdxs.has(i)) return;
-    setEditingIdx(i);
-    setEditVal(editedWords[i]);
-  };
-
-  const commitEdit = () => {
-    if (editingIdx === null) return;
-    const newWords = [...editedWords];
-    const wasEdited = editedIdxs.has(editingIdx);
-    const changed = editVal.trim() !== words[editingIdx];
-    newWords[editingIdx] = editVal.trim() || words[editingIdx];
-    setEditedWords(newWords);
-    if (!wasEdited && changed) {
-      setEditsUsed(e => e + 1);
-      setEditedIdxs(s => new Set([...s, editingIdx]));
-    }
-    setEditingIdx(null);
-    setEditVal('');
-  };
-
-  const resetWord = (i) => {
-    if (!editedIdxs.has(i)) return;
-    const newWords = [...editedWords];
-    newWords[i] = words[i];
-    setEditedWords(newWords);
-    setEditsUsed(e => Math.max(0, e - 1));
-    setEditedIdxs(s => { const n = new Set(s); n.delete(i); return n; });
-  };
-
-  const score = () => {
-    const used = editsUsed;
-    if (used === 0) return 20;
-    if (used <= ch.maxEdits) return 60 + Math.round((ch.maxEdits - used + 1) / ch.maxEdits * 40);
-    return 40;
-  };
-
-  const editsLeft = ch.maxEdits - editsUsed;
-
-  return (
-    <div>
-      {/* Original prompt */}
-      <div style={{background:"rgba(255,60,60,0.04)",border:"1px solid rgba(255,80,80,0.12)",borderRadius:"14px",padding:"18px 22px",marginBottom:"18px"}}>
-        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:"rgba(255,110,110,0.6)",marginBottom:"8px"}}>Original failing prompt</div>
-        <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"14px",color:"rgba(255,170,170,0.7)",lineHeight:1.7,fontStyle:"italic"}}>"{ch.prompt}"</p>
-      </div>
-
-      {/* Edit counter */}
-      <div style={{display:"flex",alignItems:"center",gap:"12px",marginBottom:"16px"}}>
-        <div style={{display:"flex",gap:"6px"}}>
-          {Array.from({length:ch.maxEdits},(_,i)=>(
-            <div key={i} style={{width:"28px",height:"6px",borderRadius:"3px",background: i<editsUsed?ch.color:"rgba(168,169,173,0.15)",transition:"all 0.2s"}}/>
-          ))}
-        </div>
-        <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color: atLimit?"#C47FA0":S.muted}}>
-          {atLimit ? `${ch.maxEdits}/${ch.maxEdits} edits used — no more changes` : `${editsUsed}/${ch.maxEdits} edits used — ${editsLeft} remaining`}
-        </span>
-      </div>
-
-      {/* Word editor */}
-      <div style={{background:"rgba(13,13,22,0.97)",border:`1px solid rgba(${hexToRgb(ch.color)},0.18)`,borderRadius:"14px",padding:"20px 22px",marginBottom:"16px"}}>
-        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:S.muted,marginBottom:"14px"}}>
-          Click any word to edit it — double-click an edited word to restore original
-        </div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:"6px",lineHeight:2.2}}>
-          {editedWords.map((w, i) => {
-            const isEdited = editedIdxs.has(i);
-            const isEditing = editingIdx === i;
-            const canEdit = !atLimit || isEdited;
-            return isEditing ? (
-              <input key={i} autoFocus value={editVal}
-                onChange={e => setEditVal(e.target.value)}
-                onBlur={commitEdit}
-                onKeyDown={e => { if(e.key==='Enter') commitEdit(); if(e.key==='Escape'){setEditingIdx(null);setEditVal('');} }}
-                style={{padding:"3px 8px",borderRadius:"5px",border:`1px solid ${ch.color}`,background:`rgba(${hexToRgb(ch.color)},0.1)`,color:ch.color,fontFamily:"'Cormorant Garamond', serif",fontSize:"14px",fontWeight:600,width:`${Math.max(w.length+2,6)}ch`,outline:"none"}}/>
-            ) : (
-              <motion.span key={i} whileHover={{scale:canEdit?1.08:1}} whileTap={{scale:canEdit?0.94:1}}
-                onClick={() => canEdit && startEdit(i)}
-                onDoubleClick={() => isEdited && resetWord(i)}
-                title={isEdited ? "Double-click to restore" : canEdit ? "Click to edit" : "Edit limit reached"}
-                style={{padding:"3px 10px",borderRadius:"6px",cursor:canEdit?"pointer":"default",fontFamily:"'Cormorant Garamond', serif",fontSize:"14px",fontWeight:600,transition:"all 0.15s",
-                  background: isEdited?`rgba(${hexToRgb(ch.color)},0.15)`:"rgba(168,169,173,0.05)",
-                  border: isEdited?`1px solid rgba(${hexToRgb(ch.color)},0.4)`:"1px solid rgba(168,169,173,0.1)",
-                  color: isEdited?ch.color:S.mutedMd,
-                  opacity: !canEdit && !isEdited ? 0.5 : 1}}>
-                {w}
-              </motion.span>
-            );
-          })}
-        </div>
-        <div style={{marginTop:"14px",padding:"10px 12px",background:"rgba(168,169,173,0.04)",borderRadius:"8px",border:"1px solid rgba(168,169,173,0.08)"}}>
-          <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",color:S.muted,marginRight:"8px",letterSpacing:"0.1em",textTransform:"uppercase"}}>Current prompt:</span>
-          <span style={{fontFamily:"'Courier New',monospace",fontSize:"12px",color:S.mutedMd}}>{editedWords.join(' ')}</span>
-        </div>
-      </div>
-
-      {/* Hints */}
-      <div style={{marginBottom:"16px"}}>
-        <motion.button onClick={() => setShowHints(!showHints)} whileHover={{scale:1.02}} whileTap={{scale:0.97}}
-          style={{padding:"8px 16px",borderRadius:"9px",border:`1px solid rgba(${hexToRgb(ch.color)},0.2)`,background:`rgba(${hexToRgb(ch.color)},0.05)`,color:ch.color,fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>
-          {showHints ? "Hide hints" : `Show hints (${ch.hints.length})`}
-        </motion.button>
-        {showHints && (
-          <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}} style={{marginTop:"10px",display:"flex",flexDirection:"column",gap:"6px"}}>
-            {ch.hints.map((h,i) => (
-              <div key={i} style={{padding:"8px 14px",borderRadius:"8px",background:"rgba(168,169,173,0.04)",border:"1px solid rgba(168,169,173,0.1)"}}>
-                <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:S.mutedMd}}>
-                  <span style={{color:ch.color,marginRight:"8px"}}>{i+1}.</span>{h}
-                </span>
-              </div>
-            ))}
-          </motion.div>
-        )}
-      </div>
-
-      {/* Reveal */}
-      {phase === 'reveal' && (
-        <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} style={{background:`rgba(${hexToRgb(ch.color)},0.05)`,border:`1px solid rgba(${hexToRgb(ch.color)},0.2)`,borderRadius:"14px",padding:"20px 22px",marginBottom:"16px"}}>
-          <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.18em",textTransform:"uppercase",color:ch.color,marginBottom:"8px"}}>Model answer & what changed</div>
-          <pre style={{fontFamily:"'Courier New',monospace",fontSize:"12px",color:S.mutedMd,lineHeight:1.7,whiteSpace:"pre-wrap",marginBottom:"14px",background:"rgba(168,169,173,0.04)",padding:"12px 14px",borderRadius:"8px",border:"1px solid rgba(168,169,173,0.1)"}}>{ch.modelAnswer}</pre>
-          <div style={{display:"flex",flexDirection:"column",gap:"6px"}}>
-            {ch.modelChanges.map((c,i) => (
-              <div key={i} style={{display:"flex",alignItems:"flex-start",gap:"8px"}}>
-                <span style={{color:ch.color,fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",flexShrink:0}}>Edit {i+1}:</span>
-                <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.mutedMd,lineHeight:1.5}}>{c}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{marginTop:"14px",paddingTop:"14px",borderTop:"1px solid rgba(168,169,173,0.1)"}}>
-            <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.muted,lineHeight:1.75}}>{ch.explanation}</p>
-          </div>
-        </motion.div>
-      )}
-
-      <div style={{display:"flex",justifyContent:"flex-end",gap:"10px"}}>
-        {phase === 'edit'
-          ? <motion.button onClick={() => setPhase('reveal')} disabled={editsUsed === 0} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
-              style={{padding:"12px 30px",borderRadius:"10px",border:"none",cursor:editsUsed>0?"pointer":"not-allowed",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase",opacity:editsUsed>0?1:0.4}}>
-              Submit & Reveal
-            </motion.button>
-          : <motion.button onClick={() => onDone(score())} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
-              style={{padding:"12px 30px",borderRadius:"10px",border:"none",cursor:"pointer",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
-              Complete →
-            </motion.button>
-        }
-      </div>
-    </div>
-  );
-};
 
 // ─── Impostor Challenge ───────────────────────────────────────────────────────
 const ImpostorChallenge = ({ ch, onDone }) => {
@@ -4485,25 +5171,22 @@ const ResultScreen = ({ result, onBack, onNext, onRetry }) => {
         <motion.div animate={{rotate:[-3,3,-3]}} transition={{duration:0.4,repeat:2}} style={{marginBottom:"16px"}}>
           <div style={{fontFamily:"'Playfair Display', serif",fontSize:"52px",color:"#C47FA0",lineHeight:1}}>✗</div>
         </motion.div>
-        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",letterSpacing:"0.24em",textTransform:"uppercase",color:"#C47FA0",marginBottom:"6px"}}>Not quite there</div>
-        <div style={{fontFamily:"'Playfair Display', serif",fontSize:"36px",fontWeight:700,color:S.white,marginBottom:"4px"}}>{score}<span style={{fontSize:"18px",color:S.muted}}>/100</span></div>
-        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.muted,marginBottom:"24px"}}>You need <strong style={{color:"#D4A574"}}>70+</strong> to complete this challenge</div>
+        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",letterSpacing:"0.24em",textTransform:"uppercase",color:"#C47FA0",marginBottom:"24px"}}>Not quite there</div>
 
         <div style={{background:"rgba(196,127,160,0.07)",border:"1px solid rgba(196,127,160,0.2)",borderRadius:"14px",padding:"20px 24px",marginBottom:"24px"}}>
-          <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"14px",color:S.mutedMd,lineHeight:1.8,marginBottom:"12px"}}>
+          <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"14px",color:S.mutedMd,lineHeight:1.8,marginBottom:"20px"}}>
             {score >= 50
               ? "So close — you're reading the patterns correctly. Sharpen your eye for the details that separate good from great."
               : "Back to basics. Every master prompt engineer started here. The lesson is in the gap between what you chose and what was correct."}
           </p>
-          <div style={{display:"flex",gap:"16px",justifyContent:"center"}}>
-            <div style={{textAlign:"center"}}>
-              <div style={{fontFamily:"'Playfair Display', serif",fontSize:"20px",fontWeight:700,color:"#C47FA0"}}>{score}</div>
-              <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",color:S.muted,letterSpacing:"0.1em"}}>SCORE</div>
+          <div style={{display:"flex",gap:"0",justifyContent:"center"}}>
+            <div style={{textAlign:"center",padding:"0 24px",borderRight:"1px solid rgba(196,127,160,0.2)"}}>
+              <div style={{fontFamily:"'Playfair Display', serif",fontSize:"28px",fontWeight:700,color:"rgba(168,169,173,0.4)"}}>+0</div>
+              <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",color:S.muted,letterSpacing:"0.14em",textTransform:"uppercase",marginTop:"2px"}}>XP Gained</div>
             </div>
-            <div style={{width:"1px",background:"rgba(168,169,173,0.1)"}}/>
-            <div style={{textAlign:"center"}}>
-              <div style={{fontFamily:"'Playfair Display', serif",fontSize:"20px",fontWeight:700,color:"#C47FA0"}}>{fmtTime(timeTaken)}</div>
-              <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",color:S.muted,letterSpacing:"0.1em"}}>TIME SPENT</div>
+            <div style={{textAlign:"center",padding:"0 24px"}}>
+              <div style={{fontFamily:"'Playfair Display', serif",fontSize:"28px",fontWeight:700,color:"#C47FA0"}}>{fmtTime(timeTaken)}</div>
+              <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",color:S.muted,letterSpacing:"0.14em",textTransform:"uppercase",marginTop:"2px"}}>Time Spent</div>
             </div>
           </div>
         </div>
