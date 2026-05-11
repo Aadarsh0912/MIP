@@ -2155,6 +2155,441 @@ const PromptLabPage = ({ onBack }) => {
 };
 
 
+// ─── Challenge for the Day — The Constraint Auction ──────────────────────────
+const CONSTRAINT_AUCTION_DAYS = [
+  // ── Day 0 ──
+  {
+    brokenPrompt: "Write a product description.",
+    options: [
+      { id:"a", text:"[under 50 words]",        why:"Hard length cap forces ruthless prioritisation — the single highest-ROI structural constraint." },
+      { id:"b", text:"[for a skeptical buyer]",  why:"Audience persona reshapes every word choice and objection-handling angle." },
+      { id:"c", text:"[no adjectives]",          why:"Forces specificity — but largely redundant once 'benefits not features' is in play." },
+      { id:"d", text:"[benefits not features]",  why:"Content directive that rewires what the model leads with — high independent impact." },
+      { id:"e", text:"[clear and simple]",        why:"Too vague to enforce anything; 'no adjectives' does this job with precision." },
+    ],
+    correctPick: ["a","b","d"], correctRank: ["a","b","d"], redundantPair: ["c","e"],
+    redundantExplanation: "'[no adjectives]' and '[clear and simple]' both enforce plain language — but one is a concrete rule, the other a vague aspiration. They fight for the same slot.",
+    explanation: "'[under 50 words]' forces the model to choose only the most essential content. '[for a skeptical buyer]' transforms the entire rhetorical approach. '[benefits not features]' redirects content structure. The redundant pair: '[clear and simple]' says the same thing as '[no adjectives]' but with less precision.",
+  },
+  // ── Day 1 ──
+  {
+    brokenPrompt: "Summarise this article for me.",
+    options: [
+      { id:"a", text:"[in 3 bullet points]",      why:"Format + length in one instruction — eliminates all ambiguity about shape and size." },
+      { id:"b", text:"[key takeaways only]",       why:"Content filter — but largely subsumed by 'most important points' which says the same thing." },
+      { id:"c", text:"[most important points]",    why:"Near-duplicate of 'key takeaways only' — one of these is dead weight." },
+      { id:"d", text:"[for a non-expert reader]",  why:"Audience spec that dictates vocabulary and assumed knowledge — high independent value." },
+      { id:"e", text:"[actionable conclusions]",   why:"Output type directive — shifts model from descriptive to prescriptive, totally distinct." },
+    ],
+    correctPick: ["a","d","e"], correctRank: ["a","d","e"], redundantPair: ["b","c"],
+    redundantExplanation: "'[key takeaways only]' and '[most important points]' are near-synonyms. Using both wastes a word slot with zero extra impact.",
+    explanation: "'[in 3 bullet points]' defines both format and quantity. '[for a non-expert reader]' sets the vocabulary register. '[actionable conclusions]' shifts from summary to useful output. The redundant pair is '[key takeaways only]' + '[most important points]'.",
+  },
+  // ── Day 2 ──
+  {
+    brokenPrompt: "Help me write an email to my boss.",
+    options: [
+      { id:"a", text:"[requesting a raise]",        why:"Purpose is the missing element — without it the model has no direction at all." },
+      { id:"b", text:"[professional tone]",          why:"Tone guidance helps but is redundant once formal register is implied by context." },
+      { id:"c", text:"[under 150 words]",            why:"Length constraint prevents rambling — high value for a high-stakes, sensitive request." },
+      { id:"d", text:"[citing 2 recent wins]",       why:"Evidence framework — directs specific supporting content, independent high value." },
+      { id:"e", text:"[formal and respectful]",      why:"'Professional tone' and 'formal and respectful' are the same instruction in different words." },
+    ],
+    correctPick: ["a","c","d"], correctRank: ["a","c","d"], redundantPair: ["b","e"],
+    redundantExplanation: "'[professional tone]' and '[formal and respectful]' both set the same register. Picking both burns a word slot on zero marginal impact.",
+    explanation: "'[requesting a raise]' is non-negotiable — purpose. '[citing 2 recent wins]' injects evidence structure. '[under 150 words]' keeps a sensitive message tight. The redundant pair: '[professional tone]' and '[formal and respectful]' are the same instruction twice.",
+  },
+  // ── Day 3 ──
+  {
+    brokenPrompt: "Explain how this code works.",
+    options: [
+      { id:"a", text:"[line by line]",              why:"Granularity instruction — completely changes the model's explanation architecture." },
+      { id:"b", text:"[for a junior developer]",    why:"Audience spec sets vocabulary, assumed knowledge, and analogy level independently." },
+      { id:"c", text:"[in plain English]",           why:"Register instruction but vague — 'avoid jargon' does this with more precision." },
+      { id:"d", text:"[avoid technical jargon]",     why:"More precise version of 'in plain English' — the two fight for the same slot." },
+      { id:"e", text:"[focus on what could break]",  why:"Content directive — pivots explanation toward risk, entirely distinct from all others." },
+    ],
+    correctPick: ["a","b","e"], correctRank: ["a","b","e"], redundantPair: ["c","d"],
+    redundantExplanation: "'[in plain English]' and '[avoid technical jargon]' are two phrasings of the same constraint — and both are already implied by the audience spec.",
+    explanation: "'[line by line]' defines structure. '[for a junior developer]' sets the audience. '[focus on what could break]' shifts the angle to risk. The redundant pair: '[in plain English]' and '[avoid technical jargon]' overlap completely.",
+  },
+  // ── Day 4 ──
+  {
+    brokenPrompt: "Give me interview questions.",
+    options: [
+      { id:"a", text:"[for a UX designer role]",    why:"Role spec is the highest-impact missing element — defines the entire knowledge domain." },
+      { id:"b", text:"[10 questions]",               why:"Quantity constraint — prevents both under-delivery and unmanageable lists." },
+      { id:"c", text:"[behavioural format]",          why:"Question format directive — STAR/behavioural vs technical is a major structural choice." },
+      { id:"d", text:"[in question form]",            why:"Completely redundant — the prompt already says 'questions'. This adds nothing." },
+      { id:"e", text:"[ranging in difficulty]",       why:"Difficulty spectrum is useful but lowest impact of the genuinely useful options." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[in question form]' is entirely redundant with the word 'questions' already in the prompt. It wastes a full slot on zero new information.",
+    explanation: "'[for a UX designer role]' is essential — without it, any questions are possible. '[10 questions]' sets scope. '[behavioural format]' defines question type. The trap: '[in question form]' already exists in the base prompt.",
+  },
+  // ── Day 5 ──
+  {
+    brokenPrompt: "Write a social media post.",
+    options: [
+      { id:"a", text:"[for LinkedIn]",               why:"Platform determines format, length norms, tone, and audience expectations entirely." },
+      { id:"b", text:"[announcing a product launch]", why:"Purpose — without topic/goal, the post is literally impossible to write meaningfully." },
+      { id:"c", text:"[enthusiastic tone]",           why:"Tone guidance but generic — 'use 2 emojis' is more enforceable and specific." },
+      { id:"d", text:"[under 200 characters]",        why:"Length constraint that determines everything about how ideas must be compressed." },
+      { id:"e", text:"[use 2 emojis]",                why:"Specific tone/style marker — overlaps with 'enthusiastic' but more actionable." },
+    ],
+    correctPick: ["a","b","d"], correctRank: ["a","b","d"], redundantPair: ["c","e"],
+    redundantExplanation: "'[enthusiastic tone]' and '[use 2 emojis]' both signal the same energy register. They compete for the same stylistic job.",
+    explanation: "'[for LinkedIn]' and '[announcing a product launch]' are both non-negotiable. '[under 200 characters]' creates productive constraint. The redundant pair: '[enthusiastic tone]' and '[use 2 emojis]' overlap in intent.",
+  },
+  // ── Day 6 ──
+  {
+    brokenPrompt: "Create a lesson plan.",
+    options: [
+      { id:"a", text:"[for 8th grade science]",      why:"Subject + level combined — defines curriculum, vocabulary, and learning objectives." },
+      { id:"b", text:"[on photosynthesis]",           why:"Topic — without it, the lesson plan cannot be written at all." },
+      { id:"c", text:"[with learning objectives]",    why:"Structural component — but 'including assessment' largely subsumes this." },
+      { id:"d", text:"[including assessment]",        why:"Another structural component — overlaps with learning objectives in pedagogical intent." },
+      { id:"e", text:"[60 minute duration]",          why:"Time constraint shapes every structural decision about pacing and activity selection." },
+    ],
+    correctPick: ["a","b","e"], correctRank: ["a","b","e"], redundantPair: ["c","d"],
+    redundantExplanation: "'[with learning objectives]' and '[including assessment]' both describe lesson structure — specifying both wastes a slot.",
+    explanation: "'[for 8th grade science]' and '[on photosynthesis]' are essential context. '[60 minute duration]' is the highest-impact structural constraint. The redundant pair: '[with learning objectives]' and '[including assessment]' both add pedagogical structure.",
+  },
+  // ── Day 7 ──
+  {
+    brokenPrompt: "Write a cover letter.",
+    options: [
+      { id:"a", text:"[for a product manager role]",  why:"Role spec is the critical missing piece — it defines every claim and example to include." },
+      { id:"b", text:"[at a Series B startup]",        why:"Company context reshapes tone, culture signals, and what achievements to highlight." },
+      { id:"c", text:"[under 250 words]",              why:"Length constraint is essential for cover letters — hiring managers skim fast." },
+      { id:"d", text:"[in a confident voice]",         why:"Tone guidance but vague — nearly all good cover letters are confident by default." },
+      { id:"e", text:"[written professionally]",       why:"'Confident voice' and 'professional' both gesture at register without defining it precisely." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[in a confident voice]' and '[written professionally]' both attempt to set tone without actionable specificity. Neither is enforceable.",
+    explanation: "Role, company context, and length are the three constraints that transform a generic cover letter into a targeted one. The redundant pair: '[confident voice]' and '[professionally written]' both try to set tone but say nothing concrete.",
+  },
+  // ── Day 8 ──
+  {
+    brokenPrompt: "Give me feedback on my writing.",
+    options: [
+      { id:"a", text:"[focus on clarity only]",        why:"Scoping feedback prevents the generic 'everything is wrong' response — highest impact constraint here." },
+      { id:"b", text:"[as a ruthless editor]",          why:"Role assignment changes the model from polite suggester to exacting critic — major output shift." },
+      { id:"c", text:"[3 specific improvements]",       why:"Quantity + specificity forces actionable, concrete output instead of vague advice." },
+      { id:"d", text:"[be critical]",                   why:"'Ruthless editor' already does this — 'be critical' adds nothing on top." },
+      { id:"e", text:"[point out problems]",            why:"Near-identical to 'be critical' — both attempt to unlock negative feedback, redundantly." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["b","a","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[be critical]' and '[point out problems]' are the same instruction with different wording. The role '[ruthless editor]' already handles both.",
+    explanation: "The role '[ruthless editor]' changes the entire posture of the feedback. '[focus on clarity only]' prevents scatter-gun critique. '[3 specific improvements]' forces actionable output. The redundant pair: '[be critical]' and '[point out problems]' are synonyms.",
+  },
+  // ── Day 9 ──
+  {
+    brokenPrompt: "Translate this document.",
+    options: [
+      { id:"a", text:"[to French]",                    why:"Target language is entirely missing — the most critical gap in the prompt." },
+      { id:"b", text:"[preserving formal register]",   why:"Register instruction ensures the translation matches the source document's authority level." },
+      { id:"c", text:"[for a legal audience]",          why:"Audience context determines vocabulary choices and idiom avoidance — independently valuable." },
+      { id:"d", text:"[accurately and precisely]",      why:"Every translation should be accurate — this adds no new constraint." },
+      { id:"e", text:"[word for word]",                 why:"'Accurately and precisely' and 'word for word' both attempt to enforce fidelity — they overlap." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[accurately and precisely]' and '[word for word]' both attempt to enforce translation fidelity without adding distinct constraints. Accuracy is assumed; the register and audience instructions do the real work.",
+    explanation: "Target language is non-negotiable. '[preserving formal register]' ensures the translation matches its source. '[for a legal audience]' shapes vocabulary. The redundant pair: '[accurately]' and '[word for word]' both gesture at fidelity without adding anything enforceable.",
+  },
+  // ── Day 10 ──
+  {
+    brokenPrompt: "Write a speech for me.",
+    options: [
+      { id:"a", text:"[for my sister's wedding]",      why:"Occasion defines tone, audience, emotional register, and appropriate length entirely." },
+      { id:"b", text:"[5 minutes long]",               why:"Duration constraint is essential for speeches — it determines pacing and content density." },
+      { id:"c", text:"[funny and heartfelt]",           why:"Dual tone instruction that is specific and actionable — not vague like 'good speech'." },
+      { id:"d", text:"[well-written]",                  why:"'Well-written' is a meaningless constraint — it describes the desired outcome, not the method." },
+      { id:"e", text:"[engaging and moving]",           why:"Near-synonym for 'funny and heartfelt' — both attempt to set emotional tone with zero added precision." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[well-written]' and '[engaging and moving]' both express a desire for quality without specifying what quality means. '[funny and heartfelt]' already handles emotional tone precisely.",
+    explanation: "Occasion, duration, and tone are the three constraints that make a speech prompt work. The redundant pair: '[well-written]' says nothing actionable, and '[engaging and moving]' overlaps with the already-specified '[funny and heartfelt]'.",
+  },
+  // ── Day 11 ──
+  {
+    brokenPrompt: "Debug this error for me.",
+    options: [
+      { id:"a", text:"[explain the root cause]",       why:"Shifts output from just a fix to a learning moment — the highest-value change for reuse." },
+      { id:"b", text:"[in Python 3.11]",               why:"Language and version spec constrains solution space — prevents wrong-language fixes." },
+      { id:"c", text:"[step by step]",                  why:"Process structure ensures the explanation is followable, not just a code dump." },
+      { id:"d", text:"[fix it]",                        why:"The word 'debug' already implies finding and fixing — this is a complete duplicate." },
+      { id:"e", text:"[solve the problem]",             why:"Near-identical to 'fix it' — both restate what 'debug' already says." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["b","a","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[fix it]' and '[solve the problem]' both restate what 'debug' already means. Neither adds any new constraint.",
+    explanation: "Language spec focuses the solution. '[explain the root cause]' turns a fix into a transferable lesson. '[step by step]' ensures the output is structured. The redundant pair: '[fix it]' and '[solve the problem]' are both already contained in 'debug'.",
+  },
+  // ── Day 12 ──
+  {
+    brokenPrompt: "Write a project proposal.",
+    options: [
+      { id:"a", text:"[for a mobile app redesign]",    why:"Project type is the foundational missing element — defines scope, sections, and vocabulary." },
+      { id:"b", text:"[for a non-technical client]",   why:"Audience spec changes jargon level, assumed knowledge, and how much to explain." },
+      { id:"c", text:"[with a budget section]",         why:"Specific section request that won't appear unless asked — high independent value." },
+      { id:"d", text:"[detailed and thorough]",         why:"Vague quality marker — adds no structural information, the model can't operationalise it." },
+      { id:"e", text:"[comprehensive and complete]",    why:"'Detailed and thorough' and 'comprehensive and complete' are synonyms with zero added distinction." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[detailed and thorough]' and '[comprehensive and complete]' are synonymous vague quality signals. Neither tells the model what to include or how long to be.",
+    explanation: "Project type, audience, and a specific required section are the three levers that produce a usable proposal. The redundant pair: '[detailed]' and '[comprehensive]' are aspirational adjectives, not constraints.",
+  },
+  // ── Day 13 ──
+  {
+    brokenPrompt: "Analyse this data for me.",
+    options: [
+      { id:"a", text:"[find trends over time]",        why:"Analysis type instruction — without it, 'analyse' means anything from totals to correlations." },
+      { id:"b", text:"[in a table format]",             why:"Output format changes how data is presented — essential for readability and downstream use." },
+      { id:"c", text:"[highlight anomalies]",           why:"Specific analytical lens — independently valuable, shifts focus to outliers." },
+      { id:"d", text:"[look at the numbers]",           why:"Restates the obvious — the model will look at numbers regardless, adds no direction." },
+      { id:"e", text:"[examine the data carefully]",    why:"Near-identical to 'look at the numbers' — both are null instructions." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[look at the numbers]' and '[examine the data carefully]' both restate the implied action of 'analyse'. They consume a slot while doing nothing.",
+    explanation: "Analysis type, output format, and a specific focus lens are the three constraints that make a data analysis prompt concrete. The redundant pair: '[look at the numbers]' and '[examine carefully]' are both null additions.",
+  },
+  // ── Day 14 ──
+  {
+    brokenPrompt: "Write a bio for my website.",
+    options: [
+      { id:"a", text:"[for a freelance designer]",     why:"Professional identity is the entire foundation — without it, no bio is possible." },
+      { id:"b", text:"[in third person]",               why:"Voice choice fundamentally changes reading experience and professional perception." },
+      { id:"c", text:"[under 100 words]",               why:"Website bios must be tight — length constraint is essential for usability." },
+      { id:"d", text:"[about my career]",               why:"Every bio is about a career — this adds no new constraint over what's implied." },
+      { id:"e", text:"[describing my background]",      why:"'About my career' and 'describing my background' are the same concept restated." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[about my career]' and '[describing my background]' are interchangeable — both describe what every bio does by definition.",
+    explanation: "Professional identity, voice, and length are what transform a generic bio into a tailored one. The redundant pair: '[about my career]' and '[describing my background]' both just say 'be a bio'.",
+  },
+  // ── Day 15 ──
+  {
+    brokenPrompt: "Make a list of ideas.",
+    options: [
+      { id:"a", text:"[for a podcast series]",         why:"Topic and medium are both missing — this single addition provides the entire creative context." },
+      { id:"b", text:"[targeting Gen Z listeners]",     why:"Audience spec reshapes tone, references, and platform assumptions entirely." },
+      { id:"c", text:"[10 ideas with one-line pitches]", why:"Quantity + format in one — forces complete, usable output rather than bare titles." },
+      { id:"d", text:"[creative and original]",         why:"Every idea-generation prompt implies creativity — this adds no enforceable constraint." },
+      { id:"e", text:"[fresh and innovative]",           why:"Synonym for 'creative and original' — neither is measurable or enforceable." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[creative and original]' and '[fresh and innovative]' are the same vague aspiration. No model behaviour changes by adding either.",
+    explanation: "Medium and topic, audience, and a structured output format are the three constraints that make an idea list actually useful. The redundant pair: '[creative]' and '[innovative]' are implied by any idea-generation task.",
+  },
+  // ── Day 16 ──
+  {
+    brokenPrompt: "Review my resume.",
+    options: [
+      { id:"a", text:"[for a data science role]",      why:"Target role is the lens through which every resume element must be evaluated." },
+      { id:"b", text:"[give 5 specific changes]",       why:"Quantity + specificity forces actionable output — vague feedback is useless." },
+      { id:"c", text:"[prioritise impact statements]",  why:"Content focus directive that targets the most common resume weakness — independently valuable." },
+      { id:"d", text:"[check for mistakes]",            why:"Proofreading is a lower-order task implied by 'review' — adds no strategic direction." },
+      { id:"e", text:"[look for errors]",               why:"Near-identical to 'check for mistakes' — both reduce a review to proofreading." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[check for mistakes]' and '[look for errors]' are the same proofreading instruction. Neither adds strategic value.",
+    explanation: "Target role, specific actionable changes, and a content focus are what make resume feedback useful. The redundant pair: '[check for mistakes]' and '[look for errors]' both collapse a review into spell-check.",
+  },
+  // ── Day 17 ──
+  {
+    brokenPrompt: "Write a cold outreach email.",
+    options: [
+      { id:"a", text:"[to a startup founder]",          why:"Recipient type defines the angle, pain points to reference, and tone entirely." },
+      { id:"b", text:"[pitching a design audit]",        why:"Offer definition is the other critical missing piece — without it, no pitch exists." },
+      { id:"c", text:"[under 80 words]",                 why:"Cold emails live or die by brevity — length constraint is structurally essential." },
+      { id:"d", text:"[make it persuasive]",             why:"All outreach tries to persuade — this adds no new directive." },
+      { id:"e", text:"[be convincing]",                  why:"'Make it persuasive' and 'be convincing' are synonyms — both are implied by the task." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[make it persuasive]' and '[be convincing]' are the same instruction. All outreach is persuasive by definition.",
+    explanation: "Recipient type, offer definition, and length are the three constraints that make cold outreach actionable. The redundant pair: '[persuasive]' and '[convincing]' just restate the goal of every email ever written.",
+  },
+  // ── Day 18 ──
+  {
+    brokenPrompt: "Write a FAQ page.",
+    options: [
+      { id:"a", text:"[for a SaaS billing product]",   why:"Product context is entirely absent — without it, every question will be generic." },
+      { id:"b", text:"[10 questions and answers]",      why:"Quantity constraint prevents an unusable 3-item or 50-item output." },
+      { id:"c", text:"[ordered by frequency]",          why:"Structure directive that makes the FAQ actually useful — most common issues first." },
+      { id:"d", text:"[with answers]",                  why:"FAQ stands for Frequently Asked Questions — answers are definitionally required." },
+      { id:"e", text:"[including responses]",           why:"'With answers' and 'including responses' both state what FAQ means by definition." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[with answers]' and '[including responses]' both just define what a FAQ already is. They occupy slots while contributing zero new information.",
+    explanation: "Product context, quantity, and ordering logic are the three constraints that produce a usable FAQ. The redundant pair: '[with answers]' and '[including responses]' are both contained in the definition of 'FAQ'.",
+  },
+  // ── Day 19 ──
+  {
+    brokenPrompt: "Help me plan a trip.",
+    options: [
+      { id:"a", text:"[to Tokyo for 7 days]",           why:"Destination and duration are both missing — this single option plugs the two biggest gaps." },
+      { id:"b", text:"[for a solo traveller]",           why:"Travel mode fundamentally changes accommodation, safety considerations, and activity types." },
+      { id:"c", text:"[day by day itinerary]",           why:"Output format instruction — without it, the model may produce a list of attractions rather than a plan." },
+      { id:"d", text:"[include fun activities]",         why:"All trip plans include activities — this adds no filtering or preference signal." },
+      { id:"e", text:"[with things to do]",              why:"'Include fun activities' and 'with things to do' are the same empty instruction." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[include fun activities]' and '[with things to do]' are synonyms for what every trip plan already contains.",
+    explanation: "Destination + duration, traveller context, and output format are the three constraints that turn 'plan a trip' into an actionable itinerary. The redundant pair just says 'be a trip plan'.",
+  },
+  // ── Day 20 ──
+  {
+    brokenPrompt: "Write some marketing copy.",
+    options: [
+      { id:"a", text:"[for a fitness app homepage]",    why:"Product and placement together — defines audience, medium, and what the copy must achieve." },
+      { id:"b", text:"[headline and three subheadings]", why:"Specific deliverable structure — without it, 'marketing copy' could be anything." },
+      { id:"c", text:"[focus on pain then relief]",      why:"Narrative structure directive — the most impactful copywriting framework, highly specific." },
+      { id:"d", text:"[make it catchy]",                 why:"Vague quality marker — 'catchy' is an outcome, not a constraint the model can apply." },
+      { id:"e", text:"[engaging and punchy]",            why:"'Catchy' and 'engaging and punchy' attempt the same thing with the same vagueness." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[catchy]' and '[engaging and punchy]' both express a desire for good copy without specifying how to achieve it. They are aspirational, not instructional.",
+    explanation: "Product/placement, deliverable structure, and narrative framework are the three constraints that produce usable copy. The redundant pair: '[catchy]' and '[punchy]' are both vague quality requests with no enforcement mechanism.",
+  },
+  // ── Day 21 ──
+  {
+    brokenPrompt: "Give me a recipe.",
+    options: [
+      { id:"a", text:"[for chicken tikka masala]",      why:"Dish name is the entire missing spec — without it, any recipe is valid." },
+      { id:"b", text:"[under 30 minutes]",               why:"Time constraint changes ingredients, techniques, and preparation methods entirely." },
+      { id:"c", text:"[with ingredient quantities]",     why:"Precision directive — recipes without quantities are unusable in practice." },
+      { id:"d", text:"[tasty and delicious]",            why:"All recipes aim to be tasty — this is a null constraint." },
+      { id:"e", text:"[flavourful and satisfying]",      why:"Synonym cluster for 'tasty and delicious' — both are outcome descriptions, not instructions." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[tasty and delicious]' and '[flavourful and satisfying]' both describe what every recipe intends to be. Neither constrains the output in any way.",
+    explanation: "Dish name, time constraint, and ingredient quantities are what make a recipe prompt actually useful. The redundant pair: '[tasty]' and '[flavourful]' are implied by the word 'recipe'.",
+  },
+  // ── Day 22 ──
+  {
+    brokenPrompt: "Write a performance review.",
+    options: [
+      { id:"a", text:"[for a mid-level engineer]",      why:"Seniority and role define the competencies being evaluated — without this, the review is generic." },
+      { id:"b", text:"[using specific examples]",        why:"Evidence directive that targets the most common review failure: vague praise or criticism." },
+      { id:"c", text:"[structured: strengths / areas to grow]", why:"Output format that is standard, expected, and scannable — high structural value." },
+      { id:"d", text:"[be fair and balanced]",           why:"All performance reviews should be fair — this adds no new constraint." },
+      { id:"e", text:"[objective and unbiased]",         why:"'Fair and balanced' and 'objective and unbiased' are the same instruction stated twice." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[fair and balanced]' and '[objective and unbiased]' are synonyms that describe the expected minimum standard for any review — not a differentiating constraint.",
+    explanation: "Seniority/role, evidence requirement, and structured format are the three constraints that produce a usable performance review. The redundant pair: '[fair]' and '[objective]' just say 'be professional'.",
+  },
+  // ── Day 23 ──
+  {
+    brokenPrompt: "Explain this concept to me.",
+    options: [
+      { id:"a", text:"[compound interest]",              why:"The concept itself is entirely missing — nothing can be explained without knowing what." },
+      { id:"b", text:"[using a real-life analogy]",       why:"Explanation method that dramatically improves retention — independently high value." },
+      { id:"c", text:"[for a complete beginner]",         why:"Audience spec sets vocabulary, depth, and assumed knowledge — shapes the whole explanation." },
+      { id:"d", text:"[make it easy to understand]",      why:"'For a complete beginner' already handles this — 'easy to understand' adds nothing." },
+      { id:"e", text:"[keep it simple]",                  why:"'Easy to understand' and 'keep it simple' overlap completely with the audience spec." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[make it easy to understand]' and '[keep it simple]' are both already implied by '[for a complete beginner]'. They waste slots on redundant instructions.",
+    explanation: "The concept name, explanation method, and audience level are the three constraints that make an explanation useful. The redundant pair: '[easy]' and '[simple]' are both handled by the audience spec.",
+  },
+  // ── Day 24 ──
+  {
+    brokenPrompt: "Write a business case.",
+    options: [
+      { id:"a", text:"[for adopting AI tools in HR]",   why:"Topic and department together — provides the entire decision context." },
+      { id:"b", text:"[with ROI projections]",           why:"Specific section request that won't appear by default but is critical for approval." },
+      { id:"c", text:"[for a CFO audience]",             why:"Audience determines level of financial rigour, vocabulary, and what objections to pre-empt." },
+      { id:"d", text:"[make it convincing]",             why:"A business case is always trying to convince — this is implied by the genre." },
+      { id:"e", text:"[be persuasive]",                  why:"'Make it convincing' and 'be persuasive' are the same instruction — both redundant." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[make it convincing]' and '[be persuasive]' both restate the purpose of a business case. Every business case tries to persuade — adding this is circular.",
+    explanation: "Topic + department, a required ROI section, and CFO audience are the three constraints that make a business case viable. The redundant pair: '[convincing]' and '[persuasive]' are both contained in the genre definition.",
+  },
+  // ── Day 25 ──
+  {
+    brokenPrompt: "Write test cases for this feature.",
+    options: [
+      { id:"a", text:"[for user login with 2FA]",       why:"Feature spec is entirely absent — test cases cannot be written without knowing what to test." },
+      { id:"b", text:"[including edge cases]",           why:"Edge case directive targets the most common omission in AI-generated test suites." },
+      { id:"c", text:"[in Gherkin format]",              why:"Format instruction for a specific, standardised test notation — high technical value." },
+      { id:"d", text:"[cover all scenarios]",            why:"Vague instruction — 'edge cases' is a more specific and actionable version of this." },
+      { id:"e", text:"[be thorough]",                    why:"'Cover all scenarios' and 'be thorough' are both vague thoroughness requests with the same null impact." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[cover all scenarios]' and '[be thorough]' are both vague completeness requests. '[including edge cases]' does this job with specificity.",
+    explanation: "Feature spec, edge case coverage, and output format are the three constraints that produce professional test cases. The redundant pair: '[cover all scenarios]' and '[be thorough]' are both handled more precisely by '[edge cases]'.",
+  },
+  // ── Day 26 ──
+  {
+    brokenPrompt: "Create a workout plan.",
+    options: [
+      { id:"a", text:"[for building upper body strength]", why:"Goal spec is the foundational missing piece — determines every exercise selection." },
+      { id:"b", text:"[3 days per week]",                  why:"Frequency constraint shapes the entire plan structure and recovery scheduling." },
+      { id:"c", text:"[with sets and reps]",               why:"Precision directive — workout plans without sets/reps are decorative, not usable." },
+      { id:"d", text:"[effective and challenging]",         why:"All workout plans intend to be effective — this adds no new constraint." },
+      { id:"e", text:"[results-driven]",                    why:"'Effective' and 'results-driven' are the same fitness marketing language — both null." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[effective and challenging]' and '[results-driven]' both express the aspiration of every workout plan. Neither changes the model's output.",
+    explanation: "Goal, frequency, and set/rep specification are the three constraints that make a workout plan actually usable. The redundant pair: '[effective]' and '[results-driven]' are aspirational, not instructional.",
+  },
+  // ── Day 27 ──
+  {
+    brokenPrompt: "Write a press release.",
+    options: [
+      { id:"a", text:"[announcing a Series A funding round]", why:"News hook is entirely absent — a press release cannot exist without a story." },
+      { id:"b", text:"[with a quote from the CEO]",            why:"Specific required element that won't appear by default — high independent value." },
+      { id:"c", text:"[in AP style]",                          why:"Style guide instruction that affects every word choice, number format, and structure decision." },
+      { id:"d", text:"[newsworthy and exciting]",              why:"All press releases try to be newsworthy — this is the genre definition, not a constraint." },
+      { id:"e", text:"[attention-grabbing]",                   why:"'Newsworthy' and 'attention-grabbing' are both outcome descriptions, not enforceable constraints." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[newsworthy]' and '[attention-grabbing]' both describe what a press release is supposed to be by definition. Neither changes output structure or content.",
+    explanation: "The announcement topic, a required CEO quote, and a style guide are the three constraints that produce a professional press release. The redundant pair: '[newsworthy]' and '[attention-grabbing]' are implicit in the genre.",
+  },
+  // ── Day 28 ──
+  {
+    brokenPrompt: "Help me brainstorm names.",
+    options: [
+      { id:"a", text:"[for a legal tech startup]",      why:"Industry and company type define brand positioning, tone, and naming conventions entirely." },
+      { id:"b", text:"[20 options]",                    why:"Quantity constraint forces a useful divergent output rather than 3–5 obvious suggestions." },
+      { id:"c", text:"[that are domain-available]",      why:"Practical constraint that filters ideas by real-world usability — high downstream value." },
+      { id:"d", text:"[creative and memorable]",         why:"All naming exercises aim for memorable — this is the implied goal, not a constraint." },
+      { id:"e", text:"[catchy and unique]",              why:"'Creative and memorable' and 'catchy and unique' are synonymous aspiration clusters." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[creative and memorable]' and '[catchy and unique]' both express what all brand naming aims for. They add nothing enforceable.",
+    explanation: "Industry context, a generous quantity, and a practical feasibility filter are the three constraints that make a naming brainstorm useful. The redundant pair: '[memorable]' and '[catchy]' are the aspirational defaults of every naming exercise.",
+  },
+  // ── Day 29 ──
+  {
+    brokenPrompt: "Write a risk assessment.",
+    options: [
+      { id:"a", text:"[for a product launch in Q4]",    why:"Context is entirely missing — risks cannot be assessed without knowing what is being risked." },
+      { id:"b", text:"[with likelihood and impact scores]", why:"Scoring framework is what transforms a list of risks into an actionable assessment." },
+      { id:"c", text:"[top 5 risks only]",               why:"Scoping constraint prevents an unranked 20-item list — forces prioritisation." },
+      { id:"d", text:"[be comprehensive]",               why:"'Top 5 risks only]' and 'be comprehensive' directly contradict each other — this adds confusion." },
+      { id:"e", text:"[cover everything]",               why:"'Be comprehensive' and 'cover everything' both conflict with the scoping constraint and each other." },
+    ],
+    correctPick: ["a","b","c"], correctRank: ["a","b","c"], redundantPair: ["d","e"],
+    redundantExplanation: "'[be comprehensive]' and '[cover everything]' both contradict the '[top 5 risks only]' constraint and are synonymous with each other. They create noise, not signal.",
+    explanation: "Context, a scoring framework, and a scope limit are the three constraints that produce a usable risk assessment. The redundant pair: '[comprehensive]' and '[cover everything]' actively conflict with the scope constraint.",
+  },
+];
+
+// Determine today's and tomorrow's challenge indices
+const getTodaysChallengeData = () => {
+  const dayIndex = Math.floor(Date.now() / 86400000) % CONSTRAINT_AUCTION_DAYS.length;
+  return CONSTRAINT_AUCTION_DAYS[dayIndex];
+};
+
+const getNextChallengeData = () => {
+  const nextIndex = (Math.floor(Date.now() / 86400000) + 1) % CONSTRAINT_AUCTION_DAYS.length;
+  return CONSTRAINT_AUCTION_DAYS[nextIndex];
+};
+
 // ─── Challenges Page ──────────────────────────────────────────────────────────
 const CHALLENGES = [
 
@@ -2938,38 +3373,121 @@ const CHALLENGES = [
   // ── TONE DOJO ────────────────────────────────────────────────────────────────
 
   {
-    id:"td1", trail:"Tone Dojo", step:1, total:7,
-    title:"Tone Identifier",
-    subtitle:"Read the AI output — name the tone that produced it",
+    id:"td1", trail:"Tone Dojo", step:1, total:11,
+    title:"Tone Identifier I — Surface Signals",
+    subtitle:"Read the AI output and identify which tone the prompt instructed",
     type:"MULTIPLE CHOICE", difficulty:"Starter", xp:30, color:"#D4A574",
-    timeLimit:60,
+    timeLimit:90,
     questions:[
       {
         statement:"Identify the tone of this AI output:",
         output:"The quarterly numbers, I must confess, carry a certain melancholy weight. Revenue declined 12% — not catastrophically, but enough to warrant the kind of quiet, searching questions that good organisations ask themselves in the small hours.",
         options:["Formal corporate","Literary & reflective","Aggressive sales","Technical analytical"],
         correct:1,
-        explanation:"'Melancholy weight', 'small hours', 'quiet searching questions' — literary devices. The prompt specified: 'You are a seasoned essayist. Reflect on our Q3 results with emotional intelligence and literary flair.'"
+        explanation:"'Melancholy weight', 'small hours', 'quiet searching questions' — literary devices, not business language. The prompt specified: 'You are a seasoned essayist. Reflect on our Q3 results with emotional intelligence and literary flair.' Learning point: literary tone uses abstraction, metaphor, and rhythm — none of which appear in formal corporate writing."
       },
       {
         statement:"Identify the tone of this AI output:",
         output:"YOUR COMPETITION IS EATING YOUR LUNCH. While you read this, three rivals just closed deals you could have won. The question isn't whether to act — it's whether you'll act before it's too late.",
         options:["Formal corporate","Literary & reflective","Aggressive urgency","Academic neutral"],
         correct:2,
-        explanation:"Short punchy sentences, second-person attack, manufactured scarcity — classic aggressive urgency. The prompt specified: 'Write like a high-pressure sales trainer addressing a complacent team. No softening.'"
+        explanation:"Short punchy sentences, second-person attack, manufactured scarcity, capitalisation for emphasis — classic aggressive urgency. The prompt specified: 'Write like a high-pressure sales trainer. No softening. Make the reader feel the cost of inaction.' Learning point: urgency tone weaponises sentence rhythm — short sentences accelerate the reader's pulse."
       },
       {
         statement:"Identify the tone of this AI output:",
         output:"The dataset exhibits statistically significant heteroscedasticity (Breusch-Pagan p < 0.03), suggesting OLS assumptions are violated. Recommend robust standard errors or WLS regression as remediation strategies.",
         options:["Technical analytical","Formal corporate","Aggressive urgency","Conversational"],
         correct:0,
-        explanation:"Domain terminology, statistical notation, passive construction, zero hedging — textbook technical-analytical register. The prompt specified: 'You are a PhD econometrician. Produce a technical assessment for a peer reviewer.'"
+        explanation:"Domain jargon, statistical notation, passive construction, zero hedging or softening — pure technical-analytical register. Learning point: technical tone signals peer-level expertise. Using it for a non-technical audience is not impressive — it is exclusionary."
+      },
+      {
+        statement:"Identify the tone of this AI output:",
+        output:"So here's the thing — nobody actually reads the onboarding email. Not because they don't care, but because it arrives at the exact moment they've just signed up and are already clicking around exploring. You're basically shouting into the void.",
+        options:["Casual analytical","Aggressive urgency","Formal corporate","Dry technical"],
+        correct:0,
+        explanation:"'So here's the thing', 'nobody actually', 'basically shouting into the void' — this is the casual analytical register: informal language delivering a genuine insight. The prompt: 'You are a growth consultant who writes like they talk. No fluff, no jargon.' Learning point: casual ≠ shallow. Some of the sharpest insights land hardest in plain, direct language."
       },
     ],
   },
 
   {
-    id:"td2", trail:"Tone Dojo", step:2, total:7,
+    id:"td1b", trail:"Tone Dojo", step:2, total:11,
+    title:"Tone Identifier II — Hidden Signals",
+    subtitle:"These outputs are subtler — identify the register from what's absent as much as what's present",
+    type:"MULTIPLE CHOICE", difficulty:"Medium", xp:45, color:"#D4A574",
+    timeLimit:120,
+    questions:[
+      {
+        statement:"This output reads as one tone but was produced by a very specific role constraint. Which was it?",
+        output:"We note the delay in shipment with regret. Compensation under clause 7.3 has been calculated at £840. This sum will be credited within 14 business days. Should you wish to escalate, you may do so via the formal dispute resolution process outlined in your service agreement.",
+        options:["'You are a customer service agent — be empathetic and helpful'","'You are a legal-trained customer relations officer. Write with contractual precision. Reference relevant clauses. Do not apologise beyond what is legally warranted.'","'Write a formal complaint response'","'Be professional and offer a refund'"],
+        correct:1,
+        explanation:"The telltale signs: clause reference ('7.3'), passive construction ('has been calculated'), and crucially — 'regret' not 'sorry'. In legal-register writing, 'apologise' can admit liability; 'regret' does not. The specific role prompt produced those distinctions. Learning point: legal-register writing is precise about which words are NOT used, not just what is."
+      },
+      {
+        statement:"What single tonal element distinguishes this output as 'mentor' rather than 'expert'?",
+        output:"You're asking the right question — that instinct to question the brief before executing it is exactly what separates good prompt engineers from great ones. The answer is yes, with one nuance you'll want to internalize: context windows are finite.",
+        options:["The use of second-person ('you')","The phrase 'you're asking the right question' — validating before teaching","The word 'internalize' which signals expertise","The complexity of the underlying content"],
+        correct:1,
+        explanation:"'You're asking the right question' is the pivotal move — it validates the learner before delivering the lesson. An expert gives the answer. A mentor contextualises the learner's question first. Learning point: tone is not just vocabulary — it is sequence. Validation → insight is a mentor structure. Insight alone is expert structure."
+      },
+      {
+        statement:"Both outputs answer 'Should we raise prices?' Identify which was produced by a 'no hedging' constraint.",
+        output:"A: 'There are a number of considerations to weigh here. On balance, a modest price increase may be worth exploring, though timing and market conditions would need careful assessment before drawing firm conclusions.' B: 'Yes. Your NPS is 71, churn is 2.1%, and you haven't raised prices in 3 years while costs rose 18%. Raise prices. Start with the top two tiers.'",
+        options:["Output A — it is more thorough","Output B — direct, evidence-led, no qualifier language","Both show hedging","Output A — formal language signals a professional constraint"],
+        correct:1,
+        explanation:"Output A is epistemic cowardice disguised as thoroughness — 'may be worth exploring', 'could be assessed', 'firm conclusions' — every phrase dodges commitment. Output B opens with 'Yes', cites three specific data points, ends with a direct instruction. Learning point: hedging protects the writer, not the reader. A 'no hedging' constraint doesn't just change tone — it changes the usefulness of the answer entirely."
+      },
+      {
+        statement:"This output has an unusual register. Which prompt instruction most likely produced it?",
+        output:"The machine does not care that it is Tuesday, or that you are tired, or that the deadline is unreasonable. It processes. You wrote the instruction. The instruction was ambiguous. The machine was not.",
+        options:["'Use a philosophical tone'","'Write like a Zen master commenting on AI literacy'","'You are the AI itself, speaking in third person about your own limitations in a detached, precise voice'","'Be poetic and abstract about prompt quality'"],
+        correct:2,
+        explanation:"'The machine does not care', 'The machine was not [ambiguous]' — written from the AI's own perspective, in third person, with precise emotional detachment. This is a role-as-subject prompt. Learning point: unusual persona instructions (narrator, object, process) can produce high-impact tonal outputs that generic 'be formal' constraints never achieve."
+      },
+    ],
+  },
+
+  {
+    id:"td1c", trail:"Tone Dojo", step:3, total:11,
+    title:"Tone Identifier III — Mismatches & Failures",
+    subtitle:"Identify where tone and purpose are misaligned — the most costly prompt mistake",
+    type:"MULTIPLE CHOICE", difficulty:"Hard", xp:60, color:"#D4A574",
+    timeLimit:150,
+    questions:[
+      {
+        statement:"This output was supposed to help an anxious user decide whether to quit their job. What is the tonal failure?",
+        output:"Research indicates that career transitions are associated with elevated cortisol levels and decreased short-term life satisfaction scores (Luhmann et al., 2012). Decision fatigue literature suggests that high-stakes choices made during elevated stress have lower utility-maximising outcomes.",
+        options:["Too long — needs to be more concise","Academic-clinical tone delivered to an emotionally distressed person — correct information, catastrophically wrong register","Too casual — the user deserves professional advice","The citations are irrelevant"],
+        correct:1,
+        explanation:"The content is accurate — but delivering academic citations and clinical terminology to someone in emotional distress is a register catastrophe. They needed a human voice first. Data later, if at all. The prompt failed to specify: 'The user is anxious. Begin with acknowledgment. Use plain, warm language.' Learning point: technically correct + emotionally wrong register = harmful output. Tone is not cosmetic — it is functional."
+      },
+      {
+        statement:"A founder wrote: 'Write investor update email.' The output below went to 200 investors. What tonal mistake did the prompt cause?",
+        output:"Hey all! 🚀 Big month!! Revenue up 23% MOM which is honestly insane, team is crushing it, and we just closed two enterprise clients that we're SO excited about. More updates soon!!",
+        options:["Too short","Casual-enthusiastic register used for a formal financial communication — exclamation marks and emojis erode investor confidence","Revenue figures shouldn't be disclosed","The prompt should have specified a word count"],
+        correct:1,
+        explanation:"Investor updates are formal financial communications. 'Honestly insane', 🚀, !!  — this register signals a founder who hasn't learned that investors read for signal-to-noise ratio, not enthusiasm. The prompt gave zero tonal guidance, so the model defaulted to enthusiastic startup voice. Learning point: when prompts omit tone, models default to generic-positive. For high-stakes documents, always specify the register explicitly."
+      },
+      {
+        statement:"Same content, two tones — which is wrong for a medical information context and why?",
+        output:"A: 'Metformin is typically the first-line pharmacological intervention for type 2 diabetes. Dosing is weight-adjusted and titrated to minimise GI side effects. Patients should be monitored for lactic acidosis, particularly with renal impairment.' B: 'Metformin is the go-to diabetes drug — pretty well tolerated by most people, just watch out for stomach issues at first. Works well, doctors love it.'",
+        options:["Output A is wrong — too clinical for a patient audience","Output B is wrong — 'stomach issues' and 'doctors love it' minimise real risks patients need to understand","Both are appropriate for different audiences","Output A is wrong — passive construction in a medical context is dangerous"],
+        correct:1,
+        explanation:"Output B's breezy tone obscures critical safety information. 'Stomach issues' is a casual diminution of GI side effects that, for some patients, are severe. 'Doctors love it' is not evidence. Learning point: casual register in medical or legal contexts is not 'more accessible' — it is less safe. Clarity and warmth are not the same as informality."
+      },
+      {
+        statement:"A prompt said: 'You are a compassionate therapist.' What is the tonal problem with this output?",
+        output:"I completely understand how you feel, and it makes total sense that you're feeling this way. Everything you're experiencing is completely valid and normal. Your feelings are 100% understandable. You're doing so well just by talking about this.",
+        options:["Too formal — should be more casual","Overcalibrated validation — excessive affirmation with no substantive engagement creates false comfort without therapeutic value","Too short to be therapeutic","The prompt should have specified CBT or another modality"],
+        correct:1,
+        explanation:"Zero substance beneath the warmth. 'Completely valid', 'totally understand', '100% understandable', 'doing so well' — this is affirmation stacking, not therapy. The model over-indexed on 'compassionate' into sycophantic validation. Learning point: 'compassionate' in a role prompt needs guardrails — add 'honest', 'engaged', or 'asks clarifying questions' to prevent hollow affirmation outputs."
+      },
+    ],
+  },
+
+  {
+    id:"td2", trail:"Tone Dojo", step:4, total:11,
     title:"Audience Switcher",
     subtitle:"Rewrite the same brief for 3 radically different audiences",
     type:"MULTI-REWRITE", difficulty:"Hard", xp:90, color:"#D4A574",
@@ -2985,7 +3503,7 @@ const CHALLENGES = [
 
   // ── TONE DOJO 3 ──────────────────────────────────────────────────────────────
   {
-    id:"td3", trail:"Tone Dojo", step:3, total:7,
+    id:"td3", trail:"Tone Dojo", step:5, total:11,
     title:"Tone Transplant I",
     subtitle:"Same content, radically different register — spot which prompt produced which output",
     type:"MULTIPLE CHOICE", difficulty:"Medium", xp:45, color:"#D4A574",
@@ -3017,7 +3535,7 @@ const CHALLENGES = [
 
   // ── TONE DOJO 4 ──────────────────────────────────────────────────────────────
   {
-    id:"td4", trail:"Tone Dojo", step:4, total:7,
+    id:"td4", trail:"Tone Dojo", step:6, total:11,
     title:"The Register Ladder",
     subtitle:"Rank these 4 AI outputs from most formal to most casual",
     type:"RANK", difficulty:"Medium", xp:55, color:"#D4A574",
@@ -3039,10 +3557,10 @@ const CHALLENGES = [
 
   // ── TONE DOJO 5 ──────────────────────────────────────────────────────────────
   {
-    id:"td5", trail:"Tone Dojo", step:5, total:7,
-    title:"Tone Injection",
-    subtitle:"Match each role prompt to the output it produced",
-    type:"MULTIPLE CHOICE", difficulty:"Hard", xp:70, color:"#D4A574",
+    id:"td5", trail:"Tone Dojo", step:7, total:11,
+    title:"Tone Injection I — Match the Prompt to the Output",
+    subtitle:"Each output has a fingerprint — trace it back to the role prompt that produced it",
+    type:"MULTIPLE CHOICE", difficulty:"Hard", xp:65, color:"#D4A574",
     timeLimit:120,
     questions:[
       {
@@ -3050,28 +3568,112 @@ const CHALLENGES = [
         output:"You are standing in the middle of a battlefield, and the enemy can see you — but you cannot see them. Every system you operate is a door. Most of those doors are unlocked. You are not being paranoid. You are being accurate.",
         options:["You are a CISO briefing the security team on technical vulnerabilities","You are a military strategist turned cybersecurity consultant briefing C-suite executives with zero technical background","You are a cybersecurity journalist writing for a mainstream tech publication","You are an IT helpdesk technician writing a user guide on password security"],
         correct:1,
-        explanation:"Military metaphors ('battlefield', 'enemy'), second-person direct address, non-technical framing, dramatic urgency — these markers align perfectly with a consultant using military analogies to create visceral impact for a non-technical C-suite audience. The role's 'military strategist' background explains the warfare metaphor set."
+        explanation:"Military metaphors ('battlefield', 'enemy'), second-person direct address, non-technical framing, dramatic urgency — these align with a consultant using military analogies for a non-technical C-suite. The 'military strategist' background in the role explains the warfare metaphor set. Learning point: metaphor frameworks in a role prompt propagate into every analogy the model chooses."
       },
       {
         statement:"This prompt was sent: 'You are a stoic philosopher. Respond to this user who is anxious about a work presentation.' Which output is correct?",
         output:"The presentation is not the problem. Your judgment of the presentation is the problem. You cannot control the audience's reaction. You can control your preparation. Prepare completely. Then release attachment to the outcome.",
-        options:["This output is correct — stoic philosophy emphasises dichotomy of control and emotional detachment","This output is wrong — a stoic would be warmer and more empathetic","This output is wrong — a stoic would provide practical tips, not philosophy","This output is wrong — a stoic would begin by asking clarifying questions"],
+        options:["Correct — stoic philosophy emphasises dichotomy of control and emotional detachment","Wrong — a stoic would be warmer and more empathetic","Wrong — a stoic would provide practical tips, not philosophy","Wrong — a stoic would begin by asking clarifying questions"],
         correct:0,
-        explanation:"This output is textbook stoicism: dichotomy of control ('cannot control... can control'), imperative directness, emotional detachment without coldness — exactly how Marcus Aurelius or Epictetus would frame it. Stoicism is not cold; it is precise about what matters and what doesn't."
+        explanation:"Textbook stoicism: dichotomy of control ('cannot control... can control'), imperative directness, emotional detachment without coldness — exactly how Marcus Aurelius or Epictetus would frame it. Stoicism is not cold; it is precise about what matters and what doesn't. Learning point: philosophical personas produce philosophically-structured outputs. Know the philosophy before you assign the role."
       },
       {
-        statement:"Which single word in this role prompt is causing all the hedging and uncertainty in the output?",
-        output:"I think the best approach might possibly be to consider whether perhaps restructuring the team could potentially have some positive effects, though of course there are many factors to weigh up here and different people might reasonably see this differently.",
-        options:["'consider'","'perhaps'","'possibly' — but more importantly, the role prompt said 'You are a cautious management consultant who avoids definitive claims'","The hedging is caused by the task, not the role prompt"],
+        statement:"Which single role prompt element is causing every hedging phrase in this output?",
+        output:"I think the best approach might possibly be to consider whether perhaps restructuring the team could potentially have some positive effects, though of course there are many factors to weigh up here.",
+        options:["'consider'","'perhaps'","The role prompt said 'You are a cautious management consultant who avoids definitive claims'","The hedging is caused by the task, not the role prompt"],
         correct:2,
-        explanation:"'Cautious' and 'avoids definitive claims' in the role prompt directly instructs the model to hedge. Every vague word in the output ('might', 'possibly', 'perhaps', 'potentially') is a direct consequence of those two role qualifiers. This is an anti-pattern: roles should be calibrated, not generically hedged."
+        explanation:"'Cautious' and 'avoids definitive claims' directly instruct hedging. Every vague word ('might', 'possibly', 'perhaps', 'potentially') is a direct product of those role qualifiers. Learning point: this is an anti-pattern called role under-confidence. Roles should be calibrated, not generically hedged. If you want decisive output, your role must be decisive."
+      },
+      {
+        statement:"This output gives investment advice. Which role prompt produced it — and why does it matter?",
+        output:"Historically, diversified index funds have outperformed actively managed funds over 15-year periods in approximately 80% of cases. Past performance is not a guarantee of future results. Individual circumstances vary. This is not financial advice.",
+        options:["'You are a personal finance educator'","'You are a registered financial adviser. Provide accurate information but include appropriate regulatory disclaimers.'","'You are a hedge fund manager explaining portfolio strategy'","'You are a journalist writing about investment products'"],
+        correct:1,
+        explanation:"The regulatory disclaimer ('This is not financial advice') and the phrase 'individual circumstances vary' are injected by the role constraint 'include appropriate regulatory disclaimers'. Without this, the model might give the same data without the disclaimer — legally significant. Learning point: professional role prompts do more than set tone — they trigger regulatory and ethical behaviours the model has learned from professional contexts."
+      },
+    ],
+  },
+
+  {
+    id:"td5b", trail:"Tone Dojo", step:8, total:11,
+    title:"Tone Injection II — Reverse Engineering",
+    subtitle:"You see the output. Reconstruct the role prompt that produced it.",
+    type:"MULTIPLE CHOICE", difficulty:"Hard", xp:70, color:"#D4A574",
+    timeLimit:150,
+    questions:[
+      {
+        statement:"This output about AI regulation was written for a very specific audience. Reconstruct the role that produced it.",
+        output:"The Brussels Effect is real and accelerating. If you're building in the EU, GDPR isn't a compliance checkbox — it's a product architecture decision. The AI Act's risk-tier classifications will bifurcate your development roadmap in ways most founders haven't modelled yet.",
+        options:["'You are a policy expert writing a briefing for the European Parliament'","'You are a startup advisor who knows EU tech regulation deeply. Write for a founder audience who is smart but time-poor. Be specific, skip basics, flag what's actually going to bite them.'","'You are a journalist writing a tech column about European AI regulation'","'You are a compliance lawyer writing a risk assessment memo'"],
+        correct:1,
+        explanation:"'Brussels Effect', 'GDPR as architecture decision', 'bifurcate your development roadmap' — this is expert knowledge delivered in founder-friendly directness. 'Skip basics, flag what's actually going to bite them' is the exact constraint producing the output's urgency and specificity. Learning point: the 'skip basics' instruction is one of the most powerful tonal levers available — it signals mutual expertise and produces high signal-to-noise output instantly."
+      },
+      {
+        statement:"This job rejection email has an unusual tone. Which role prompt produced it?",
+        output:"Thank you for your application and your time in our process. After careful consideration, we're not moving forward with your candidacy at this stage. We received 340 applications for this role, and the decision was genuinely difficult. Your background in data engineering is strong — the gap was domain experience in fintech specifically, which was a hard requirement we underweighted in our job description. We wish you well.",
+        options:["'Write a professional rejection email'","'You are an honest, direct recruiter who believes candidates deserve real feedback, not corporate softening. Acknowledge where the process failed them. Be specific about the reason without being discouraging.'","'Write a warm and empathetic rejection'","'You are an HR manager following company policy on candidate communication'"],
+        correct:1,
+        explanation:"'The gap was domain experience in fintech specifically' and 'which was a hard requirement we underweighted in our job description' — this is accountability language, not HR boilerplate. The role prompt's 'acknowledge where the process failed them' directly produced those self-critical lines. Learning point: 'honest' and 'direct' in a role prompt produce outputs that acknowledge institutional failure — rare in corporate contexts, highly impactful."
+      },
+      {
+        statement:"This product description converts unusually well in A/B tests. What role prompt produced it?",
+        output:"Most project management tools are built for the PM, not the team. Tasks get assigned. Nothing gets done. Align is different: it shows each person exactly what they're responsible for this week, and nothing else. No noise. No meetings to explain the meetings.",
+        options:["'Write a product description for a project management tool'","'You are a direct-response copywriter. Lead with the problem the competitor fails to solve. No feature lists. Make the reader feel the pain before offering the relief. Max 60 words.'","'You are a brand strategist writing a positioning statement'","'You are a UX writer creating onboarding copy'"],
+        correct:1,
+        explanation:"'Most project management tools are built for the PM, not the team' — this is the competitor failure framing from 'lead with the problem the competitor fails to solve'. 'No noise. No meetings to explain the meetings.' — this is the pain-then-relief structure. The 60-word constraint drove the rhythm. Learning point: 'direct-response copywriter' is one of the highest-converting role prompts for product copy because it activates learned persuasion patterns."
+      },
+      {
+        statement:"This feedback on a subordinate's work has a specific professional intent. Which role prompt produced it?",
+        output:"The analysis is directionally right, and the conclusion holds. Two things to sharpen before Thursday: the revenue projections on page 4 assume flat headcount — update for the two hires confirmed last week. The executive summary reads like it was written for an analyst audience; this one goes to the CFO. Reframe the opening around cashflow, not methodology.",
+        options:["'Give feedback on this document'","'You are a senior manager giving feedback. Be specific, not general. Focus only on what must change before the next version. Assume the person is capable — skip praise, skip hedging, give them exactly what they need to fix it.'","'Be constructive and encouraging in your feedback'","'You are a writing coach reviewing a business document'"],
+        correct:1,
+        explanation:"'Directionally right' is the only positive signal — the rest is pure actionable instruction. 'Two things to sharpen', 'update for', 'Reframe the opening' — this is the output of 'focus only on what must change' and 'assume they're capable, skip praise'. Learning point: feedback prompts that skip the compliment sandwich produce faster, more useful output — and higher-performing teams."
+      },
+    ],
+  },
+
+  {
+    id:"td5c", trail:"Tone Dojo", step:9, total:11,
+    title:"Tone Injection III — Build the Prompt",
+    subtitle:"Given a target output, write the role prompt that would produce it — then identify the critical missing instruction",
+    type:"MULTIPLE CHOICE", difficulty:"Expert", xp:80, color:"#D4A574",
+    timeLimit:180,
+    questions:[
+      {
+        statement:"Target output: 'Three things will determine whether this acquisition creates value or destroys it: integration speed, culture delta, and whether the acquiree's best engineers stay for 18 months. Right now, you're optimising for the wrong one.' Which prompt element is MOST responsible for the directness and the closing challenge?",
+        output:"Three things will determine whether this acquisition creates value or destroys it: integration speed, culture delta, and whether the acquiree's best engineers stay for 18 months. Right now, you're optimising for the wrong one.",
+        options:["'You are an M&A consultant'","'Write an analysis of acquisition risks'","'You are an M&A advisor. End every insight with the implication for the decision-maker's current behaviour — not just what's true, but what they're getting wrong.'","'Be direct and concise'"],
+        correct:2,
+        explanation:"'Right now, you're optimising for the wrong one' is the closing challenge — it exists because the prompt instructs 'end with what they're getting wrong'. Without that constraint, the model would end on the insight, not the implication. Learning point: 'end with' instructions are among the highest-leverage prompt tools — they shape what the reader walks away thinking about."
+      },
+      {
+        statement:"A prompt should produce this onboarding message for a B2B SaaS. Which is the BEST role prompt for it? Target: 'Welcome to Claira. You've just saved your team approximately 4 hours per week on status updates. Here's how to prove it to your manager in 30 days.'",
+        output:"Welcome to Claira. You've just saved your team approximately 4 hours per week on status updates. Here's how to prove it to your manager in 30 days.",
+        options:["'Write a welcome email for a project management tool'","'You are a customer success copywriter. Open with the outcome already achieved (not the feature). Then give the user a specific, time-bound win they can show their manager. Max 2 sentences.'","'Be welcoming and explain the product's main benefit'","'You are a UX writer. Keep it short and positive.'"],
+        correct:1,
+        explanation:"'You've just saved' — this is past tense, framing the outcome as already achieved. That comes from 'open with the outcome already achieved, not the feature'. 'Prove it to your manager in 30 days' comes from 'a specific, time-bound win they can show their manager'. Learning point: onboarding copy that opens with achieved outcome (not feature) converts significantly better — because it tells the user they already won."
+      },
+      {
+        statement:"This crisis communications output is missing one critical element. Which role prompt instruction would add it? Output: 'At 14:32 on Thursday, our payment processing system experienced a failure affecting 12,400 transactions. Services were restored at 17:14. All affected transactions have been reversed. We are implementing additional monitoring to prevent recurrence.'",
+        output:"At 14:32 on Thursday, our payment processing system experienced a failure affecting 12,400 transactions. Services were restored at 17:14. All affected transactions have been reversed. We are implementing additional monitoring to prevent recurrence.",
+        options:["The output needs to be longer and more detailed","'Include a personal acknowledgment from the CEO and an apology that validates the customer's experience, not just the facts'","'Add technical detail about what caused the failure'","'Include a compensation offer'"],
+        correct:1,
+        explanation:"The output is factually complete but emotionally absent. Crisis communication has two audiences: the rational and the emotional. The rational audience (regulators, press) needs the facts — the output covers that. But the emotional audience (affected customers) needs acknowledgment that this impacted them, not just data about what happened. Learning point: facts without empathy in crisis comms signals that the company prioritises its own narrative over the customer's experience."
+      },
+      {
+        statement:"You want to produce this style of strategic analysis. Which role prompt element is doing the most work? Output: 'The real constraint isn\'t budget — it\'s decision velocity. Every week this decision waits costs approximately £40K in delayed revenue and increases competitor advantage. The question isn\'t whether to proceed. It\'s whether you\'ll decide before or after the window closes.'",
+        output:"The real constraint isn't budget — it's decision velocity. Every week this decision waits costs approximately £40K in delayed revenue and increases competitor advantage. The question isn't whether to proceed. It's whether you'll decide before or after the window closes.",
+        options:["'Be direct and avoid jargon'","'You are a strategic advisor. Reframe every analysis around the hidden constraint, not the stated one. Quantify the cost of delay. End with the decision the reader is actually avoiding.'","'Write a strategic analysis'","'Focus on the most important point'"],
+        correct:1,
+        explanation:"'The real constraint isn't budget — it's decision velocity' is a reframe — the stated constraint (budget) is replaced by the hidden one. This comes directly from 'reframe every analysis around the hidden constraint, not the stated one'. 'Every week costs approximately £40K' comes from 'quantify the cost of delay'. 'The question isn't whether to proceed' comes from 'end with the decision the reader is actually avoiding'. Learning point: the most powerful strategic prompts don't ask for analysis — they ask for reframing."
       },
     ],
   },
 
   // ── TONE DOJO 6 ──────────────────────────────────────────────────────────────
   {
-    id:"td6", trail:"Tone Dojo", step:6, total:7,
+    id:"td6", trail:"Tone Dojo", step:10, total:11,
+  
     title:"Audience Switcher II — The Hard Cases",
     subtitle:"Three audiences where the wrong tone causes real damage",
     type:"MULTI-REWRITE", difficulty:"Hard", xp:90, color:"#D4A574",
@@ -3087,7 +3689,7 @@ const CHALLENGES = [
 
   // ── TONE DOJO 7 ──────────────────────────────────────────────────────────────
   {
-    id:"td7", trail:"Tone Dojo", step:7, total:7,
+    id:"td7", trail:"Tone Dojo", step:11, total:11,
     title:"The Tone Architect",
     subtitle:"Build the role prompt that produces a specific target tone",
     type:"DIAGNOSE & REWRITE", difficulty:"Expert", xp:100, color:"#D4A574",
@@ -3106,6 +3708,388 @@ const CHALLENGES = [
     rewrite:"You are a product analytics lead presenting findings to a product and growth team. Write in a data-first, narrative style: open with the key metric, then interpret it in plain language. Be direct and confident — no hedging. Diagnose root cause explicitly, distinguishing it from surface symptoms. Maximum 80 words.",
   },];
 const difficultyColor = { Starter:"#A8A9AD", Medium:"#8B9ED4", Hard:"#C47FA0", Expert:"#EF9F27" };
+
+// ─── Constraint Auction Challenge Component ───────────────────────────────────
+const ConstraintAuctionChallenge = () => {
+  const data = getTodaysChallengeData();
+  const ALLOWED = 3;
+  const accentColor = "#C4A55A";
+
+  const [selectedIds, setSelectedIds]   = useState([]);
+  const [ranking, setRanking]           = useState([]);
+  const [phase, setPhase]               = useState("pick"); // pick | rank | rank-result | result
+  const [score, setScore]               = useState(null);
+  const [rankAttempts, setRankAttempts] = useState(0);
+  const [rankFeedback, setRankFeedback] = useState(null); // null | "wrong" | "correct"
+  const [countdown, setCountdown]       = useState("");
+
+  // Countdown to next midnight (when challenge resets)
+  useEffect(() => {
+    const tick = () => {
+      const now  = new Date();
+      const next = new Date();
+      next.setHours(24, 0, 0, 0); // next midnight
+      const diff = next - now;
+      const h  = String(Math.floor(diff / 3600000)).padStart(2, "0");
+      const m  = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
+      const s  = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
+      setCountdown(`${h}:${m}:${s}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const resetChallenge = () => {
+    setSelectedIds([]);
+    setRanking([]);
+    setPhase("pick");
+    setScore(null);
+    setRankAttempts(0);
+    setRankFeedback(null);
+  };
+
+  // ── pick phase ──
+  const togglePick = (id) => {
+    if (phase !== "pick") return;
+    setSelectedIds(prev => {
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      if (prev.length >= ALLOWED) return prev;
+      return [...prev, id];
+    });
+  };
+
+  const proceedToRank = () => {
+    if (selectedIds.length < ALLOWED) return;
+    setRanking([...selectedIds]);
+    setPhase("rank");
+  };
+
+  // ── rank phase ──
+  const moveRank = (id, dir) => {
+    if (phase !== "rank") return;
+    setRanking(prev => {
+      const idx = prev.indexOf(id);
+      if (idx < 0) return prev;
+      const next = [...prev];
+      const swap = idx + dir;
+      if (swap < 0 || swap >= next.length) return prev;
+      [next[idx], next[swap]] = [next[swap], next[idx]];
+      return next;
+    });
+  };
+
+  const submitRanking = () => {
+    // Check if picks are correct first
+    const correctSet   = new Set(data.correctPick);
+    const pickedSet    = new Set(selectedIds);
+    const correctPicks = [...pickedSet].filter(id => correctSet.has(id)).length;
+    const allPicksRight = correctPicks === ALLOWED;
+
+    // Check ranking
+    const rankCorrect = ranking.every((id, i) => data.correctRank[i] === id);
+
+    if (allPicksRight && rankCorrect) {
+      setScore(100);
+      setRankFeedback("correct");
+      setPhase("rank-result");
+    } else if (!allPicksRight) {
+      // Wrong picks — go straight to full result reveal
+      const pickScore = Math.round((correctPicks / ALLOWED) * 100);
+      setScore(pickScore);
+      setRankFeedback(null);
+      setPhase("result");
+    } else {
+      // Right picks, wrong ranking
+      setRankAttempts(a => a + 1);
+      setRankFeedback("wrong");
+      setPhase("rank-result");
+    }
+  };
+
+  const retryRanking = () => {
+    setRankFeedback(null);
+    setPhase("rank");
+  };
+
+  const finaliseResult = () => {
+    // Called after rank-result when user clicks "See Full Breakdown"
+    if (rankFeedback === "correct") {
+      setScore(100);
+    } else {
+      // Wrong ranking — partial score based on position matches
+      let pos = 0;
+      ranking.forEach((id, i) => { if (data.correctRank[i] === id) pos++; });
+      setScore(Math.round((pos / ALLOWED) * 100));
+    }
+    setPhase("result");
+  };
+
+  // ── option display colour ──
+  const optionBorderColor = (id) => {
+    if (phase === "result") {
+      const isCorrect = data.correctPick.includes(id);
+      const wasPicked = selectedIds.includes(id);
+      if (isCorrect && wasPicked)  return "rgba(126,200,164,0.4)";
+      if (isCorrect && !wasPicked) return "rgba(126,200,164,0.2)";
+      if (!isCorrect && wasPicked) return "rgba(196,127,160,0.35)";
+      return "rgba(168,169,173,0.08)";
+    }
+    return selectedIds.includes(id) ? "rgba(196,165,90,0.4)" : "rgba(168,169,173,0.1)";
+  };
+
+  const optionTextColor = (id) => {
+    if (phase === "result") {
+      const isCorrect = data.correctPick.includes(id);
+      const wasPicked = selectedIds.includes(id);
+      if (isCorrect) return "rgba(126,200,164,0.9)";
+      if (wasPicked)  return "rgba(196,127,160,0.75)";
+      return "rgba(255,255,255,0.3)";
+    }
+    return selectedIds.includes(id) ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.55)";
+  };
+
+  return (
+    <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:0.5}}
+      style={{background:"rgba(10,8,20,0.98)",border:"1px solid rgba(196,165,90,0.28)",borderRadius:"18px",padding:"28px 32px",marginBottom:"40px",position:"relative",overflow:"hidden"}}>
+
+      {/* top accent line */}
+      <div style={{position:"absolute",top:0,left:0,right:0,height:"2px",background:"linear-gradient(90deg,transparent,rgba(196,165,90,0.65),transparent)"}}/>
+
+      {/* ── Header ── */}
+      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:"20px",flexWrap:"wrap",gap:"12px"}}>
+        <div>
+          <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"7px"}}>
+            <span style={{padding:"2px 10px",borderRadius:"20px",background:"rgba(196,165,90,0.12)",border:"1px solid rgba(196,165,90,0.3)",fontFamily:"'Cormorant Garamond',serif",fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:accentColor}}>Challenge for the Day</span>
+            <span style={{padding:"2px 10px",borderRadius:"20px",background:"rgba(168,169,173,0.06)",fontFamily:"'Cormorant Garamond',serif",fontSize:"8px",letterSpacing:"0.1em",color:difficultyColor["Medium"]}}>Medium</span>
+          </div>
+          <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"22px",fontWeight:700,color:"#FFF",marginBottom:"4px",lineHeight:1.2}}>The Constraint Auction</h2>
+          <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.42)",lineHeight:1.65,maxWidth:"500px"}}>
+            Pick the 3 options with the highest combined impact on the prompt below. Then rank them — most important first.
+          </p>
+        </div>
+        <div style={{textAlign:"right",flexShrink:0}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"10px",letterSpacing:"0.12em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",marginBottom:"2px"}}>Resets daily</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:accentColor}}>+80 XP</div>
+        </div>
+      </div>
+
+      {/* ── Broken prompt box ── */}
+      <div style={{background:"rgba(255,80,80,0.04)",border:"1px solid rgba(255,80,80,0.14)",borderRadius:"12px",padding:"16px 20px",marginBottom:"22px"}}>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:"rgba(255,110,110,0.5)",marginBottom:"8px"}}>The broken prompt — only 3 words may be added</div>
+        <p style={{fontFamily:"'Courier New',monospace",fontSize:"16px",color:"rgba(255,200,200,0.82)",lineHeight:1.5,fontStyle:"italic"}}>"{data.brokenPrompt}"</p>
+      </div>
+
+      {/* ══════════ PHASE: PICK ══════════ */}
+      {(phase === "pick" || phase === "result") && (
+        <>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:"rgba(255,255,255,0.38)",marginBottom:"12px",letterSpacing:"0.04em"}}>
+            {phase === "pick"
+              ? `Choose 3 options — ${selectedIds.length}/3 selected:`
+              : "Results — all options revealed:"}
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"18px"}}>
+            {data.options.map(opt => {
+              const picked     = selectedIds.includes(opt.id);
+              const isCorrect  = phase === "result" && data.correctPick.includes(opt.id);
+              const isRedundant = phase === "result" && data.redundantPair.includes(opt.id);
+              return (
+                <motion.div key={opt.id}
+                  onClick={() => togglePick(opt.id)}
+                  whileHover={phase === "pick" ? {scale:1.01} : {}}
+                  whileTap={phase === "pick" ? {scale:0.99} : {}}
+                  style={{display:"flex",alignItems:"flex-start",gap:"12px",padding:"13px 16px",borderRadius:"11px",
+                    cursor: phase === "pick" ? "pointer" : "default",
+                    background: picked ? "rgba(196,165,90,0.07)" : "rgba(168,169,173,0.025)",
+                    border: `1px solid ${optionBorderColor(opt.id)}`,
+                    transition:"all 0.15s"}}>
+                  {/* radio dot */}
+                  <div style={{width:"20px",height:"20px",borderRadius:"50%",flexShrink:0,marginTop:"2px",display:"flex",alignItems:"center",justifyContent:"center",
+                    border: `2px solid ${phase==="pick"?(picked?accentColor:"rgba(168,169,173,0.3)"):(isCorrect?"#7EC8A4":picked?"#C47FA0":"rgba(168,169,173,0.2)")}`,
+                    background: picked&&phase==="pick" ? "rgba(196,165,90,0.15)" : "transparent",transition:"all 0.15s"}}>
+                    {picked && phase==="pick" && <div style={{width:"7px",height:"7px",borderRadius:"50%",background:accentColor}}/>}
+                    {phase==="result" && isCorrect && <span style={{fontSize:"9px",color:"#7EC8A4",lineHeight:1}}>✓</span>}
+                    {phase==="result" && !isCorrect && picked && <span style={{fontSize:"9px",color:"#C47FA0",lineHeight:1}}>✗</span>}
+                  </div>
+                  <div style={{flex:1}}>
+                    <p style={{fontFamily:"'Courier New',monospace",fontSize:"14px",color:optionTextColor(opt.id),margin:0,lineHeight:1.45}}>{opt.text}</p>
+                    {phase === "result" && (
+                      <div style={{marginTop:"7px"}}>
+                        <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:isCorrect?"rgba(126,200,164,0.8)":"rgba(255,255,255,0.3)",lineHeight:1.55,margin:0}}>{opt.why}</p>
+                        {isRedundant && (
+                          <span style={{display:"inline-block",marginTop:"5px",padding:"1px 8px",borderRadius:"10px",background:"rgba(196,165,90,0.1)",border:"1px solid rgba(196,165,90,0.22)",fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",color:accentColor,letterSpacing:"0.1em"}}>⚠ REDUNDANT PAIR</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* ══════════ PHASE: RANK ══════════ */}
+      {phase === "rank" && (
+        <>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:"rgba(255,255,255,0.38)",marginBottom:"12px"}}>
+            Now rank your 3 picks — drag or use arrows, most important at top:
+            {rankAttempts > 0 && <span style={{color:"rgba(196,127,160,0.75)",marginLeft:"10px"}}>Attempt {rankAttempts + 1}</span>}
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"18px"}}>
+            {ranking.map((id, i) => {
+              const opt = data.options.find(o => o.id === id);
+              return (
+                <div key={id} style={{display:"flex",alignItems:"center",gap:"12px",padding:"13px 16px",borderRadius:"11px",background:"rgba(196,165,90,0.06)",border:"1px solid rgba(196,165,90,0.2)"}}>
+                  <div style={{width:"26px",height:"26px",borderRadius:"50%",background:"rgba(196,165,90,0.15)",border:"1px solid rgba(196,165,90,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"13px",fontWeight:700,color:accentColor}}>{i+1}</span>
+                  </div>
+                  <p style={{fontFamily:"'Courier New',monospace",fontSize:"14px",color:"rgba(255,255,255,0.82)",flex:1,margin:0}}>{opt.text}</p>
+                  <div style={{display:"flex",flexDirection:"column",gap:"3px"}}>
+                    <motion.button onClick={() => moveRank(id, -1)} disabled={i === 0}
+                      whileHover={{scale:1.1}} whileTap={{scale:0.9}}
+                      style={{background:"rgba(196,165,90,0.1)",border:"1px solid rgba(196,165,90,0.2)",borderRadius:"5px",padding:"3px 9px",
+                        color: i===0 ? "rgba(196,165,90,0.18)" : accentColor,
+                        cursor: i===0 ? "default" : "pointer",fontSize:"10px",lineHeight:1}}>▲</motion.button>
+                    <motion.button onClick={() => moveRank(id, 1)} disabled={i === ranking.length - 1}
+                      whileHover={{scale:1.1}} whileTap={{scale:0.9}}
+                      style={{background:"rgba(196,165,90,0.1)",border:"1px solid rgba(196,165,90,0.2)",borderRadius:"5px",padding:"3px 9px",
+                        color: i===ranking.length-1 ? "rgba(196,165,90,0.18)" : accentColor,
+                        cursor: i===ranking.length-1 ? "default" : "pointer",fontSize:"10px",lineHeight:1}}>▼</motion.button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* ══════════ PHASE: RANK-RESULT (right picks, wrong order — offer retry) ══════════ */}
+      {phase === "rank-result" && (
+        <AnimatePresence mode="wait">
+          <motion.div key="rank-result" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:0.3}}>
+            {rankFeedback === "wrong" ? (
+              <div style={{background:"rgba(196,127,160,0.06)",border:"1px solid rgba(196,127,160,0.25)",borderRadius:"14px",padding:"22px 24px",marginBottom:"18px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"12px"}}>
+                  <span style={{fontSize:"20px"}}>↕</span>
+                  <div>
+                    <div style={{fontFamily:"'Playfair Display',serif",fontSize:"16px",fontWeight:700,color:"#C47FA0",marginBottom:"2px"}}>Wrong order — good picks though</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.38)"}}>Your 3 choices were correct. The ranking wasn't quite right.</div>
+                  </div>
+                </div>
+                <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.45)",lineHeight:1.7,marginBottom:"0"}}>
+                  Think about which instruction has the broadest, most independent effect on the output — that goes first. Which is narrowest or most conditional — that goes last.
+                </p>
+              </div>
+            ) : (
+              <div style={{background:"rgba(126,200,164,0.06)",border:"1px solid rgba(126,200,164,0.25)",borderRadius:"14px",padding:"22px 24px",marginBottom:"18px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                  <span style={{fontSize:"22px"}}>✦</span>
+                  <div>
+                    <div style={{fontFamily:"'Playfair Display',serif",fontSize:"16px",fontWeight:700,color:"#7EC8A4",marginBottom:"2px"}}>Perfect — picks and ranking both correct</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.38)"}}>You understand constraint economics.</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      )}
+
+      {/* ══════════ PHASE: RESULT (full breakdown) ══════════ */}
+      {phase === "result" && (
+        <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.35}}
+          style={{background:"rgba(196,165,90,0.05)",border:"1px solid rgba(196,165,90,0.18)",borderRadius:"12px",padding:"18px 22px",marginBottom:"18px"}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:accentColor,marginBottom:"10px"}}>Why these three</div>
+          <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"13px",color:"rgba(255,255,255,0.65)",lineHeight:1.8,marginBottom:"14px"}}>{data.explanation}</p>
+          <div style={{background:"rgba(255,50,50,0.04)",border:"1px solid rgba(255,80,80,0.12)",borderRadius:"9px",padding:"12px 16px",marginBottom:"14px"}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",letterSpacing:"0.18em",textTransform:"uppercase",color:"rgba(255,110,110,0.5)",marginBottom:"6px"}}>The redundant pair</div>
+            <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,150,150,0.72)",lineHeight:1.7,margin:0}}>{data.redundantExplanation}</p>
+          </div>
+          <div style={{padding:"10px 14px",borderRadius:"9px",
+            background: score===100 ? "rgba(126,200,164,0.08)" : score>=60 ? "rgba(196,165,90,0.08)" : "rgba(196,127,160,0.08)",
+            border: `1px solid ${score===100?"rgba(126,200,164,0.25)":score>=60?"rgba(196,165,90,0.25)":"rgba(196,127,160,0.25)"}`}}>
+            <span style={{fontFamily:"'Playfair Display',serif",fontSize:"20px",fontWeight:700,
+              color: score===100 ? "#7EC8A4" : score>=60 ? accentColor : "#C47FA0"}}>{score}%</span>
+            <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:"rgba(255,255,255,0.38)",marginLeft:"10px"}}>
+              {score===100 ? "Flawless — picks and ranking both correct." : score>=60 ? "Good instincts — study the ranking hierarchy." : "Review the redundancy principle and try again tomorrow."}
+            </span>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ══════════ Action buttons ══════════ */}
+      <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:"10px",flexWrap:"wrap"}}>
+
+        {/* PICK phase */}
+        {phase === "pick" && (
+          <motion.button onClick={proceedToRank} disabled={selectedIds.length < ALLOWED}
+            whileHover={selectedIds.length>=ALLOWED?{scale:1.04}:{}} whileTap={selectedIds.length>=ALLOWED?{scale:0.97}:{}}
+            style={{padding:"11px 28px",borderRadius:"10px",border:"none",
+              cursor: selectedIds.length>=ALLOWED ? "pointer" : "not-allowed",
+              background: selectedIds.length>=ALLOWED ? accentColor : "rgba(196,165,90,0.18)",
+              color: selectedIds.length>=ALLOWED ? "#08080F" : "rgba(196,165,90,0.35)",
+              fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
+            Rank These 3 →
+          </motion.button>
+        )}
+
+        {/* RANK phase */}
+        {phase === "rank" && (
+          <motion.button onClick={submitRanking} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+            style={{padding:"11px 28px",borderRadius:"10px",border:"none",cursor:"pointer",background:accentColor,color:"#08080F",
+              fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
+            Submit Ranking →
+          </motion.button>
+        )}
+
+        {/* RANK-RESULT phase */}
+        {phase === "rank-result" && rankFeedback === "wrong" && (
+          <>
+            <motion.button onClick={finaliseResult} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+              style={{padding:"10px 20px",borderRadius:"10px",border:"1px solid rgba(168,169,173,0.18)",cursor:"pointer",
+                background:"transparent",color:"rgba(255,255,255,0.4)",
+                fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",letterSpacing:"0.12em",textTransform:"uppercase"}}>
+              See Breakdown
+            </motion.button>
+            <motion.button onClick={retryRanking} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+              style={{padding:"11px 28px",borderRadius:"10px",border:"none",cursor:"pointer",background:accentColor,color:"#08080F",
+                fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
+              Try Ranking Again →
+            </motion.button>
+          </>
+        )}
+        {phase === "rank-result" && rankFeedback === "correct" && (
+          <motion.button onClick={finaliseResult} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+            style={{padding:"11px 28px",borderRadius:"10px",border:"none",cursor:"pointer",background:"#7EC8A4",color:"#08080F",
+              fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
+            See Full Breakdown →
+          </motion.button>
+        )}
+
+        {/* RESULT phase */}
+        {phase === "result" && (
+          <div style={{display:"flex",alignItems:"center",gap:"14px",flexWrap:"wrap",justifyContent:"flex-end"}}>
+            {/* 24-hour countdown */}
+            <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+              <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"10px",letterSpacing:"0.14em",textTransform:"uppercase",color:"rgba(255,255,255,0.25)"}}>Next challenge in</span>
+              <span style={{fontFamily:"'Courier New',monospace",fontSize:"15px",fontWeight:700,color:accentColor,letterSpacing:"0.1em"}}>{countdown}</span>
+            </div>
+            {/* Try Again — only shown when score is not perfect */}
+            {score < 100 && (
+              <motion.button onClick={resetChallenge} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+                style={{padding:"10px 22px",borderRadius:"10px",border:"1px solid rgba(196,165,90,0.3)",cursor:"pointer",
+                  background:"transparent",color:accentColor,
+                  fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.14em",textTransform:"uppercase"}}>
+                ↺ Try Again
+              </motion.button>
+            )}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
 
 const ChallengesPage = ({ onBack }) => {
   const [selectedChallenge, setSelectedChallenge] = useState(null);
@@ -3153,6 +4137,9 @@ const ChallengesPage = ({ onBack }) => {
                 ))}
               </div>
             </motion.div>
+
+            {/* ── Challenge for the Day ── */}
+            <ConstraintAuctionChallenge streak={0} />
 
             {/* Trails */}
             {trails.map((trail,ti)=>{
@@ -4390,79 +5377,211 @@ const MultiRewriteChallenge = ({ ch, onDone }) => {
 
 // ─── Drag Order Challenge ─────────────────────────────────────────────────────
 const DragOrderChallenge = ({ ch, onDone }) => {
-  const [pool, setPool] = useState(ch.blocks.filter(b=>b.type!=="decoy").concat(ch.blocks.filter(b=>b.type==="decoy")).sort(()=>Math.random()-0.5));
-  const [slots, setSlots] = useState(ch.correctOrder.map(()=>null));
+  const [pool, setPool]       = useState(ch.blocks.slice().sort(()=>Math.random()-0.5));
+  const [slots, setSlots]     = useState(ch.correctOrder.map(()=>null));
   const [checked, setChecked] = useState(false);
-  const [dragging, setDragging] = useState(null);
+  const [decoyWarn, setDecoyWarn] = useState(false); // decoy-in-slot warning state
+  const [dragging, setDragging]   = useState(null);
+  const [dragOverSlot, setDragOverSlot] = useState(null);
+  const [dragOverPool, setDragOverPool] = useState(false);
 
-  const blockColors = { role:"#8B9ED4", task:"#7EC8A4", context:"#D4A574", format:"#85B7EB", constraint:"#C47FA0", decoy:"rgba(168,169,173,0.3)" };
+  const blockColors = { role:"#8B9ED4", task:"#7EC8A4", context:"#D4A574", format:"#85B7EB", constraint:"#C47FA0", decoy:"#C47FA0" };
 
+  // ── placement helpers ──────────────────────────────────────────────────────
   const placeInSlot = (blockId, slotIdx) => {
-    if(checked) return;
+    if (checked) return;
     const block = ch.blocks.find(b=>b.id===blockId);
-    if(!block || block.type==="decoy") return;
-    const newSlots=[...slots];
-    const prevSlotIdx = newSlots.indexOf(blockId);
-    if(prevSlotIdx!==-1) newSlots[prevSlotIdx]=null;
-    if(newSlots[slotIdx]) { setPool(p=>[...p.filter(b=>b.id!==blockId), ch.blocks.find(b=>b.id===newSlots[slotIdx])]); }
-    newSlots[slotIdx]=blockId;
+    if (!block) return;
+    const newSlots = [...slots];
+    const prevIdx  = newSlots.indexOf(blockId);
+    if (prevIdx !== -1) newSlots[prevIdx] = null;
+    if (newSlots[slotIdx]) setPool(p => [...p.filter(b=>b.id!==blockId), ch.blocks.find(b=>b.id===newSlots[slotIdx])]);
+    newSlots[slotIdx] = blockId;
     setSlots(newSlots);
-    setPool(p=>p.filter(b=>b.id!==blockId));
+    setPool(p => p.filter(b=>b.id!==blockId));
+    setDecoyWarn(false);
   };
 
   const removeFromSlot = (slotIdx) => {
-    if(checked) return;
-    const blockId=slots[slotIdx];
-    if(!blockId) return;
-    const newSlots=[...slots]; newSlots[slotIdx]=null; setSlots(newSlots);
-    setPool(p=>[...p,ch.blocks.find(b=>b.id===blockId)]);
+    if (checked) return;
+    const blockId = slots[slotIdx];
+    if (!blockId) return;
+    const newSlots = [...slots]; newSlots[slotIdx] = null; setSlots(newSlots);
+    setPool(p => [...p, ch.blocks.find(b=>b.id===blockId)]);
+    setDecoyWarn(false);
   };
 
-  const check = () => setChecked(true);
-  const score = () => { const correct=slots.filter((id,i)=>id===ch.correctOrder[i]).length; return Math.round((correct/ch.correctOrder.length)*100); };
+  // ── drag handlers ──────────────────────────────────────────────────────────
+  const onDragStartPool = (e, b) => {
+    if (checked) { e.preventDefault(); return; }
+    setDragging({ id: b.id, from: "pool" });
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", b.id);
+  };
+  const onDragStartSlot = (e, id, slotIdx) => {
+    if (checked) { e.preventDefault(); return; }
+    setDragging({ id, from: slotIdx });
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+  };
+  const onDragEnd = () => { setDragging(null); setDragOverSlot(null); setDragOverPool(false); };
+
+  const onDropSlot = (e, slotIdx) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain") || dragging?.id;
+    if (!id) return;
+    placeInSlot(id, slotIdx);
+    setDragging(null); setDragOverSlot(null);
+  };
+  const onDropPool = (e) => {
+    e.preventDefault();
+    if (!dragging || dragging.from === "pool") return;
+    removeFromSlot(dragging.from);
+    setDragging(null); setDragOverPool(false);
+  };
+
+  // ── check logic ────────────────────────────────────────────────────────────
+  const hasDecoyInSlots = slots.some(id => {
+    const b = ch.blocks.find(b=>b.id===id);
+    return b && b.type === "decoy";
+  });
+
+  const handleCheck = () => {
+    if (hasDecoyInSlots) { setDecoyWarn(true); return; } // warn, don't finalise
+    setChecked(true);
+    setDecoyWarn(false);
+  };
+
+  const dismissDecoys = () => {
+    // Eject all decoy-occupied slots back to pool
+    const newSlots = [...slots];
+    const toReturn = [];
+    newSlots.forEach((id, i) => {
+      const b = ch.blocks.find(b=>b.id===id);
+      if (b && b.type === "decoy") { toReturn.push(b); newSlots[i] = null; }
+    });
+    setSlots(newSlots);
+    setPool(p => [...p, ...toReturn]);
+    setDecoyWarn(false);
+  };
+
+  const score = () => { const c=slots.filter((id,i)=>id===ch.correctOrder[i]).length; return Math.round((c/ch.correctOrder.length)*100); };
   const allFilled = slots.every(s=>s!==null);
 
   return (
     <div>
+      {/* Decoy warning banner */}
+      {decoyWarn && (
+        <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
+          style={{display:"flex",alignItems:"flex-start",gap:"14px",background:"rgba(196,127,160,0.09)",border:"1px solid rgba(196,127,160,0.4)",borderRadius:"12px",padding:"14px 18px",marginBottom:"16px"}}>
+          <span style={{fontSize:"20px",lineHeight:1,flexShrink:0}}>⚠</span>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",fontWeight:700,color:"#C47FA0",marginBottom:"4px"}}>
+              You've placed {slots.filter(id=>{ const b=ch.blocks.find(b=>b.id===id); return b&&b.type==="decoy"; }).length} decoy{slots.filter(id=>{ const b=ch.blocks.find(b=>b.id===id); return b&&b.type==="decoy"; }).length>1?"s":""} in your structure
+            </div>
+            <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"rgba(196,127,160,0.75)",lineHeight:1.6}}>
+              The highlighted slots contain decoy blocks — they look plausible but would break the prompt. Remove them before checking your order.
+            </div>
+          </div>
+          <motion.button onClick={dismissDecoys} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+            style={{padding:"7px 16px",borderRadius:"8px",border:"1px solid rgba(196,127,160,0.4)",background:"rgba(196,127,160,0.12)",color:"#C47FA0",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"10px",letterSpacing:"0.14em",textTransform:"uppercase",cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>
+            Remove Decoys
+          </motion.button>
+        </motion.div>
+      )}
+
       {/* Pool */}
-      <div style={{background:"rgba(168,169,173,0.04)",border:"1px solid rgba(168,169,173,0.1)",borderRadius:"14px",padding:"16px 20px",marginBottom:"18px"}}>
-        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:S.muted,marginBottom:"12px"}}>Available blocks — click to place, avoid decoys</div>
+      <div
+        onDragOver={e=>{ e.preventDefault(); setDragOverPool(true); }}
+        onDragLeave={()=>setDragOverPool(false)}
+        onDrop={onDropPool}
+        style={{background: dragOverPool && dragging?.from!=="pool" ? "rgba(133,183,235,0.06)" : "rgba(168,169,173,0.04)",
+          border: dragOverPool && dragging?.from!=="pool" ? "1px solid rgba(133,183,235,0.3)" : "1px solid rgba(168,169,173,0.1)",
+          borderRadius:"14px",padding:"16px 20px",marginBottom:"18px",transition:"all 0.15s"}}>
+        <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:S.muted,marginBottom:"12px"}}>
+          Available blocks — drag or click to place
+        </div>
         <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
-          {pool.map(b=>(
-            <motion.div key={b.id} whileHover={{scale:1.04}} whileTap={{scale:0.96}}
-              onClick={()=>{ const empty=slots.findIndex(s=>s===null); if(empty!==-1) placeInSlot(b.id,empty); }}
-              style={{padding:"8px 14px",borderRadius:"9px",cursor:b.type==="decoy"?"not-allowed":"pointer",border:`1px solid ${b.type==="decoy"?"rgba(168,169,173,0.12)":`${blockColors[b.type]}55`}`,background:b.type==="decoy"?"rgba(168,169,173,0.04)":`${blockColors[b.type]}18`}}>
-              <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.16em",textTransform:"uppercase",color:b.type==="decoy"?"rgba(168,169,173,0.3)":blockColors[b.type],marginBottom:"3px"}}>{b.label}</div>
-              <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:b.type==="decoy"?"rgba(168,169,173,0.35)":S.mutedMd}}>{b.text}</div>
-            </motion.div>
-          ))}
-          {pool.length===0 && <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.muted,fontStyle:"italic"}}>All blocks placed</span>}
+          {pool.map(b => {
+            const isDecoy = b.type === "decoy";
+            const isDragging = dragging?.id === b.id;
+            return (
+              <motion.div key={b.id}
+                draggable={!checked}
+                onDragStart={e=>onDragStartPool(e,b)}
+                onDragEnd={onDragEnd}
+                animate={{ opacity: isDragging ? 0.3 : 1 }}
+                whileHover={{ scale: checked ? 1 : 1.04, y: checked ? 0 : -1 }}
+                whileTap={{ scale: checked ? 1 : 0.96 }}
+                onClick={()=>{ if(checked) return; const empty=slots.findIndex(s=>s===null); if(empty!==-1) placeInSlot(b.id,empty); }}
+                style={{padding:"8px 14px",borderRadius:"9px",cursor:checked?"default":"grab",userSelect:"none",
+                  border:`1px solid ${isDecoy?"rgba(196,127,160,0.25)":`${blockColors[b.type]}55`}`,
+                  background:isDecoy?"rgba(196,127,160,0.06)":`${blockColors[b.type]}18`}}>
+                <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+                  {!checked && <span style={{fontSize:"10px",color:"rgba(168,169,173,0.3)",lineHeight:1}}>⠿</span>}
+                  <div>
+                    <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.16em",textTransform:"uppercase",color:isDecoy?"rgba(196,127,160,0.55)":blockColors[b.type],marginBottom:"3px"}}>{b.label}</div>
+                    <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:isDecoy?"rgba(196,127,160,0.55)":S.mutedMd}}>{b.text}</div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+          {pool.length===0 && <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.muted,fontStyle:"italic"}}>All blocks placed — drag back here to return one</span>}
         </div>
       </div>
 
       {/* Slots */}
       <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"18px"}}>
         {slots.map((id,i)=>{
-          const block=id?ch.blocks.find(b=>b.id===id):null;
-          const isCorrect=checked&&id===ch.correctOrder[i];
-          const isWrong=checked&&id&&id!==ch.correctOrder[i];
+          const block       = id ? ch.blocks.find(b=>b.id===id) : null;
+          const isDecoySlot = decoyWarn && block && block.type === "decoy";
+          const isCorrect   = checked && id === ch.correctOrder[i];
+          const isWrong     = checked && id && id !== ch.correctOrder[i];
+          const isOver      = dragOverSlot === i;
           return (
             <div key={i} style={{display:"flex",alignItems:"center",gap:"12px"}}>
-              <div style={{width:"20px",fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",color:S.muted,textAlign:"center",flexShrink:0}}>{i+1}</div>
-              <motion.div whileHover={!checked&&block?{scale:1.01}:{}}
-                onClick={()=>block&&removeFromSlot(i)}
-                style={{flex:1,padding:"11px 16px",borderRadius:"10px",minHeight:"46px",cursor:block&&!checked?"pointer":"default",transition:"all 0.15s",
-                  background: isCorrect?"rgba(100,200,150,0.1)" : isWrong?"rgba(196,127,160,0.1)" : block?`${blockColors[block.type]}12`:"rgba(168,169,173,0.04)",
-                  border: isCorrect?"1px solid rgba(100,200,150,0.35)" : isWrong?"1px solid rgba(196,127,160,0.3)" : block?`1px solid ${blockColors[block.type]}44`:"1px dashed rgba(168,169,173,0.18)"}}>
+              <div style={{width:"20px",fontFamily:"'Cormorant Garamond', serif",fontSize:"11px",
+                color: isDecoySlot ? "#C47FA0" : S.muted,
+                textAlign:"center",flexShrink:0,fontWeight: isDecoySlot ? 700 : 400}}>{i+1}</div>
+              <div
+                onDragOver={e=>{ e.preventDefault(); setDragOverSlot(i); }}
+                onDragLeave={()=>setDragOverSlot(null)}
+                onDrop={e=>onDropSlot(e,i)}
+                onClick={()=>{ if(!checked) { if(block) removeFromSlot(i); }}}
+                style={{flex:1,padding: isOver?"10px 15px":"11px 16px",borderRadius:"10px",minHeight:"46px",
+                  cursor:block&&!checked?"pointer":"default",transition:"all 0.15s",
+                  background: isDecoySlot ? "rgba(196,127,160,0.1)" :
+                    isCorrect ? "rgba(100,200,150,0.1)" :
+                    isWrong   ? "rgba(196,127,160,0.1)" :
+                    isOver    ? "rgba(133,183,235,0.1)" :
+                    block     ? `${blockColors[block.type]}12` : "rgba(168,169,173,0.04)",
+                  border: isDecoySlot ? "1.5px solid rgba(196,127,160,0.55)" :
+                    isCorrect ? "1px solid rgba(100,200,150,0.35)" :
+                    isWrong   ? "1px solid rgba(196,127,160,0.3)" :
+                    isOver    ? "2px solid rgba(133,183,235,0.45)" :
+                    block     ? `1px solid ${blockColors[block.type]}44` : "1px dashed rgba(168,169,173,0.18)",
+                  boxShadow: isDecoySlot ? "0 0 10px rgba(196,127,160,0.18)" : isOver ? "0 0 12px rgba(133,183,235,0.12)" : "none"}}>
                 {block ? (
-                  <div>
-                    <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.16em",textTransform:"uppercase",color: isCorrect?"#7EC8A4" : isWrong?"#C47FA0" : blockColors[block.type],marginBottom:"2px"}}>{block.label} {isCorrect?"✓":isWrong?"✗":""}</div>
-                    <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",color:S.mutedMd}}>{block.text}</div>
+                  <div draggable={!checked} onDragStart={e=>onDragStartSlot(e,id,i)} onDragEnd={onDragEnd}
+                    style={{display:"flex",alignItems:"flex-start",gap:"8px",cursor:checked?"default":"grab"}}>
+                    {!checked && <span style={{fontSize:"10px",color:"rgba(168,169,173,0.3)",marginTop:"2px",flexShrink:0}}>⠿</span>}
+                    <div style={{flex:1}}>
+                      <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"9px",letterSpacing:"0.16em",textTransform:"uppercase",marginBottom:"2px",
+                        color: isDecoySlot ? "#C47FA0" : isCorrect ? "#7EC8A4" : isWrong ? "#C47FA0" : blockColors[block.type]}}>
+                        {isDecoySlot ? "⚠ DECOY — remove this" : `${block.label} ${isCorrect?"✓":isWrong?"✗":""}`}
+                      </div>
+                      <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"13px",
+                        color: isDecoySlot ? "rgba(196,127,160,0.8)" : S.mutedMd}}>{block.text}</div>
+                    </div>
                   </div>
                 ) : (
-                  <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",color:"rgba(168,169,173,0.25)",fontStyle:"italic"}}>Click a block above to place it here</span>
+                  <span style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"12px",fontStyle:"italic",
+                    color: isOver ? "rgba(133,183,235,0.6)" : "rgba(168,169,173,0.25)"}}>
+                    {isOver ? "Drop here" : "Click a block above or drag here"}
+                  </span>
                 )}
-              </motion.div>
+              </div>
             </div>
           );
         })}
@@ -4475,8 +5594,14 @@ const DragOrderChallenge = ({ ch, onDone }) => {
       )}
 
       <div style={{display:"flex",justifyContent:"flex-end",gap:"10px"}}>
+        <motion.button
+          onClick={()=>{ setPool(ch.blocks.slice().sort(()=>Math.random()-0.5)); setSlots(ch.correctOrder.map(()=>null)); setChecked(false); setDecoyWarn(false); setDragging(null); }}
+          whileHover={{scale:1.03}} whileTap={{scale:0.97}}
+          style={{padding:"10px 18px",borderRadius:"9px",background:"rgba(168,169,173,0.07)",border:"1px solid rgba(168,169,173,0.16)",color:S.muted,fontFamily:"'Cormorant Garamond', serif",fontWeight:600,fontSize:"11px",letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>
+          Reset
+        </motion.button>
         {!checked ? (
-          <motion.button onClick={check} disabled={!allFilled} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+          <motion.button onClick={handleCheck} disabled={!allFilled} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
             style={{padding:"12px 32px",borderRadius:"10px",border:"none",cursor:allFilled?"pointer":"not-allowed",background:ch.color,color:"#08080F",fontFamily:"'Cormorant Garamond', serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase",opacity:allFilled?1:0.4}}>
             Check Order
           </motion.button>
@@ -5855,4 +6980,3 @@ export default function App() {
     </>
   );
 }
-
