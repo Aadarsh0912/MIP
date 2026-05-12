@@ -953,3 +953,34 @@
 2026-05-11 01:46:44,884 INFO 127.0.0.1 - - [11/May/2026 01:46:44] "GET /api/health HTTP/1.1" 200 -
 2026-05-11 01:46:45,213 INFO 127.0.0.1 - - [11/May/2026 01:46:45] "GET /api/history HTTP/1.1" 200 -
 2026-05-11 01:46:45,217 INFO 127.0.0.1 - - [11/May/2026 01:46:45] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-13 00:10:24,129 INFO QualityAnalyser loaded.
+2026-05-13 00:10:24,212 INFO IntentClassifier loaded.
+2026-05-13 00:10:24,215 INFO Prompt Lab | primary=llama-3.3-70b-versatile | port=5000 | key=set
+2026-05-13 00:10:24,263 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.5:5000
+2026-05-13 00:10:24,264 INFO [33mPress CTRL+C to quit[0m
+2026-05-13 00:10:37,227 INFO 127.0.0.1 - - [13/May/2026 00:10:37] "GET /api/health HTTP/1.1" 200 -
+2026-05-13 00:10:37,497 INFO 127.0.0.1 - - [13/May/2026 00:10:37] "GET /api/health HTTP/1.1" 200 -
+2026-05-13 00:10:37,542 INFO 127.0.0.1 - - [13/May/2026 00:10:37] "GET /api/history HTTP/1.1" 200 -
+2026-05-13 00:10:37,545 INFO 127.0.0.1 - - [13/May/2026 00:10:37] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-13 00:10:44,202 INFO 127.0.0.1 - - [13/May/2026 00:10:44] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-13 00:10:45,423 INFO Response from: llama-3.3-70b-versatile
+2026-05-13 00:10:45,616 INFO Response from: llama-3.3-70b-versatile
+2026-05-13 00:10:45,618 INFO 127.0.0.1 - - [13/May/2026 00:10:45] "POST /api/generate HTTP/1.1" 200 -
+2026-05-13 00:10:45,627 INFO 127.0.0.1 - - [13/May/2026 00:10:45] "GET /api/history HTTP/1.1" 200 -
+2026-05-13 00:11:06,769 INFO 127.0.0.1 - - [13/May/2026 00:11:06] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-13 00:11:07,474 INFO Response from: llama-3.3-70b-versatile
+2026-05-13 00:11:07,475 INFO 127.0.0.1 - - [13/May/2026 00:11:07] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-13 00:11:08,592 INFO Response from: llama-3.3-70b-versatile
+2026-05-13 00:11:08,593 INFO 127.0.0.1 - - [13/May/2026 00:11:08] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-13 00:11:10,712 INFO Response from: llama-3.3-70b-versatile
+2026-05-13 00:11:10,713 INFO 127.0.0.1 - - [13/May/2026 00:11:10] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-13 00:11:12,188 INFO Response from: llama-3.3-70b-versatile
+2026-05-13 00:11:12,189 INFO 127.0.0.1 - - [13/May/2026 00:11:12] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-13 00:11:14,568 INFO 127.0.0.1 - - [13/May/2026 00:11:14] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-13 00:11:15,489 INFO 127.0.0.1 - - [13/May/2026 00:11:15] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-13 00:11:15,529 INFO Response from: llama-3.3-70b-versatile
+2026-05-13 00:11:15,531 INFO 127.0.0.1 - - [13/May/2026 00:11:15] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-13 00:11:16,354 INFO Response from: llama-3.3-70b-versatile

@@ -1210,7 +1210,7 @@ const Navbar = ({ onBack, showBack, onNav, activeView }) => (
       </motion.button>
     ) : (
       <div style={{ display:"flex", gap:"6px" }}>
-        {[["Prompt Lab","lab"],["Challenges","challenges"],["Dashboard","home"]].map(([label,dest]) => (
+        {[["Prompt Lab","lab"],["Challenges","challenges"],["Dashboard","dashboard"]].map(([label,dest]) => (
           <motion.button key={label}
             onClick={() => onNav?.(dest)}
             whileHover={{ scale:1.03, background:"rgba(168,169,173,0.1)" }} whileTap={{ scale:0.96 }}
@@ -3710,7 +3710,7 @@ const CHALLENGES = [
 const difficultyColor = { Starter:"#A8A9AD", Medium:"#8B9ED4", Hard:"#C47FA0", Expert:"#EF9F27" };
 
 // ─── Constraint Auction Challenge Component ───────────────────────────────────
-const ConstraintAuctionChallenge = () => {
+const ConstraintAuctionChallenge = ({ onComplete }) => {
   // silver palette — no gold
   const silver     = "#A8A9AD";
   const silverDim  = "rgba(168,169,173,0.55)";
@@ -3831,6 +3831,7 @@ const ConstraintAuctionChallenge = () => {
     // Called after rank-result when user clicks "See Full Breakdown"
     if (rankFeedback === "correct") {
       setScore(100);
+      if (onComplete) onComplete(); // perfect score — update daily streak
     } else {
       // Wrong ranking — partial score based on position matches
       let pos = 0;
@@ -4208,10 +4209,11 @@ const ConstraintAuctionChallenge = () => {
   );
 };
 
-const ChallengesPage = ({ onBack }) => {
+const ChallengesPage = ({ onBack, onChallengeComplete, completedChallengeIds: externalCompletedIds, onChallengePass }) => {
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [phase, setPhase] = useState("map"); // map | challenge | result
-  const [completedIds, setCompletedIds] = useState([]);
+  // Use external completed IDs lifted to App so dashboard can read them
+  const completedIds = externalCompletedIds || [];
   const [xpTotal, setXpTotal] = useState(0);
   const [result, setResult] = useState(null);
 
@@ -4221,7 +4223,10 @@ const ChallengesPage = ({ onBack }) => {
 
   const completeChallenge = (ch, score, timeTaken) => {
     const passed = score >= PASS_THRESHOLD;
-    if (passed && !completedIds.includes(ch.id)) { setCompletedIds(p=>[...p,ch.id]); setXpTotal(p=>p+ch.xp); }
+    if (passed && !completedIds.includes(ch.id)) {
+      if (onChallengePass) onChallengePass(ch.id); // lift to App → updates dashboard
+      setXpTotal(p => p + ch.xp);
+    }
     setResult({ch, score, timeTaken: timeTaken || 0, passed}); setPhase("result");
   };
 
@@ -4255,7 +4260,7 @@ const ChallengesPage = ({ onBack }) => {
             </motion.div>
 
             {/* ── Challenge for the Day ── */}
-            <ConstraintAuctionChallenge />
+            <ConstraintAuctionChallenge onComplete={onChallengeComplete} />
 
             {/* Trails */}
             {trails.map((trail,ti)=>{
@@ -6997,7 +7002,737 @@ function IntroAnimation({ onComplete }) {
   );
 }
 
-// ─── App ──────────────────────────────────────────────────────────────────────
+
+// ─── Observatory Dashboard Components ─────────────────────────────────────────
+const DASH_S = {
+  bg: "#08080F",
+  card: "#0F0F1A",
+  cardBorder: "rgba(168,169,173,0.12)",
+  silver: "#A8A9AD",
+  silverLt: "#C8C9CC",
+  muted: "rgba(255,255,255,0.32)",
+  mutedMd: "rgba(255,255,255,0.58)",
+  white: "#FFFFFF",
+};
+
+const DASH_STAGES = [
+  { id: 1, icon: "◈", color: "#A8A9AD", glow: "rgba(168,169,173,0.6)", name: "Prompt Basics", constellation: "Prima" },
+  { id: 2, icon: "◇", color: "#8B9ED4", glow: "rgba(139,158,212,0.6)", name: "Role Prompting", constellation: "Persona" },
+  { id: 3, icon: "◆", color: "#C47FA0", glow: "rgba(196,127,160,0.6)", name: "Few-Shot", constellation: "Exemplar" },
+  { id: 4, icon: "◉", color: "#7DBFA8", glow: "rgba(125,191,168,0.6)", name: "Chain of Thought", constellation: "Nexus" },
+  { id: 5, icon: "◐", color: "#D4A84B", glow: "rgba(212,168,75,0.6)", name: "Self-Consistency", constellation: "Chorus" },
+  { id: 6, icon: "◑", color: "#9B8EC4", glow: "rgba(155,142,196,0.6)", name: "Tree of Thoughts", constellation: "Arbor" },
+  { id: 7, icon: "◎", color: "#6EC6D4", glow: "rgba(110,198,212,0.6)", name: "ReAct", constellation: "Praxis" },
+  { id: 8, icon: "○", color: "#C49A7D", glow: "rgba(196,154,125,0.6)", name: "Meta-Prompting", constellation: "Mirror" },
+  { id: 9, icon: "●", color: "#A8C47D", glow: "rgba(168,196,125,0.6)", name: "Prompt Chaining", constellation: "Helix" },
+  { id: 10, icon: "✦", color: "#D4C4A8", glow: "rgba(212,196,168,0.8)", name: "Mastery", constellation: "Apex" },
+  { id: 11, icon: "✧", color: "#E8D5B0", glow: "rgba(232,213,176,0.8)", name: "Advanced Mastery", constellation: "Zenith" },
+];
+
+const DASH_STAR_POSITIONS = [
+  { cx: 52, cy: 68 }, { cx: 112, cy: 38 }, { cx: 178, cy: 82 }, { cx: 244, cy: 28 },
+  { cx: 308, cy: 72 }, { cx: 372, cy: 32 }, { cx: 432, cy: 78 }, { cx: 492, cy: 24 },
+  { cx: 544, cy: 70 }, { cx: 596, cy: 34 }, { cx: 648, cy: 76 },
+];
+
+const DASH_AMBIENT_STARS = Array.from({ length: 60 }, (_, i) => ({
+  id: i,
+  cx: 20 + Math.floor(((i * 97 + 13) % 580)),
+  cy: 10 + Math.floor(((i * 61 + 29) % 100)),
+  r: i % 5 === 0 ? 1.2 : i % 3 === 0 ? 0.8 : 0.5,
+  delay: (i * 0.37) % 4,
+  dur: 2.1 + (i % 7) * 0.4,
+}));
+
+const DASH_WEEK_DAYS = ["M", "T", "W", "T", "F", "S", "S"];
+const DASH_STREAK_ACTIVE = [true, true, true, true, true, true, false];
+
+function DashConstellationMap({ completed, active }) {
+  const prevCompletedRef  = useRef([]);
+  // animLines: Set of line indices currently playing the draw animation
+  const [animLines, setAnimLines] = useState(new Set());
+  // burstLines: line indices playing the arrival burst (fires 900ms into the draw)
+  const [burstLines, setBurstLines] = useState(new Set());
+  // animKey: bumped per line so SVG SMIL restarts reliably
+  const animKeyRef = useRef({});
+
+  useEffect(() => {
+    const prev = prevCompletedRef.current;
+    const newlyDone = completed.filter(id => !prev.includes(id));
+    prevCompletedRef.current = completed;
+    if (!newlyDone.length) return;
+
+    // line index = completed stage id - 1  (line goes FROM star[id-1] TO star[id])
+    const newIdx = newlyDone
+      .map(id => id - 1)
+      .filter(i => i >= 0 && i < DASH_STAR_POSITIONS.length - 1);
+    if (!newIdx.length) return;
+
+    // Bump anim keys so SVG restarts
+    newIdx.forEach(i => { animKeyRef.current[i] = (animKeyRef.current[i] || 0) + 1; });
+
+    setAnimLines(prev => new Set([...prev, ...newIdx]));
+
+    // Burst flash 900 ms in
+    const burstTimer = setTimeout(() => {
+      setBurstLines(prev => new Set([...prev, ...newIdx]));
+    }, 900);
+
+    // Clean up after full animation (1400 ms)
+    const doneTimer = setTimeout(() => {
+      setAnimLines(prev => { const s = new Set(prev); newIdx.forEach(i => s.delete(i)); return s; });
+      setBurstLines(prev => { const s = new Set(prev); newIdx.forEach(i => s.delete(i)); return s; });
+    }, 1400);
+
+    return () => { clearTimeout(burstTimer); clearTimeout(doneTimer); };
+  }, [completed]);
+
+  const lineLen = (i) => {
+    const a = DASH_STAR_POSITIONS[i], b = DASH_STAR_POSITIONS[i + 1];
+    return Math.sqrt((b.cx - a.cx) ** 2 + (b.cy - a.cy) ** 2);
+  };
+
+  // Build the @keyframes CSS for every currently animating line and inject into <head>
+  useEffect(() => {
+    const id = "constellation-keyframes";
+    let el = document.getElementById(id);
+    if (!el) { el = document.createElement("style"); el.id = id; document.head.appendChild(el); }
+    el.textContent = [...animLines].map(i => {
+      const len = lineLen(i);
+      return `
+        @keyframes cDraw${i} {
+          0%   { stroke-dashoffset: ${len.toFixed(2)}; opacity: 0.9; }
+          100% { stroke-dashoffset: 0;                 opacity: 0.6; }
+        }
+        @keyframes cParticle${i} {
+          0%   { opacity: 0; }
+          10%  { opacity: 1; }
+          85%  { opacity: 1; }
+          100% { opacity: 0; }
+        }
+      `;
+    }).join("\n");
+    // cleanup when nothing is animating
+    if (!animLines.size) el.textContent = "";
+  }, [animLines]);
+
+  return (
+    <svg width="100%" viewBox="0 0 700 140" style={{ display:"block", overflow:"visible" }}>
+      <defs>
+        <filter id="cGlow" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="2.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="cBurst" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="4" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      {/* Ambient twinkling stars */}
+      {DASH_AMBIENT_STARS.map((s) => (
+        <circle key={s.id} cx={s.cx} cy={s.cy} r={s.r} fill="rgba(168,169,173,0.25)">
+          <animate attributeName="opacity" values="0.25;0.7;0.25"
+            dur={`${s.dur}s`} begin={`${s.delay}s`} repeatCount="indefinite" />
+        </circle>
+      ))}
+
+      {/* ── Lines ── */}
+      {DASH_STAR_POSITIONS.map((pos, i) => {
+        if (i >= DASH_STAR_POSITIONS.length - 1) return null;
+        const next      = DASH_STAR_POSITIONS[i + 1];
+        const isLit     = completed.includes(i + 1) && completed.includes(i + 2);
+        const isAnim    = animLines.has(i);
+        const isBurst   = burstLines.has(i);
+        const len       = lineLen(i);
+        const color     = DASH_STAGES[i + 1]?.color || "#A8A9AD";
+        const animKey   = animKeyRef.current[i] || 0;
+
+        return (
+          <g key={`line-${i}`}>
+            {/* Always-present dim ghost line */}
+            <line x1={pos.cx} y1={pos.cy} x2={next.cx} y2={next.cy}
+              stroke="rgba(168,169,173,0.10)" strokeWidth="0.5" />
+
+            {/* Fully lit static line (shown once animation is done) */}
+            {isLit && !isAnim && (
+              <line x1={pos.cx} y1={pos.cy} x2={next.cx} y2={next.cy}
+                stroke={color} strokeWidth="1.1" opacity="0.55" />
+            )}
+
+            {/* Animated draw line */}
+            {isAnim && (
+              <line
+                key={`anim-line-${i}-${animKey}`}
+                x1={pos.cx} y1={pos.cy} x2={next.cx} y2={next.cy}
+                stroke={color} strokeWidth="1.4"
+                strokeDasharray={len}
+                style={{
+                  animation: `cDraw${i} 1.1s cubic-bezier(0.25,0.46,0.45,0.94) forwards`,
+                }}
+              />
+            )}
+
+            {/* Travelling glow particle */}
+            {isAnim && (
+              <g key={`particle-${i}-${animKey}`}>
+                {/* Soft halo */}
+                <circle r="7" fill={color} opacity="0.18" filter="url(#cGlow)"
+                  style={{ animation: `cParticle${i} 1.1s linear forwards` }}>
+                  <animateMotion dur="1.1s" fill="freeze"
+                    path={`M ${pos.cx} ${pos.cy} L ${next.cx} ${next.cy}`} />
+                </circle>
+                {/* Bright core */}
+                <circle r="2.8" fill={color} opacity="0.95" filter="url(#cGlow)"
+                  style={{ animation: `cParticle${i} 1.1s linear forwards` }}>
+                  <animateMotion dur="1.1s" fill="freeze"
+                    path={`M ${pos.cx} ${pos.cy} L ${next.cx} ${next.cy}`} />
+                  <animate attributeName="r" values="1.5;3.2;2.8;1.8" dur="1.1s" fill="freeze" />
+                </circle>
+              </g>
+            )}
+
+            {/* Arrival burst ring */}
+            {isBurst && (
+              <g key={`burst-${i}-${animKey}`} filter="url(#cBurst)">
+                <circle cx={next.cx} cy={next.cy} r="4" fill="none"
+                  stroke={color} strokeWidth="1.5" opacity="0">
+                  <animate attributeName="r"       values="4;20"   dur="0.55s" fill="freeze" />
+                  <animate attributeName="opacity"  values="0.9;0"  dur="0.55s" fill="freeze" />
+                </circle>
+                <circle cx={next.cx} cy={next.cy} r="2" fill={color} opacity="0">
+                  <animate attributeName="r"       values="2;8"    dur="0.4s"  fill="freeze" />
+                  <animate attributeName="opacity"  values="0.7;0"  dur="0.4s"  fill="freeze" />
+                </circle>
+              </g>
+            )}
+          </g>
+        );
+      })}
+
+      {/* ── Stars ── */}
+      {DASH_STAR_POSITIONS.map((pos, i) => {
+        const stage       = DASH_STAGES[i];
+        const stageId     = i + 1;
+        const isCompleted = completed.includes(stageId);
+        const isActive    = active === stageId;
+        const isDimmed    = !isCompleted && !isActive;
+        const outerR      = isActive ? 13 : isCompleted ? 10 : 7;
+        const innerR      = isActive ? 5  : isCompleted ? 4  : 2.5;
+        return (
+          <g key={`star-${i}`}>
+            {isActive && (
+              <>
+                <circle cx={pos.cx} cy={pos.cy} r={20} fill="none"
+                  stroke={stage.color} strokeWidth="0.5" opacity="0.2">
+                  <animate attributeName="r"      values="16;22;16" dur="3s"   repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="0.2;0.05;0.2" dur="3s" repeatCount="indefinite" />
+                </circle>
+                <circle cx={pos.cx} cy={pos.cy} r={14}
+                  fill={`${stage.color}15`} stroke={stage.color} strokeWidth="1">
+                  <animate attributeName="r" values="12;15;12" dur="2.2s" repeatCount="indefinite" />
+                </circle>
+              </>
+            )}
+            <circle cx={pos.cx} cy={pos.cy} r={outerR}
+              fill={isCompleted ? `${stage.color}20` : isDimmed ? "rgba(168,169,173,0.04)" : `${stage.color}12`}
+              stroke={isCompleted ? stage.color : isDimmed ? "rgba(168,169,173,0.18)" : `${stage.color}80`}
+              strokeWidth={isCompleted ? 1 : 0.5} opacity={isDimmed ? 0.45 : 1} />
+            <circle cx={pos.cx} cy={pos.cy} r={innerR}
+              fill={isCompleted ? stage.color : isDimmed ? "rgba(168,169,173,0.12)" : `${stage.color}60`}
+              opacity={isDimmed ? 0.3 : 1} />
+            <text x={pos.cx} y={pos.cy + outerR + 13} textAnchor="middle"
+              fill={isCompleted ? stage.color : isDimmed ? "rgba(168,169,173,0.22)" : `${stage.color}aa`}
+              fontSize="9" fontFamily="'Cormorant Garamond', serif" fontStyle="italic"
+              opacity={isDimmed ? 0.5 : 1}>
+              {stage.constellation}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function DashXPArcMeter({ percent }) {
+  const r = 54, cx = 70, cy = 70;
+  const circumference = Math.PI * r;
+  const dashOffset = circumference * (1 - percent / 100);
+  return (
+    <svg width="140" height="88" viewBox="0 0 140 88" style={{ overflow: "visible" }}>
+      <defs>
+        <linearGradient id="dashArcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#A8A9AD" /><stop offset="100%" stopColor="#C8C9CC" />
+        </linearGradient>
+      </defs>
+      {[40, 52, 64].map((rad, i) => (
+        <path key={i} d={`M ${cx - rad} ${cy} A ${rad} ${rad} 0 0 1 ${cx + rad} ${cy}`} fill="none" stroke="rgba(168,169,173,0.05)" strokeWidth="0.5" />
+      ))}
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="rgba(168,169,173,0.08)" strokeWidth="8" strokeLinecap="round" />
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="url(#dashArcGrad)" strokeWidth="8" strokeLinecap="round"
+        strokeDasharray={circumference} strokeDashoffset={dashOffset} style={{ transition: "stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)" }} />
+      <circle cx={cx - r + 6} cy={cy} r="4" fill="rgba(168,169,173,0.3)" stroke="#A8A9AD" strokeWidth="0.5" />
+      {(() => {
+        const angle = Math.PI * (1 - percent / 100);
+        const tipX = cx + r * Math.cos(Math.PI - angle);
+        const tipY = cy - r * Math.sin(Math.PI - angle);
+        return <circle cx={tipX} cy={tipY} r="5" fill="rgba(200,201,204,0.25)" stroke="#C8C9CC" strokeWidth="1">
+          <animate attributeName="opacity" values="1;0.4;1" dur="2.5s" repeatCount="indefinite" />
+        </circle>;
+      })()}
+      <text x={cx} y={cy - 6} textAnchor="middle" fill="#C8C9CC" fontSize="20" fontWeight="700" fontFamily="'Playfair Display', serif">{percent}%</text>
+      <text x={cx} y={cy + 10} textAnchor="middle" fill="rgba(168,169,173,0.5)" fontSize="9" fontFamily="'Cormorant Garamond', serif">luminance</text>
+    </svg>
+  );
+}
+
+function DashStreakCalendar({ streak, streakDays }) {
+  const today = new Date().getDay(); // 0=Sun,1=Mon...6=Sat
+  const todayIdx = today === 0 ? 6 : today - 1; // map to M=0...S=6
+  return (
+    <div style={{ display: "flex", gap: "6px", alignItems: "flex-end" }}>
+      {DASH_WEEK_DAYS.map((day, i) => {
+        const active = streakDays ? streakDays[i] : false;
+        const isToday = i === todayIdx;
+        return (
+          <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+            <div style={{
+              width: "28px",
+              height: active ? `${18 + i * 3}px` : "14px",
+              background: active
+                ? isToday ? "rgba(125,191,168,0.55)" : `rgba(168,169,173,${0.25 + i * 0.09})`
+                : "rgba(168,169,173,0.07)",
+              borderRadius: "2px",
+              border: isToday ? (active ? "0.5px solid #7DBFA8" : "0.5px solid rgba(168,169,173,0.35)") : "none",
+              transition: "height 0.6s ease, background 0.4s ease",
+            }} />
+            <span style={{
+              fontSize: "9px",
+              color: isToday ? (active ? "#7DBFA8" : "rgba(168,169,173,0.55)") : active ? "rgba(168,169,173,0.7)" : "rgba(168,169,173,0.25)",
+              fontFamily: "'Cormorant Garamond', serif",
+              fontWeight: isToday ? 600 : 400,
+            }}>{day}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DashStageRow({ stage, isCompleted, isActive, stageStars }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "8px",
+      background: isActive ? `${stage.color}0D` : isCompleted ? "rgba(255,255,255,0.03)" : "transparent",
+      border: isActive ? `0.5px solid ${stage.color}50` : isCompleted ? "0.5px solid rgba(168,169,173,0.1)" : "0.5px solid transparent",
+      opacity: !isCompleted && !isActive ? 0.38 : 1, transition: "all 0.3s ease",
+    }}>
+      <span style={{ fontSize: "15px", color: stage.color, flexShrink: 0, width: "20px", textAlign: "center" }}>{stage.icon}</span>
+      <span style={{ flex: 1, fontSize: "13px", fontFamily: "'Cormorant Garamond', serif",
+        color: isActive ? "#C8C9CC" : isCompleted ? "rgba(255,255,255,0.75)" : "rgba(168,169,173,0.45)",
+        fontStyle: isActive ? "italic" : "normal", letterSpacing: "0.02em" }}>
+        {stage.name}
+      </span>
+      {isCompleted && (
+        <div style={{ display: "flex", gap: "2px" }}>
+          {[1, 2, 3].map((s) => <span key={s} style={{ fontSize: "9px", color: s <= stageStars ? stage.color : "rgba(168,169,173,0.15)" }}>★</span>)}
+        </div>
+      )}
+      {isActive && <span style={{ fontSize: "9px", color: stage.color, fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", letterSpacing: "0.06em" }}>charting</span>}
+      {!isCompleted && !isActive && <span style={{ fontSize: "9px", color: "rgba(168,169,173,0.2)", fontFamily: "'Cormorant Garamond', serif", letterSpacing: "0.06em" }}>sealed</span>}
+    </div>
+  );
+}
+
+function DashTwinklingStarfield() {
+  return (
+    <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+      {Array.from({ length: 80 }, (_, i) => ({
+        cx: (i * 137 + 23) % 790, cy: (i * 89 + 41) % 590,
+        r: i % 7 === 0 ? 1.3 : i % 4 === 0 ? 0.9 : 0.5,
+        delay: (i * 0.29) % 5, dur: 2.5 + (i % 9) * 0.35,
+      })).map((s, i) => (
+        <circle key={i} cx={s.cx} cy={s.cy} r={s.r} fill={`rgba(168,169,173,${0.1 + (i % 5) * 0.06})`}>
+          <animate attributeName="opacity" values={`${0.1 + (i % 5) * 0.05};${0.4 + (i % 3) * 0.1};${0.1 + (i % 5) * 0.05}`} dur={`${s.dur}s`} begin={`${s.delay}s`} repeatCount="indefinite" />
+        </circle>
+      ))}
+    </svg>
+  );
+}
+
+function ChallengesCompletedCard({ done, total }) {
+  const [displayCount, setDisplayCount] = useState(0);
+  const [mounted, setMounted]           = useState(false);
+  const prevDone = useRef(done);
+
+  // Animate counter whenever `done` changes
+  useEffect(() => {
+    setMounted(true);
+    const start = prevDone.current;
+    const end   = done;
+    prevDone.current = done;
+    if (start === end) return;
+
+    const duration = 900; // ms
+    const startTime = performance.now();
+    const step = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayCount(Math.round(start + (end - start) * eased));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [done]);
+
+  // On mount, animate from 0
+  useEffect(() => {
+    if (done === 0) { setDisplayCount(0); return; }
+    const duration = 1100;
+    const startTime = performance.now();
+    const step = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayCount(Math.round(done * eased));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    const raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const pct       = total > 0 ? done / total : 0;
+  const radius    = 44;
+  const cx        = 60;
+  const cy        = 60;
+  const circum    = 2 * Math.PI * radius;
+  const dashOffset = circum * (1 - pct);
+
+  // Segment dots around the ring — one per 8 challenges
+  const segments = total;
+  const dots = Array.from({ length: segments }, (_, i) => {
+    const angle = (i / segments) * 2 * Math.PI - Math.PI / 2;
+    const isLit = i < done;
+    const dotR  = 58;
+    return {
+      x: cx + dotR * Math.cos(angle),
+      y: cy + dotR * Math.sin(angle),
+      lit: isLit,
+      color: isLit ? `hsl(${180 + i * 3}, 35%, 68%)` : "rgba(168,169,173,0.12)",
+    };
+  });
+
+  // Color shifts from silver → warm gold as completion grows
+  const ringColor = pct < 0.33
+    ? "#A8A9AD"
+    : pct < 0.66
+    ? "#C4B07A"
+    : "#D4C4A8";
+
+  return (
+    <div className="obs-card" style={{
+      background: "rgba(15,15,26,1)",
+      border: "0.5px solid rgba(168,169,173,0.12)",
+      borderRadius: "14px",
+      padding: "20px",
+      animationDelay: "320ms",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      {/* Subtle radial glow behind ring */}
+      <div style={{
+        position: "absolute", top: "30%", left: "50%", transform: "translate(-50%,-50%)",
+        width: "120px", height: "120px",
+        background: `radial-gradient(circle, ${ringColor}12 0%, transparent 70%)`,
+        pointerEvents: "none",
+        transition: "background 1s ease",
+      }} />
+
+      <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: "rgba(168,169,173,0.5)", marginBottom: "14px", alignSelf: "flex-start" }}>
+        CHALLENGES COMPLETED
+      </div>
+
+      {/* Ring */}
+      <svg width="120" height="120" viewBox="0 0 120 120" style={{ overflow: "visible", flexShrink: 0 }}>
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={ringColor} stopOpacity="0.4" />
+            <stop offset="100%" stopColor={ringColor} stopOpacity="1" />
+          </linearGradient>
+          <filter id="ringGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        {/* Track */}
+        <circle cx={cx} cy={cy} r={radius}
+          fill="none" stroke="rgba(168,169,173,0.07)" strokeWidth="5" />
+
+        {/* Progress arc */}
+        <circle cx={cx} cy={cy} r={radius}
+          fill="none"
+          stroke="url(#ringGrad)"
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeDasharray={circum}
+          strokeDashoffset={dashOffset}
+          transform={`rotate(-90 ${cx} ${cy})`}
+          filter="url(#ringGlow)"
+          style={{ transition: "stroke-dashoffset 1.1s cubic-bezier(0.4,0,0.2,1), stroke 0.8s ease" }}
+        />
+
+        {/* Segment tick marks */}
+        {dots.map((d, i) => (
+          <circle key={i} cx={d.x} cy={d.y} r={i < done ? 1.8 : 1.2}
+            fill={d.color}
+            style={{ transition: "fill 0.4s ease, r 0.3s ease" }}
+          >
+            {d.lit && (
+              <animate attributeName="opacity" values="0.6;1;0.6"
+                dur={`${2 + (i % 5) * 0.3}s`} begin={`${(i * 0.1) % 1.5}s`} repeatCount="indefinite" />
+            )}
+          </circle>
+        ))}
+
+        {/* Centre: animated count */}
+        <text x={cx} y={cy - 8} textAnchor="middle"
+          fill="#FFFFFF" fontSize="26" fontWeight="700"
+          fontFamily="'Playfair Display', serif"
+          style={{ transition: "fill 0.5s" }}>
+          {displayCount}
+        </text>
+        <text x={cx} y={cy + 10} textAnchor="middle"
+          fill="rgba(168,169,173,0.45)" fontSize="10"
+          fontFamily="'Cormorant Garamond', serif">
+          of {total}
+        </text>
+
+        {/* Tip dot at arc head */}
+        {done > 0 && (() => {
+          const angle = pct * 2 * Math.PI - Math.PI / 2;
+          const tx = cx + radius * Math.cos(angle);
+          const ty = cy + radius * Math.sin(angle);
+          return (
+            <circle cx={tx} cy={ty} r="4" fill={ringColor} filter="url(#ringGlow)">
+              <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/>
+            </circle>
+          );
+        })()}
+      </svg>
+
+      {/* Bottom: segmented fill bar */}
+      <div style={{ width: "100%", marginTop: "16px" }}>
+        <div style={{ display: "flex", gap: "3px" }}>
+          {Array.from({ length: Math.min(total, 16) }, (_, i) => {
+            // Each segment represents total/16 challenges
+            const threshold = Math.round((i + 1) * total / 16);
+            const lit = done >= Math.round(i * total / 16) + 1;
+            return (
+              <div key={i} style={{
+                flex: 1, height: "3px", borderRadius: "2px",
+                background: lit ? ringColor : "rgba(168,169,173,0.08)",
+                opacity: lit ? (0.4 + (i / 16) * 0.6) : 1,
+                transition: `background 0.3s ease ${i * 0.03}s`,
+              }} />
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "6px" }}>
+          <span style={{ fontSize: "9px", color: "rgba(168,169,173,0.3)", fontFamily: "'Cormorant Garamond', serif" }}>0</span>
+          <span style={{ fontSize: "9px", color: pct >= 0.5 ? ringColor : "rgba(168,169,173,0.3)", fontFamily: "'Cormorant Garamond', serif", transition: "color 0.5s" }}>
+            {Math.round(pct * 100)}% complete
+          </span>
+          <span style={{ fontSize: "9px", color: "rgba(168,169,173,0.3)", fontFamily: "'Cormorant Garamond', serif" }}>{total}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, completedChallengeIds, onOpenStage }) {
+  const completedIds = completed || [];
+  const starsMap = stageStarsMap || {};
+  const activeStage = completedIds.length < 11 ? completedIds.length + 1 : 11;
+  const xpCurrent = completedIds.length * 780 + Object.values(starsMap).reduce((a, b) => a + b * 60, 0);
+  const xpMax = 11 * 780 + 33 * 60;
+  const xpPercent = Math.round((xpCurrent / xpMax) * 100) || 0;
+  const currentStreak = streak || 0;
+  const level = completedIds.length < 3 ? "I" : completedIds.length < 5 ? "II" : completedIds.length < 7 ? "III" : completedIds.length < 9 ? "IV" : "V";
+  const levelTitle = completedIds.length < 3 ? "Novice Stargazer" : completedIds.length < 6 ? "Axiom Acolyte" : completedIds.length < 9 ? "Stellar Sage" : "Oracle of the Apex";
+  const nextTitle = completedIds.length < 10 ? "Sage" : "Apex";
+
+  const [hoveredStage, setHoveredStage] = useState(null);
+  const DS = DASH_S;
+  const cardBorder = DS.cardBorder;
+
+  return (
+    <div style={{ position: "relative", overflow: "hidden", minHeight: "100vh" }}>
+      <style>{`
+        @keyframes obs-fadein { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes obs-shimmer { 0%,100% { opacity:0.4; } 50% { opacity:1; } }
+        @keyframes obs-float { 0%,100% { transform:translateY(0px); } 50% { transform:translateY(-5px); } }
+        .obs-card { animation: obs-fadein 0.7s cubic-bezier(0.4,0,0.2,1) both; }
+        .obs-shimmer-line { animation: obs-shimmer 3s ease-in-out infinite; }
+        .obs-float { animation: obs-float 5s ease-in-out infinite; }
+        .obs-stage-row:hover { background: rgba(255,255,255,0.04) !important; cursor: pointer; }
+      `}</style>
+
+      <DashTwinklingStarfield />
+
+      <div style={{ position: "relative", zIndex: 1, maxWidth: "1100px", margin: "0 auto", padding: "96px 24px 32px" }}>
+
+        {/* Header */}
+        <div className="obs-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", animationDelay: "0ms" }}>
+          <div>
+            <div style={{ fontSize: "10px", letterSpacing: "0.22em", color: DS.muted, marginBottom: "4px", fontFamily: "'Playfair Display', serif" }}>THE OBSERVATORY</div>
+            <div style={{ fontSize: "28px", fontWeight: "700", fontFamily: "'Playfair Display', serif", lineHeight: 1.1, color: DS.white }}>Welcome back,</div>
+            <div style={{ fontSize: "28px", fontWeight: "400", fontFamily: "'Playfair Display', serif", lineHeight: 1.1, color: DS.silver, fontStyle: "italic" }}>Pathfinder</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "6px" }}>CURRENT RANK</div>
+            <div style={{ fontSize: "16px", fontFamily: "'Playfair Display', serif", color: DS.silverLt, letterSpacing: "0.04em" }}>{levelTitle}</div>
+            <div style={{ fontSize: "11px", color: DS.muted, fontStyle: "italic", marginTop: "2px" }}>Level {level}</div>
+          </div>
+        </div>
+
+        {/* Constellation Map */}
+        <div className="obs-card" style={{ background: DS.card, border: `0.5px solid ${cardBorder}`, borderRadius: "14px", padding: "24px 20px 16px", marginBottom: "20px", animationDelay: "80ms" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div>
+              <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "3px" }}>CONSTELLATION PROGRESS</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", fontFamily: "'Playfair Display', serif", color: DS.white }}>Orion's Method</div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ fontSize: "10px", color: DS.muted, letterSpacing: "0.1em" }}>STARS CHARTED</div>
+              <div style={{ fontSize: "22px", fontWeight: "700", fontFamily: "'Playfair Display', serif", color: DS.silverLt }}>
+                {completedIds.length}<span style={{ fontSize: "14px", color: DS.muted, fontWeight: "400" }}>/11</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ position: "relative" }}>
+            <DashConstellationMap completed={completedIds} active={activeStage} />
+          </div>
+          <div className="obs-shimmer-line" style={{ height: "0.5px", background: `linear-gradient(90deg, transparent, ${DS.silver}30, transparent)`, margin: "12px 0 8px" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ fontSize: "11px", color: DS.muted, fontStyle: "italic" }}>
+              Currently charting: <span style={{ color: DASH_STAGES[activeStage - 1].color }}>{DASH_STAGES[activeStage - 1].name}</span>
+            </div>
+            <div style={{ fontSize: "11px", color: DS.muted }}>{11 - completedIds.length} stars remaining</div>
+          </div>
+        </div>
+
+        {/* Middle Row */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "20px" }}>
+
+          {/* XP Arc */}
+          <div className="obs-card" style={{ background: DS.card, border: `0.5px solid ${cardBorder}`, borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", animationDelay: "160ms" }}>
+            <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "12px", alignSelf: "flex-start" }}>LUMINANCE</div>
+            <div className="obs-float"><DashXPArcMeter percent={xpPercent} /></div>
+            <div style={{ marginTop: "8px", textAlign: "center" }}>
+              <div style={{ fontSize: "15px", fontWeight: "700", fontFamily: "'Playfair Display', serif", color: DS.silverLt }}>{xpCurrent.toLocaleString()}</div>
+              <div style={{ fontSize: "11px", color: DS.muted, fontStyle: "italic" }}>{(xpMax - xpCurrent).toLocaleString()} to {nextTitle}</div>
+            </div>
+            <div style={{ width: "100%", height: "3px", background: "rgba(168,169,173,0.08)", borderRadius: "2px", marginTop: "12px", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${xpPercent}%`, background: DS.silver, borderRadius: "2px", transition: "width 1s ease" }} />
+            </div>
+          </div>
+
+          {/* Daily Challenges Streak */}
+          <div className="obs-card" style={{ background: DS.card, border: `0.5px solid ${cardBorder}`, borderRadius: "14px", padding: "20px", animationDelay: "240ms" }}>
+            <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "14px" }}>DAILY CHALLENGES</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "18px" }}>
+              <div style={{ fontSize: "42px", fontWeight: "700", fontFamily: "'Playfair Display', serif", lineHeight: 1, color: currentStreak > 0 ? DS.white : "rgba(168,169,173,0.3)" }}>{currentStreak}</div>
+              <div>
+                <div style={{ fontSize: "13px", color: DS.silver }}>day streak</div>
+                <div style={{ fontSize: "11px", color: currentStreak > 0 ? "#7DBFA8" : DS.muted, fontStyle: "italic" }}>
+                  {currentStreak > 0 ? "challenges completed" : "no streak yet"}
+                </div>
+              </div>
+            </div>
+            <DashStreakCalendar streak={currentStreak} streakDays={streakDays || Array(7).fill(false)} />
+            <div style={{ marginTop: "14px", padding: "8px 12px", background: "rgba(168,169,173,0.06)", borderRadius: "6px", border: "0.5px solid rgba(168,169,173,0.1)" }}>
+              <div style={{ fontSize: "11px", color: DS.mutedMd, fontStyle: "italic" }}>
+                {streakDays && streakDays[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1]
+                  ? "✦ Challenge completed today — well done"
+                  : "Complete today's challenge to extend your streak"}
+              </div>
+            </div>
+          </div>
+
+          {/* Challenges Completed Card */}
+          <ChallengesCompletedCard done={(completedChallengeIds || []).length} total={48} />
+        </div>
+
+        {/* Bottom Row */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: "16px" }}>
+          {/* Stage List */}
+          <div className="obs-card" style={{ background: DS.card, border: `0.5px solid ${cardBorder}`, borderRadius: "14px", padding: "20px", animationDelay: "400ms" }}>
+            <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "14px" }}>JOURNEY</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+              {DASH_STAGES.map((stage) => (
+                <div key={stage.id} className="obs-stage-row" onMouseEnter={() => setHoveredStage(stage.id)} onMouseLeave={() => setHoveredStage(null)} style={{ borderRadius: "8px", transition: "all 0.2s ease" }}>
+                  <DashStageRow stage={stage} isCompleted={completedIds.includes(stage.id)} isActive={activeStage === stage.id} stageStars={starsMap[stage.id] || 0} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Active Stage + Next Up */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div className="obs-card" style={{ background: `${DASH_STAGES[activeStage - 1].color}0A`, border: `0.5px solid ${DASH_STAGES[activeStage - 1].color}40`, borderRadius: "14px", padding: "20px", animationDelay: "480ms", flex: 1 }}>
+              <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "12px" }}>ACTIVE STAR</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: `${DASH_STAGES[activeStage - 1].color}18`, border: `1px solid ${DASH_STAGES[activeStage - 1].color}60`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: DASH_STAGES[activeStage - 1].color, flexShrink: 0 }}>
+                  {DASH_STAGES[activeStage - 1].icon}
+                </div>
+                <div>
+                  <div style={{ fontSize: "16px", fontWeight: "700", fontFamily: "'Playfair Display', serif", color: DS.white, lineHeight: 1.1 }}>{DASH_STAGES[activeStage - 1].name}</div>
+                  <div style={{ fontSize: "11px", color: DASH_STAGES[activeStage - 1].color, fontStyle: "italic", marginTop: "2px" }}>{DASH_STAGES[activeStage - 1].constellation} constellation</div>
+                </div>
+              </div>
+              <div style={{ fontSize: "12px", color: DS.mutedMd, fontStyle: "italic", lineHeight: 1.6, marginBottom: "16px" }}>
+                {activeStage <= 2 ? "Learn to craft precise, structured prompts that activate exactly the knowledge region you need." : "Teach by example, not instruction. Two to five demonstrations illuminate what a thousand words cannot."}
+              </div>
+              <button
+                onClick={() => { if (onOpenStage) onOpenStage(STAGES[activeStage - 1]); }}
+                style={{ width: "100%", padding: "10px", background: `${DASH_STAGES[activeStage - 1].color}18`, border: `0.5px solid ${DASH_STAGES[activeStage - 1].color}50`, borderRadius: "8px", color: DASH_STAGES[activeStage - 1].color, fontSize: "12px", fontFamily: "'Cormorant Garamond', serif", letterSpacing: "0.1em", cursor: "pointer", transition: "all 0.2s ease" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = `${DASH_STAGES[activeStage - 1].color}28`}
+                onMouseLeave={(e) => e.currentTarget.style.background = `${DASH_STAGES[activeStage - 1].color}18`}>
+                Continue Charting →
+              </button>
+            </div>
+
+            <div className="obs-card" style={{ background: DS.card, border: `0.5px solid ${cardBorder}`, borderRadius: "14px", padding: "18px 20px", animationDelay: "560ms" }}>
+              <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "10px" }}>NEXT IN ORBIT</div>
+              {DASH_STAGES.slice(activeStage, Math.min(activeStage + 2, 11)).map((stage) => (
+                <div key={stage.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 0", borderBottom: "0.5px solid rgba(168,169,173,0.07)", opacity: 0.45 }}>
+                  <span style={{ fontSize: "13px", color: stage.color }}>{stage.icon}</span>
+                  <span style={{ fontSize: "12px", fontStyle: "italic", color: DS.mutedMd, flex: 1 }}>{stage.name}</span>
+                  <span style={{ fontSize: "9px", color: DS.muted, letterSpacing: "0.08em" }}>sealed</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="obs-card" style={{ textAlign: "center", marginTop: "24px", padding: "14px", animationDelay: "640ms" }}>
+          <div style={{ height: "0.5px", background: `linear-gradient(90deg, transparent, ${DS.silver}25, transparent)`, marginBottom: "12px" }} />
+          <div style={{ fontSize: "11px", color: DS.muted, fontStyle: "italic", letterSpacing: "0.06em" }}>
+            Every prompt is a coordinate. Every stage, a star charted.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [introComplete, setIntroComplete] = useState(false);
   const [showAppWave,   setShowAppWave]   = useState(false);
@@ -7006,15 +7741,21 @@ export default function App() {
   const [completed,    setCompleted]    = useState([]);
   const [stageStarsMap,setStageStarsMap]= useState({});
   const [quizOpen,     setQuizOpen]     = useState(false);
+  const [streak,       setStreak]       = useState(0);
+  const [streakDays,   setStreakDays]   = useState(Array(7).fill(false));
+  const [challengesDone, setChallengesDone] = useState(0);
+  const [completedChallengeIds, setCompletedChallengeIds] = useState([]);
 
   const openStage       = (stage) => { setActiveStage(stage); setView("lesson"); window.scrollTo({ top:0, behavior:"smooth" }); };
   const goBack          = () => { setView("home"); setActiveStage(null); setQuizOpen(false); setTimeout(() => window.scrollTo({ top:0, behavior:"smooth" }), 50); };
   const openLab         = () => { setView("lab"); setQuizOpen(false); window.scrollTo({ top:0, behavior:"smooth" }); };
   const openChallenges  = () => { setView("challenges"); setQuizOpen(false); window.scrollTo({ top:0, behavior:"smooth" }); };
+  const openDashboard   = () => { setView("dashboard"); setQuizOpen(false); window.scrollTo({ top:0, behavior:"smooth" }); };
   const handleNav = (dest) => {
     if (dest==="home")       goBack();
     if (dest==="lab")        openLab();
     if (dest==="challenges") openChallenges();
+    if (dest==="dashboard")  openDashboard();
   };
 
   const handleQuizPass = (stageId, stars) => {
@@ -7023,6 +7764,26 @@ export default function App() {
     const newStarsMap  = { ...stageStarsMap, [stageId]: Math.max(prevStars, stars) };
     setCompleted(newCompleted);
     setStageStarsMap(newStarsMap);
+  };
+
+  const handleChallengeComplete = () => {
+    setChallengesDone(prev => prev + 1);
+    // Mark today in the week strip (Mon=0 … Sun=6)
+    const today = new Date().getDay();
+    const todayIdx = today === 0 ? 6 : today - 1;
+    setStreakDays(prev => {
+      if (prev[todayIdx]) return prev; // already counted today
+      const next = [...prev];
+      next[todayIdx] = true;
+      return next;
+    });
+    setStreak(prev => {
+      // Only increment if today hasn't been counted yet
+      const today2 = new Date().getDay();
+      const idx = today2 === 0 ? 6 : today2 - 1;
+      if (streakDays[idx]) return prev;
+      return prev + 1;
+    });
   };
 
   return (
@@ -7045,9 +7806,9 @@ export default function App() {
 
       {/* Background layers — fade in only after intro completes, preventing the flash */}
       <Orbs visible={introComplete}/>
-      <FlyingBook isBackground={view==="lesson" || view==="lab" || view==="challenges"}/>
+      <FlyingBook isBackground={view==="lesson" || view==="lab" || view==="challenges" || view==="dashboard"}/>
 
-      {/* Landing page — simple fade in after intro, slightly delayed to match wave fade */}
+      {/* Main content — simple fade in after intro, slightly delayed to match wave fade */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={introComplete ? { opacity: 1 } : { opacity: 0 }}
@@ -7079,7 +7840,12 @@ export default function App() {
           )}
           {view === "challenges" && (
             <motion.div key="challenges" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.3 }}>
-              <ChallengesPage onBack={goBack}/>
+              <ChallengesPage onBack={goBack} onChallengeComplete={handleChallengeComplete} completedChallengeIds={completedChallengeIds} onChallengePass={(id) => setCompletedChallengeIds(prev => prev.includes(id) ? prev : [...prev, id])}/>
+            </motion.div>
+          )}
+          {view === "dashboard" && (
+            <motion.div key="dashboard" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.3 }}>
+              <ObservatoryDashboard completed={completed} stageStarsMap={stageStarsMap} streak={streak} streakDays={streakDays} completedChallengeIds={completedChallengeIds} onOpenStage={openStage}/>
             </motion.div>
           )}
         </AnimatePresence>
