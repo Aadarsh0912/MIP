@@ -3711,28 +3711,37 @@ const difficultyColor = { Starter:"#A8A9AD", Medium:"#8B9ED4", Hard:"#C47FA0", E
 
 // ─── Constraint Auction Challenge Component ───────────────────────────────────
 const ConstraintAuctionChallenge = () => {
-  const data = getTodaysChallengeData();
+  // silver palette — no gold
+  const silver     = "#A8A9AD";
+  const silverDim  = "rgba(168,169,173,0.55)";
+  const silverFaint= "rgba(168,169,173,0.18)";
+  const silverBg   = "rgba(168,169,173,0.07)";
+
   const ALLOWED = 3;
-  const accentColor = "#C4A55A";
+  const todayIndex = Math.floor(Date.now() / 86400000) % CONSTRAINT_AUCTION_DAYS.length;
 
-  const [selectedIds, setSelectedIds]   = useState([]);
-  const [ranking, setRanking]           = useState([]);
-  const [phase, setPhase]               = useState("pick"); // pick | rank | rank-result | result
-  const [score, setScore]               = useState(null);
-  const [rankAttempts, setRankAttempts] = useState(0);
-  const [rankFeedback, setRankFeedback] = useState(null); // null | "wrong" | "correct"
-  const [countdown, setCountdown]       = useState("");
+  const [challengeIndex, setChallengeIndex] = useState(todayIndex);
+  const [selectedIds, setSelectedIds]       = useState([]);
+  const [ranking, setRanking]               = useState([]);
+  const [phase, setPhase]                   = useState("pick"); // pick | rank | rank-result | result
+  const [score, setScore]                   = useState(null);
+  const [rankAttempts, setRankAttempts]     = useState(0);
+  const [rankFeedback, setRankFeedback]     = useState(null);
+  const [countdown, setCountdown]           = useState("");
 
-  // Countdown to next midnight (when challenge resets)
+  const data = CONSTRAINT_AUCTION_DAYS[challengeIndex % CONSTRAINT_AUCTION_DAYS.length];
+  const isToday = challengeIndex === todayIndex;
+
+  // Countdown to next midnight
   useEffect(() => {
     const tick = () => {
       const now  = new Date();
       const next = new Date();
-      next.setHours(24, 0, 0, 0); // next midnight
+      next.setHours(24, 0, 0, 0);
       const diff = next - now;
-      const h  = String(Math.floor(diff / 3600000)).padStart(2, "0");
-      const m  = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
-      const s  = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
+      const h = String(Math.floor(diff / 3600000)).padStart(2,"0");
+      const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2,"0");
+      const s = String(Math.floor((diff % 60000) / 1000)).padStart(2,"0");
       setCountdown(`${h}:${m}:${s}`);
     };
     tick();
@@ -3747,6 +3756,12 @@ const ConstraintAuctionChallenge = () => {
     setScore(null);
     setRankAttempts(0);
     setRankFeedback(null);
+  };
+
+  const [locked, setLocked] = useState(false);
+
+  const goToNext = () => {
+    setLocked(true);
   };
 
   // ── pick phase ──
@@ -3825,7 +3840,7 @@ const ConstraintAuctionChallenge = () => {
     setPhase("result");
   };
 
-  // ── option display colour ──
+  // ── option display helpers (silver palette) ──
   const optionBorderColor = (id) => {
     if (phase === "result") {
       const isCorrect = data.correctPick.includes(id);
@@ -3833,9 +3848,9 @@ const ConstraintAuctionChallenge = () => {
       if (isCorrect && wasPicked)  return "rgba(126,200,164,0.4)";
       if (isCorrect && !wasPicked) return "rgba(126,200,164,0.2)";
       if (!isCorrect && wasPicked) return "rgba(196,127,160,0.35)";
-      return "rgba(168,169,173,0.08)";
+      return "rgba(168,169,173,0.07)";
     }
-    return selectedIds.includes(id) ? "rgba(196,165,90,0.4)" : "rgba(168,169,173,0.1)";
+    return selectedIds.includes(id) ? "rgba(168,169,173,0.5)" : "rgba(168,169,173,0.1)";
   };
 
   const optionTextColor = (id) => {
@@ -3844,250 +3859,352 @@ const ConstraintAuctionChallenge = () => {
       const wasPicked = selectedIds.includes(id);
       if (isCorrect) return "rgba(126,200,164,0.9)";
       if (wasPicked)  return "rgba(196,127,160,0.75)";
-      return "rgba(255,255,255,0.3)";
+      return "rgba(255,255,255,0.28)";
     }
-    return selectedIds.includes(id) ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.55)";
+    return selectedIds.includes(id) ? "#FFFFFF" : "rgba(255,255,255,0.52)";
   };
 
+  // ── locked next-challenge overlay (shown after 100% on today's challenge) ──
+  const showLockedNext = score === 100 && isToday && phase === "result";
+
   return (
-    <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:0.5}}
-      style={{background:"rgba(10,8,20,0.98)",border:"1px solid rgba(196,165,90,0.28)",borderRadius:"18px",padding:"28px 32px",marginBottom:"40px",position:"relative",overflow:"hidden"}}>
+    <AnimatePresence mode="wait">
+      <motion.div key={challengeIndex}
+        initial={{opacity:0,y:14}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-10}}
+        transition={{duration:0.4}}
+        style={{background:"rgba(10,8,20,0.98)",border:`1px solid ${silverFaint}`,borderRadius:"18px",padding:"28px 32px",marginBottom:"40px",position:"relative",overflow:"hidden"}}>
 
-      {/* top accent line */}
-      <div style={{position:"absolute",top:0,left:0,right:0,height:"2px",background:"linear-gradient(90deg,transparent,rgba(196,165,90,0.65),transparent)"}}/>
+        {/* top accent line — silver */}
+        <div style={{position:"absolute",top:0,left:0,right:0,height:"2px",background:`linear-gradient(90deg,transparent,${silverDim},transparent)`}}/>
 
-      {/* ── Header ── */}
-      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:"20px",flexWrap:"wrap",gap:"12px"}}>
-        <div>
-          <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"7px"}}>
-            <span style={{padding:"2px 10px",borderRadius:"20px",background:"rgba(196,165,90,0.12)",border:"1px solid rgba(196,165,90,0.3)",fontFamily:"'Cormorant Garamond',serif",fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:accentColor}}>Challenge for the Day</span>
-            <span style={{padding:"2px 10px",borderRadius:"20px",background:"rgba(168,169,173,0.06)",fontFamily:"'Cormorant Garamond',serif",fontSize:"8px",letterSpacing:"0.1em",color:difficultyColor["Medium"]}}>Medium</span>
+        {/* ── Header ── */}
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:"20px",flexWrap:"wrap",gap:"12px"}}>
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"7px"}}>
+              <span style={{padding:"2px 10px",borderRadius:"20px",background:silverBg,border:`1px solid ${silverFaint}`,fontFamily:"'Cormorant Garamond',serif",fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:silver}}>Challenge for the Day</span>
+              <span style={{padding:"2px 10px",borderRadius:"20px",background:"rgba(168,169,173,0.04)",fontFamily:"'Cormorant Garamond',serif",fontSize:"8px",letterSpacing:"0.1em",color:difficultyColor["Medium"]}}>Medium</span>
+            </div>
+            <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"22px",fontWeight:700,color:"#FFF",marginBottom:"4px",lineHeight:1.2}}>The Constraint Auction</h2>
+            <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.4)",lineHeight:1.65,maxWidth:"500px"}}>
+              Pick the 3 options with the highest combined impact on the prompt below. Then rank them — most important first.
+            </p>
           </div>
-          <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"22px",fontWeight:700,color:"#FFF",marginBottom:"4px",lineHeight:1.2}}>The Constraint Auction</h2>
-          <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.42)",lineHeight:1.65,maxWidth:"500px"}}>
-            Pick the 3 options with the highest combined impact on the prompt below. Then rank them — most important first.
-          </p>
+          <div style={{textAlign:"right",flexShrink:0}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"10px",letterSpacing:"0.12em",color:"rgba(255,255,255,0.28)",textTransform:"uppercase",marginBottom:"2px"}}>Resets daily</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:silverDim}}>+80 XP</div>
+          </div>
         </div>
-        <div style={{textAlign:"right",flexShrink:0}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"10px",letterSpacing:"0.12em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",marginBottom:"2px"}}>Resets daily</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:accentColor}}>+80 XP</div>
+
+        {/* ── Broken prompt box ── */}
+        <div style={{background:"rgba(255,80,80,0.03)",border:"1px solid rgba(255,80,80,0.12)",borderRadius:"12px",padding:"16px 20px",marginBottom:"22px"}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:"rgba(255,110,110,0.45)",marginBottom:"8px"}}>The broken prompt — only 3 words may be added</div>
+          <p style={{fontFamily:"'Courier New',monospace",fontSize:"16px",color:"rgba(255,200,200,0.78)",lineHeight:1.5,fontStyle:"italic"}}>"{data.brokenPrompt}"</p>
         </div>
-      </div>
 
-      {/* ── Broken prompt box ── */}
-      <div style={{background:"rgba(255,80,80,0.04)",border:"1px solid rgba(255,80,80,0.14)",borderRadius:"12px",padding:"16px 20px",marginBottom:"22px"}}>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:"rgba(255,110,110,0.5)",marginBottom:"8px"}}>The broken prompt — only 3 words may be added</div>
-        <p style={{fontFamily:"'Courier New',monospace",fontSize:"16px",color:"rgba(255,200,200,0.82)",lineHeight:1.5,fontStyle:"italic"}}>"{data.brokenPrompt}"</p>
-      </div>
-
-      {/* ══════════ PHASE: PICK ══════════ */}
-      {(phase === "pick" || phase === "result") && (
-        <>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:"rgba(255,255,255,0.38)",marginBottom:"12px",letterSpacing:"0.04em"}}>
-            {phase === "pick"
-              ? `Choose 3 options — ${selectedIds.length}/3 selected:`
-              : "Results — all options revealed:"}
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"18px"}}>
-            {data.options.map(opt => {
-              const picked     = selectedIds.includes(opt.id);
-              const isCorrect  = phase === "result" && data.correctPick.includes(opt.id);
-              const isRedundant = phase === "result" && data.redundantPair.includes(opt.id);
-              return (
-                <motion.div key={opt.id}
-                  onClick={() => togglePick(opt.id)}
-                  whileHover={phase === "pick" ? {scale:1.01} : {}}
-                  whileTap={phase === "pick" ? {scale:0.99} : {}}
-                  style={{display:"flex",alignItems:"flex-start",gap:"12px",padding:"13px 16px",borderRadius:"11px",
-                    cursor: phase === "pick" ? "pointer" : "default",
-                    background: picked ? "rgba(196,165,90,0.07)" : "rgba(168,169,173,0.025)",
-                    border: `1px solid ${optionBorderColor(opt.id)}`,
-                    transition:"all 0.15s"}}>
-                  {/* radio dot */}
-                  <div style={{width:"20px",height:"20px",borderRadius:"50%",flexShrink:0,marginTop:"2px",display:"flex",alignItems:"center",justifyContent:"center",
-                    border: `2px solid ${phase==="pick"?(picked?accentColor:"rgba(168,169,173,0.3)"):(isCorrect?"#7EC8A4":picked?"#C47FA0":"rgba(168,169,173,0.2)")}`,
-                    background: picked&&phase==="pick" ? "rgba(196,165,90,0.15)" : "transparent",transition:"all 0.15s"}}>
-                    {picked && phase==="pick" && <div style={{width:"7px",height:"7px",borderRadius:"50%",background:accentColor}}/>}
-                    {phase==="result" && isCorrect && <span style={{fontSize:"9px",color:"#7EC8A4",lineHeight:1}}>✓</span>}
-                    {phase==="result" && !isCorrect && picked && <span style={{fontSize:"9px",color:"#C47FA0",lineHeight:1}}>✗</span>}
-                  </div>
-                  <div style={{flex:1}}>
-                    <p style={{fontFamily:"'Courier New',monospace",fontSize:"14px",color:optionTextColor(opt.id),margin:0,lineHeight:1.45}}>{opt.text}</p>
-                    {phase === "result" && (
-                      <div style={{marginTop:"7px"}}>
-                        <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:isCorrect?"rgba(126,200,164,0.8)":"rgba(255,255,255,0.3)",lineHeight:1.55,margin:0}}>{opt.why}</p>
-                        {isRedundant && (
-                          <span style={{display:"inline-block",marginTop:"5px",padding:"1px 8px",borderRadius:"10px",background:"rgba(196,165,90,0.1)",border:"1px solid rgba(196,165,90,0.22)",fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",color:accentColor,letterSpacing:"0.1em"}}>⚠ REDUNDANT PAIR</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {/* ══════════ PHASE: RANK ══════════ */}
-      {phase === "rank" && (
-        <>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:"rgba(255,255,255,0.38)",marginBottom:"12px"}}>
-            Now rank your 3 picks — drag or use arrows, most important at top:
-            {rankAttempts > 0 && <span style={{color:"rgba(196,127,160,0.75)",marginLeft:"10px"}}>Attempt {rankAttempts + 1}</span>}
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"18px"}}>
-            {ranking.map((id, i) => {
-              const opt = data.options.find(o => o.id === id);
-              return (
-                <div key={id} style={{display:"flex",alignItems:"center",gap:"12px",padding:"13px 16px",borderRadius:"11px",background:"rgba(196,165,90,0.06)",border:"1px solid rgba(196,165,90,0.2)"}}>
-                  <div style={{width:"26px",height:"26px",borderRadius:"50%",background:"rgba(196,165,90,0.15)",border:"1px solid rgba(196,165,90,0.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"13px",fontWeight:700,color:accentColor}}>{i+1}</span>
-                  </div>
-                  <p style={{fontFamily:"'Courier New',monospace",fontSize:"14px",color:"rgba(255,255,255,0.82)",flex:1,margin:0}}>{opt.text}</p>
-                  <div style={{display:"flex",flexDirection:"column",gap:"3px"}}>
-                    <motion.button onClick={() => moveRank(id, -1)} disabled={i === 0}
-                      whileHover={{scale:1.1}} whileTap={{scale:0.9}}
-                      style={{background:"rgba(196,165,90,0.1)",border:"1px solid rgba(196,165,90,0.2)",borderRadius:"5px",padding:"3px 9px",
-                        color: i===0 ? "rgba(196,165,90,0.18)" : accentColor,
-                        cursor: i===0 ? "default" : "pointer",fontSize:"10px",lineHeight:1}}>▲</motion.button>
-                    <motion.button onClick={() => moveRank(id, 1)} disabled={i === ranking.length - 1}
-                      whileHover={{scale:1.1}} whileTap={{scale:0.9}}
-                      style={{background:"rgba(196,165,90,0.1)",border:"1px solid rgba(196,165,90,0.2)",borderRadius:"5px",padding:"3px 9px",
-                        color: i===ranking.length-1 ? "rgba(196,165,90,0.18)" : accentColor,
-                        cursor: i===ranking.length-1 ? "default" : "pointer",fontSize:"10px",lineHeight:1}}>▼</motion.button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {/* ══════════ PHASE: RANK-RESULT (right picks, wrong order — offer retry) ══════════ */}
-      {phase === "rank-result" && (
-        <AnimatePresence mode="wait">
-          <motion.div key="rank-result" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:0.3}}>
-            {rankFeedback === "wrong" ? (
-              <div style={{background:"rgba(196,127,160,0.06)",border:"1px solid rgba(196,127,160,0.25)",borderRadius:"14px",padding:"22px 24px",marginBottom:"18px"}}>
-                <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"12px"}}>
-                  <span style={{fontSize:"20px"}}>↕</span>
-                  <div>
-                    <div style={{fontFamily:"'Playfair Display',serif",fontSize:"16px",fontWeight:700,color:"#C47FA0",marginBottom:"2px"}}>Wrong order — good picks though</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.38)"}}>Your 3 choices were correct. The ranking wasn't quite right.</div>
-                  </div>
-                </div>
-                <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.45)",lineHeight:1.7,marginBottom:"0"}}>
-                  Think about which instruction has the broadest, most independent effect on the output — that goes first. Which is narrowest or most conditional — that goes last.
-                </p>
-              </div>
-            ) : (
-              <div style={{background:"rgba(126,200,164,0.06)",border:"1px solid rgba(126,200,164,0.25)",borderRadius:"14px",padding:"22px 24px",marginBottom:"18px"}}>
-                <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                  <span style={{fontSize:"22px"}}>✦</span>
-                  <div>
-                    <div style={{fontFamily:"'Playfair Display',serif",fontSize:"16px",fontWeight:700,color:"#7EC8A4",marginBottom:"2px"}}>Perfect — picks and ranking both correct</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.38)"}}>You understand constraint economics.</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      )}
-
-      {/* ══════════ PHASE: RESULT (full breakdown) ══════════ */}
-      {phase === "result" && (
-        <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.35}}
-          style={{background:"rgba(196,165,90,0.05)",border:"1px solid rgba(196,165,90,0.18)",borderRadius:"12px",padding:"18px 22px",marginBottom:"18px"}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:accentColor,marginBottom:"10px"}}>Why these three</div>
-          <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"13px",color:"rgba(255,255,255,0.65)",lineHeight:1.8,marginBottom:"14px"}}>{data.explanation}</p>
-          <div style={{background:"rgba(255,50,50,0.04)",border:"1px solid rgba(255,80,80,0.12)",borderRadius:"9px",padding:"12px 16px",marginBottom:"14px"}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",letterSpacing:"0.18em",textTransform:"uppercase",color:"rgba(255,110,110,0.5)",marginBottom:"6px"}}>The redundant pair</div>
-            <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,150,150,0.72)",lineHeight:1.7,margin:0}}>{data.redundantExplanation}</p>
-          </div>
-          <div style={{padding:"10px 14px",borderRadius:"9px",
-            background: score===100 ? "rgba(126,200,164,0.08)" : score>=60 ? "rgba(196,165,90,0.08)" : "rgba(196,127,160,0.08)",
-            border: `1px solid ${score===100?"rgba(126,200,164,0.25)":score>=60?"rgba(196,165,90,0.25)":"rgba(196,127,160,0.25)"}`}}>
-            <span style={{fontFamily:"'Playfair Display',serif",fontSize:"20px",fontWeight:700,
-              color: score===100 ? "#7EC8A4" : score>=60 ? accentColor : "#C47FA0"}}>{score}%</span>
-            <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:"rgba(255,255,255,0.38)",marginLeft:"10px"}}>
-              {score===100 ? "Flawless — picks and ranking both correct." : score>=60 ? "Good instincts — study the ranking hierarchy." : "Review the redundancy principle and try again tomorrow."}
-            </span>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ══════════ Action buttons ══════════ */}
-      <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:"10px",flexWrap:"wrap"}}>
-
-        {/* PICK phase */}
-        {phase === "pick" && (
-          <motion.button onClick={proceedToRank} disabled={selectedIds.length < ALLOWED}
-            whileHover={selectedIds.length>=ALLOWED?{scale:1.04}:{}} whileTap={selectedIds.length>=ALLOWED?{scale:0.97}:{}}
-            style={{padding:"11px 28px",borderRadius:"10px",border:"none",
-              cursor: selectedIds.length>=ALLOWED ? "pointer" : "not-allowed",
-              background: selectedIds.length>=ALLOWED ? accentColor : "rgba(196,165,90,0.18)",
-              color: selectedIds.length>=ALLOWED ? "#08080F" : "rgba(196,165,90,0.35)",
-              fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
-            Rank These 3 →
-          </motion.button>
-        )}
-
-        {/* RANK phase */}
-        {phase === "rank" && (
-          <motion.button onClick={submitRanking} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
-            style={{padding:"11px 28px",borderRadius:"10px",border:"none",cursor:"pointer",background:accentColor,color:"#08080F",
-              fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
-            Submit Ranking →
-          </motion.button>
-        )}
-
-        {/* RANK-RESULT phase */}
-        {phase === "rank-result" && rankFeedback === "wrong" && (
+        {/* ══════════ PHASE: PICK ══════════ */}
+        {(phase === "pick" || phase === "result") && (
           <>
-            <motion.button onClick={finaliseResult} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
-              style={{padding:"10px 20px",borderRadius:"10px",border:"1px solid rgba(168,169,173,0.18)",cursor:"pointer",
-                background:"transparent",color:"rgba(255,255,255,0.4)",
-                fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",letterSpacing:"0.12em",textTransform:"uppercase"}}>
-              See Breakdown
-            </motion.button>
-            <motion.button onClick={retryRanking} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
-              style={{padding:"11px 28px",borderRadius:"10px",border:"none",cursor:"pointer",background:accentColor,color:"#08080F",
-                fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
-              Try Ranking Again →
-            </motion.button>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:"rgba(255,255,255,0.35)",marginBottom:"12px",letterSpacing:"0.04em"}}>
+              {phase === "pick" ? `Choose 3 options — ${selectedIds.length}/3 selected:` : "Results — all options revealed:"}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"18px"}}>
+              {data.options.map(opt => {
+                const picked      = selectedIds.includes(opt.id);
+                const isCorrect   = phase === "result" && data.correctPick.includes(opt.id);
+                const isRedundant = phase === "result" && data.redundantPair.includes(opt.id);
+                return (
+                  <motion.div key={opt.id}
+                    onClick={() => togglePick(opt.id)}
+                    whileHover={phase === "pick" ? {scale:1.01} : {}}
+                    whileTap={phase === "pick" ? {scale:0.99} : {}}
+                    style={{display:"flex",alignItems:"flex-start",gap:"12px",padding:"13px 16px",borderRadius:"11px",
+                      cursor: phase === "pick" ? "pointer" : "default",
+                      background: picked && phase==="pick" ? "rgba(168,169,173,0.06)" : "rgba(168,169,173,0.02)",
+                      border: `1px solid ${optionBorderColor(opt.id)}`,
+                      transition:"all 0.15s"}}>
+                    {/* radio dot */}
+                    <div style={{width:"20px",height:"20px",borderRadius:"50%",flexShrink:0,marginTop:"2px",display:"flex",alignItems:"center",justifyContent:"center",
+                      border: `2px solid ${phase==="pick"?(picked?silver:"rgba(168,169,173,0.25)"):(isCorrect?"#7EC8A4":picked?"#C47FA0":"rgba(168,169,173,0.18)")}`,
+                      background: picked&&phase==="pick" ? "rgba(168,169,173,0.12)" : "transparent",transition:"all 0.15s"}}>
+                      {picked && phase==="pick" && <div style={{width:"7px",height:"7px",borderRadius:"50%",background:silver}}/>}
+                      {phase==="result" && isCorrect && <span style={{fontSize:"9px",color:"#7EC8A4",lineHeight:1}}>✓</span>}
+                      {phase==="result" && !isCorrect && picked && <span style={{fontSize:"9px",color:"#C47FA0",lineHeight:1}}>✗</span>}
+                    </div>
+                    <div style={{flex:1}}>
+                      <p style={{fontFamily:"'Courier New',monospace",fontSize:"14px",color:optionTextColor(opt.id),margin:0,lineHeight:1.45}}>{opt.text}</p>
+                      {phase === "result" && (
+                        <div style={{marginTop:"7px"}}>
+                          <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:isCorrect?"rgba(126,200,164,0.75)":"rgba(255,255,255,0.28)",lineHeight:1.55,margin:0}}>{opt.why}</p>
+                          {isRedundant && (
+                            <span style={{display:"inline-block",marginTop:"5px",padding:"1px 8px",borderRadius:"10px",background:"rgba(168,169,173,0.07)",border:`1px solid ${silverFaint}`,fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",color:silverDim,letterSpacing:"0.1em"}}>⚠ REDUNDANT PAIR</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </>
         )}
-        {phase === "rank-result" && rankFeedback === "correct" && (
-          <motion.button onClick={finaliseResult} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
-            style={{padding:"11px 28px",borderRadius:"10px",border:"none",cursor:"pointer",background:"#7EC8A4",color:"#08080F",
-              fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
-            See Full Breakdown →
-          </motion.button>
+
+        {/* ══════════ PHASE: RANK ══════════ */}
+        {phase === "rank" && (
+          <>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:"rgba(255,255,255,0.35)",marginBottom:"12px"}}>
+              Now rank your 3 picks — most important at top:
+              {rankAttempts > 0 && <span style={{color:"rgba(196,127,160,0.7)",marginLeft:"10px"}}>Attempt {rankAttempts + 1}</span>}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"18px"}}>
+              {ranking.map((id, i) => {
+                const opt = data.options.find(o => o.id === id);
+                return (
+                  <div key={id} style={{display:"flex",alignItems:"center",gap:"12px",padding:"13px 16px",borderRadius:"11px",background:"rgba(168,169,173,0.04)",border:`1px solid ${silverFaint}`}}>
+                    <div style={{width:"26px",height:"26px",borderRadius:"50%",background:"rgba(168,169,173,0.08)",border:`1px solid ${silverFaint}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"13px",fontWeight:700,color:silver}}>{i+1}</span>
+                    </div>
+                    <p style={{fontFamily:"'Courier New',monospace",fontSize:"14px",color:"rgba(255,255,255,0.82)",flex:1,margin:0}}>{opt.text}</p>
+                    <div style={{display:"flex",flexDirection:"column",gap:"3px"}}>
+                      <motion.button onClick={() => moveRank(id, -1)} disabled={i === 0}
+                        whileHover={{scale:1.1}} whileTap={{scale:0.9}}
+                        style={{background:"rgba(168,169,173,0.07)",border:`1px solid ${silverFaint}`,borderRadius:"5px",padding:"3px 9px",
+                          color: i===0 ? "rgba(168,169,173,0.18)" : silver,
+                          cursor: i===0 ? "default" : "pointer",fontSize:"10px",lineHeight:1}}>▲</motion.button>
+                      <motion.button onClick={() => moveRank(id, 1)} disabled={i === ranking.length - 1}
+                        whileHover={{scale:1.1}} whileTap={{scale:0.9}}
+                        style={{background:"rgba(168,169,173,0.07)",border:`1px solid ${silverFaint}`,borderRadius:"5px",padding:"3px 9px",
+                          color: i===ranking.length-1 ? "rgba(168,169,173,0.18)" : silver,
+                          cursor: i===ranking.length-1 ? "default" : "pointer",fontSize:"10px",lineHeight:1}}>▼</motion.button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
-        {/* RESULT phase */}
-        {phase === "result" && (
-          <div style={{display:"flex",alignItems:"center",gap:"14px",flexWrap:"wrap",justifyContent:"flex-end"}}>
-            {/* 24-hour countdown */}
-            <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-              <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"10px",letterSpacing:"0.14em",textTransform:"uppercase",color:"rgba(255,255,255,0.25)"}}>Next challenge in</span>
-              <span style={{fontFamily:"'Courier New',monospace",fontSize:"15px",fontWeight:700,color:accentColor,letterSpacing:"0.1em"}}>{countdown}</span>
-            </div>
-            {/* Try Again — only shown when score is not perfect */}
-            {score < 100 && (
-              <motion.button onClick={resetChallenge} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
-                style={{padding:"10px 22px",borderRadius:"10px",border:"1px solid rgba(196,165,90,0.3)",cursor:"pointer",
-                  background:"transparent",color:accentColor,
-                  fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.14em",textTransform:"uppercase"}}>
-                ↺ Try Again
-              </motion.button>
-            )}
-          </div>
+        {/* ══════════ PHASE: RANK-RESULT ══════════ */}
+        {phase === "rank-result" && (
+          <AnimatePresence mode="wait">
+            <motion.div key="rank-result" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:0.3}}>
+              {rankFeedback === "wrong" ? (
+                <div style={{background:"rgba(196,127,160,0.05)",border:"1px solid rgba(196,127,160,0.22)",borderRadius:"14px",padding:"22px 24px",marginBottom:"18px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"12px"}}>
+                    <span style={{fontSize:"20px"}}>↕</span>
+                    <div>
+                      <div style={{fontFamily:"'Playfair Display',serif",fontSize:"16px",fontWeight:700,color:"#C47FA0",marginBottom:"2px"}}>Wrong order — good picks though</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.35)"}}>Your 3 choices were correct. The ranking wasn't quite right.</div>
+                    </div>
+                  </div>
+                  <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.42)",lineHeight:1.7,margin:0}}>
+                    Think about which instruction has the broadest, most independent effect — that goes first. Narrowest or most conditional — last.
+                  </p>
+                </div>
+              ) : (
+                <div style={{background:"rgba(126,200,164,0.05)",border:"1px solid rgba(126,200,164,0.22)",borderRadius:"14px",padding:"22px 24px",marginBottom:"18px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                    <span style={{fontSize:"22px"}}>✦</span>
+                    <div>
+                      <div style={{fontFamily:"'Playfair Display',serif",fontSize:"16px",fontWeight:700,color:"#7EC8A4",marginBottom:"2px"}}>Perfect — picks and ranking both correct</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,255,255,0.35)"}}>You understand constraint economics.</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         )}
-      </div>
-    </motion.div>
+
+        {/* ══════════ PHASE: RESULT (full breakdown) ══════════ */}
+        {phase === "result" && (
+          <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.35}}
+            style={{background:"rgba(168,169,173,0.03)",border:`1px solid ${silverFaint}`,borderRadius:"12px",padding:"18px 22px",marginBottom:"18px"}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",letterSpacing:"0.22em",textTransform:"uppercase",color:silverDim,marginBottom:"10px"}}>Why these three</div>
+            <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"13px",color:"rgba(255,255,255,0.62)",lineHeight:1.8,marginBottom:"14px"}}>{data.explanation}</p>
+            <div style={{background:"rgba(255,50,50,0.03)",border:"1px solid rgba(255,80,80,0.1)",borderRadius:"9px",padding:"12px 16px",marginBottom:"14px"}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"9px",letterSpacing:"0.18em",textTransform:"uppercase",color:"rgba(255,110,110,0.45)",marginBottom:"6px"}}>The redundant pair</div>
+              <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",color:"rgba(255,150,150,0.65)",lineHeight:1.7,margin:0}}>{data.redundantExplanation}</p>
+            </div>
+            <div style={{padding:"10px 14px",borderRadius:"9px",
+              background: score===100 ? "rgba(126,200,164,0.07)" : score>=60 ? "rgba(168,169,173,0.06)" : "rgba(196,127,160,0.06)",
+              border: `1px solid ${score===100?"rgba(126,200,164,0.22)":score>=60?silverFaint:"rgba(196,127,160,0.22)"}`}}>
+              <span style={{fontFamily:"'Playfair Display',serif",fontSize:"20px",fontWeight:700,
+                color: score===100 ? "#7EC8A4" : score>=60 ? silver : "#C47FA0"}}>{score}%</span>
+              <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",color:"rgba(255,255,255,0.35)",marginLeft:"10px"}}>
+                {score===100 ? "Flawless — picks and ranking both correct." : score>=60 ? "Good instincts — study the ranking hierarchy." : "Review the redundancy principle and try again."}
+              </span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ══════════ Action buttons ══════════ */}
+        <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:"10px",flexWrap:"wrap"}}>
+
+          {/* PICK */}
+          {phase === "pick" && (
+            <motion.button onClick={proceedToRank} disabled={selectedIds.length < ALLOWED}
+              whileHover={selectedIds.length>=ALLOWED?{scale:1.04}:{}} whileTap={selectedIds.length>=ALLOWED?{scale:0.97}:{}}
+              style={{padding:"11px 28px",borderRadius:"10px",border:"none",
+                cursor: selectedIds.length>=ALLOWED ? "pointer" : "not-allowed",
+                background: selectedIds.length>=ALLOWED ? silver : "rgba(168,169,173,0.12)",
+                color: selectedIds.length>=ALLOWED ? "#08080F" : "rgba(168,169,173,0.3)",
+                fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
+              Rank These 3 →
+            </motion.button>
+          )}
+
+          {/* RANK */}
+          {phase === "rank" && (
+            <motion.button onClick={submitRanking} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+              style={{padding:"11px 28px",borderRadius:"10px",border:"none",cursor:"pointer",
+                background:silver,color:"#08080F",
+                fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
+              Submit Ranking →
+            </motion.button>
+          )}
+
+          {/* RANK-RESULT */}
+          {phase === "rank-result" && rankFeedback === "wrong" && (
+            <>
+              <motion.button onClick={finaliseResult} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+                style={{padding:"10px 20px",borderRadius:"10px",border:`1px solid ${silverFaint}`,cursor:"pointer",
+                  background:"transparent",color:"rgba(255,255,255,0.38)",
+                  fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",letterSpacing:"0.12em",textTransform:"uppercase"}}>
+                See Breakdown
+              </motion.button>
+              <motion.button onClick={retryRanking} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+                style={{padding:"11px 28px",borderRadius:"10px",border:"none",cursor:"pointer",
+                  background:silver,color:"#08080F",
+                  fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
+                Try Ranking Again →
+              </motion.button>
+            </>
+          )}
+          {phase === "rank-result" && rankFeedback === "correct" && (
+            <motion.button onClick={finaliseResult} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+              style={{padding:"11px 28px",borderRadius:"10px",border:"none",cursor:"pointer",background:"#7EC8A4",color:"#08080F",
+                fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
+              See Full Breakdown →
+            </motion.button>
+          )}
+
+          {/* RESULT */}
+          {phase === "result" && (
+            <div style={{display:"flex",alignItems:"center",gap:"12px",flexWrap:"wrap",justifyContent:"flex-end"}}>
+              {score === 100 && isToday ? (
+                <motion.button onClick={goToNext}
+                  whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+                  style={{padding:"11px 28px",borderRadius:"10px",border:"none",cursor:"pointer",
+                    background:silver,color:"#08080F",
+                    fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.16em",textTransform:"uppercase"}}>
+                  Go to Next →
+                </motion.button>
+              ) : score < 100 ? (
+                <motion.button onClick={resetChallenge} whileHover={{scale:1.04}} whileTap={{scale:0.97}}
+                  style={{padding:"10px 22px",borderRadius:"10px",border:`1px solid ${silverFaint}`,cursor:"pointer",
+                    background:"transparent",color:silver,
+                    fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"11px",letterSpacing:"0.14em",textTransform:"uppercase"}}>
+                  ↺ Try Again
+                </motion.button>
+              ) : null}
+            </div>
+          )}
+        </div>
+
+        {/* ══════════ LOCKED OVERLAY — shown after Go to Next ══════════ */}
+        {locked && (
+          <motion.div
+            initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.35}}
+            style={{
+              position:"absolute", inset:0, zIndex:10,
+              borderRadius:"18px",
+              backdropFilter:"blur(14px)",
+              WebkitBackdropFilter:"blur(14px)",
+              background:"rgba(8,7,18,0.82)",
+              display:"flex", flexDirection:"column",
+              alignItems:"center", justifyContent:"center",
+              gap:"0", padding:"40px 32px",
+            }}>
+
+            {/* Lock icon ring */}
+            <motion.div
+              initial={{scale:0.6, opacity:0}} animate={{scale:1, opacity:1}}
+              transition={{delay:0.1, type:"spring", stiffness:220, damping:18}}
+              style={{
+                width:"72px", height:"72px", borderRadius:"50%",
+                border:"1px solid rgba(168,169,173,0.2)",
+                background:"rgba(168,169,173,0.06)",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                marginBottom:"28px",
+              }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(168,169,173,0.65)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </motion.div>
+
+            {/* Headline */}
+            <motion.div
+              initial={{y:10, opacity:0}} animate={{y:0, opacity:1}}
+              transition={{delay:0.2, duration:0.4}}
+              style={{textAlign:"center", marginBottom:"14px"}}>
+              <div style={{
+                fontFamily:"'Cormorant Garamond',serif",
+                fontSize:"9px", letterSpacing:"0.3em",
+                textTransform:"uppercase", color:"rgba(168,169,173,0.4)",
+                marginBottom:"10px",
+              }}>Quest Complete</div>
+              <h3 style={{
+                fontFamily:"'Playfair Display',serif",
+                fontSize:"clamp(22px,4vw,30px)",
+                fontWeight:700, color:"#FFFFFF",
+                lineHeight:1.2, margin:0,
+              }}>Come Back Tomorrow</h3>
+            </motion.div>
+
+            {/* Flavour line */}
+            <motion.p
+              initial={{y:10, opacity:0}} animate={{y:0, opacity:1}}
+              transition={{delay:0.3, duration:0.4}}
+              style={{
+                fontFamily:"'Cormorant Garamond',serif",
+                fontSize:"14px", color:"rgba(255,255,255,0.38)",
+                lineHeight:1.75, textAlign:"center",
+                maxWidth:"320px", marginBottom:"32px",
+              }}>
+              You've cleared today's constraint. A fresh prompt is being forged for tomorrow — sharper, trickier, waiting.
+            </motion.p>
+
+            {/* Divider */}
+            <motion.div
+              initial={{scaleX:0}} animate={{scaleX:1}}
+              transition={{delay:0.4, duration:0.5}}
+              style={{
+                width:"48px", height:"1px",
+                background:"rgba(168,169,173,0.2)",
+                marginBottom:"32px",
+              }}/>
+
+            {/* XP badge */}
+            <motion.div
+              initial={{y:8, opacity:0}} animate={{y:0, opacity:1}}
+              transition={{delay:0.45, duration:0.35}}
+              style={{
+                display:"flex", alignItems:"center", gap:"8px",
+                padding:"8px 18px", borderRadius:"30px",
+                border:"1px solid rgba(168,169,173,0.15)",
+                background:"rgba(168,169,173,0.05)",
+              }}>
+              <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",letterSpacing:"0.18em",textTransform:"uppercase",color:"rgba(168,169,173,0.5)"}}>Today's score</span>
+              <span style={{fontFamily:"'Playfair Display',serif",fontSize:"15px",fontWeight:700,color:"#7EC8A4"}}>100%</span>
+              <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",letterSpacing:"0.1em",color:"rgba(168,169,173,0.35)"}}>✦ +80 XP</span>
+            </motion.div>
+
+          </motion.div>
+        )}
+
+      </motion.div>
+    </AnimatePresence>
   );
 };
 
@@ -4128,7 +4245,6 @@ const ChallengesPage = ({ onBack }) => {
                 {[
                   {label:"Challenges completed", val:`${completedIds.length} / ${CHALLENGES.length}`},
                   {label:"XP earned", val:`${xpTotal} XP`},
-                  {label:"Trails available", val:`${trails.length}`},
                 ].map((s,i)=>(
                   <div key={i} style={{padding:"10px 18px",background:"rgba(168,169,173,0.05)",border:"1px solid rgba(168,169,173,0.1)",borderRadius:"10px",display:"flex",gap:"10px",alignItems:"center"}}>
                     <span style={{fontFamily:"'Playfair Display', serif",fontSize:"17px",fontWeight:700,color:S.silverLt}}>{s.val}</span>
@@ -4139,7 +4255,7 @@ const ChallengesPage = ({ onBack }) => {
             </motion.div>
 
             {/* ── Challenge for the Day ── */}
-            <ConstraintAuctionChallenge streak={0} />
+            <ConstraintAuctionChallenge />
 
             {/* Trails */}
             {trails.map((trail,ti)=>{
