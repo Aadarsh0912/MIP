@@ -984,3 +984,14 @@
 2026-05-13 00:11:15,529 INFO Response from: llama-3.3-70b-versatile
 2026-05-13 00:11:15,531 INFO 127.0.0.1 - - [13/May/2026 00:11:15] "POST /api/analyse HTTP/1.1" 200 -
 2026-05-13 00:11:16,354 INFO Response from: llama-3.3-70b-versatile
+2026-05-13 00:11:16,492 INFO Response from: llama-3.3-70b-versatile
+2026-05-13 00:11:16,494 INFO 127.0.0.1 - - [13/May/2026 00:11:16] "POST /api/generate HTTP/1.1" 200 -
+2026-05-13 00:11:16,813 INFO 127.0.0.1 - - [13/May/2026 00:11:16] "GET /api/history HTTP/1.1" 200 -
+2026-05-13 00:20:41,629 INFO 127.0.0.1 - - [13/May/2026 00:20:41] "GET /api/health HTTP/1.1" 200 -
+2026-05-13 00:20:41,893 INFO 127.0.0.1 - - [13/May/2026 00:20:41] "GET /api/health HTTP/1.1" 200 -
+2026-05-13 00:20:41,936 INFO 127.0.0.1 - - [13/May/2026 00:20:41] "GET /api/history HTTP/1.1" 200 -
+2026-05-13 00:20:41,952 INFO 127.0.0.1 - - [13/May/2026 00:20:41] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-13 00:23:01,413 INFO 127.0.0.1 - - [13/May/2026 00:23:01] "GET /api/health HTTP/1.1" 200 -
+2026-05-13 00:23:01,681 INFO 127.0.0.1 - - [13/May/2026 00:23:01] "GET /api/health HTTP/1.1" 200 -
+2026-05-13 00:23:01,729 INFO 127.0.0.1 - - [13/May/2026 00:23:01] "GET /api/history HTTP/1.1" 200 -
+2026-05-13 00:23:01,733 INFO 127.0.0.1 - - [13/May/2026 00:23:01] "GET /api/history/saved HTTP/1.1" 200 -
