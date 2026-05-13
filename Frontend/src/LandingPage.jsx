@@ -1896,15 +1896,15 @@ const PromptLabPage = ({ onBack }) => {
   };
 
   const score        = analysis.clarity ?? 0;
-  const clarityColor = score >= 70 ? "#7EC8A4" : score >= 40 ? "#D4A574" : "#C47FA0";
+  const clarityColor = score >= 70 ? "#aaddff" : score >= 40 ? "#7ec8e8" : "#4aa8d0";
   const clarityLabel = score >= 70 ? "Strong"  : score >= 40 ? "Fair"    : "Weak";
 
   // Backend status badge
   const statusDot = backendOk === null
-    ? { color:"#D4A574", label:"Checking…" }
+    ? { color:"#7ec8e8", label:"Checking…" }
     : backendOk
-      ? { color:"#7EC8A4", label:"Backend ready" }
-      : { color:"#C47FA0", label:"Backend offline — run python app.py" };
+      ? { color:"#aaddff", label:"Backend ready" }
+      : { color:"#4aa8d0", label:"Backend offline — run python app.py" };
 
   return (
     <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-16 }}
@@ -1986,7 +1986,7 @@ const PromptLabPage = ({ onBack }) => {
                         <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"11px", color:S.muted }}>{analysis.chars} chars · {analysis.words} words</span>
                         <motion.button onClick={savePrompt} whileHover={{ scale:1.08 }} whileTap={{ scale:0.94 }}
                           title="Save prompt"
-                          style={{ width:"28px", height:"28px", borderRadius:"7px", border:`1px solid ${isSaved?"rgba(126,200,164,0.4)":"rgba(168,169,173,0.16)"}`, background:isSaved?"rgba(126,200,164,0.1)":"rgba(168,169,173,0.05)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isSaved?"#7EC8A4":S.muted, fontSize:"13px", transition:"all 0.2s" }}>
+                          style={{ width:"28px", height:"28px", borderRadius:"7px", border:`1px solid ${isSaved?"rgba(126,208,232,0.4)":"rgba(168,169,173,0.16)"}`, background:isSaved?"rgba(126,208,232,0.1)":"rgba(168,169,173,0.05)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:isSaved?"#7ec8e8":S.muted, fontSize:"13px", transition:"all 0.2s" }}>
                           {isSaved ? "✦" : "☆"}
                         </motion.button>
                       </div>
@@ -2038,7 +2038,7 @@ const PromptLabPage = ({ onBack }) => {
                       <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                         {loading && (
                           <motion.div animate={{ opacity:[1,0.4,1] }} transition={{ duration:0.8, repeat:Infinity }}
-                            style={{ width:"6px", height:"6px", borderRadius:"50%", background:"#7EC8A4" }}/>
+                            style={{ width:"6px", height:"6px", borderRadius:"50%", background:"#7ec8e8" }}/>
                         )}
                         {response && !loading && (
                           <motion.button initial={{ opacity:0 }} animate={{ opacity:1 }}
@@ -2196,7 +2196,7 @@ const PromptLabPage = ({ onBack }) => {
                           style={{ padding:"16px 18px", background:"rgba(13,13,22,0.97)", border:"1px solid rgba(168,169,173,0.1)", borderRadius:"12px", cursor:"pointer", transition:"all 0.2s" }}>
                           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"8px" }}>
                             <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-                              <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:(item.analysis?.clarity ?? 0) >= 70 ? "#7EC8A4" : (item.analysis?.clarity ?? 0) >= 40 ? "#D4A574" : "#C47FA0" }}/>
+                              <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:(item.analysis?.clarity ?? 0) >= 70 ? "#aaddff" : (item.analysis?.clarity ?? 0) >= 40 ? "#7ec8e8" : "#4aa8d0" }}/>
                               <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"10px", color:S.muted }}>
                                 {item.analysis?.words ?? 0}w · {item.analysis?.chars ?? 0}c
                               </span>
