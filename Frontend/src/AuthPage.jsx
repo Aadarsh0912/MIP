@@ -1,314 +1,355 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const GOLD = "#A8A9AD";
-const GOLD_LIGHT = "#C8C9CC";
-const BG_DEEP = "#0A0A0F";
-const BG_CARD = "#111118";
-const BG_PANEL = "#0E0E16";
-const BORDER = "rgba(168,169,173,0.18)";
-const TEXT_MUTED = "rgba(255,255,255,0.45)";
-
-const inputStyle = {
-  width: "100%",
-  background: "rgba(255,255,255,0.04)",
-  border: "1px solid rgba(168,169,173,0.2)",
-  borderRadius: "10px",
-  padding: "13px 16px",
-  color: "#fff",
-  fontSize: "14px",
-  fontFamily: "'Cormorant Garamond', serif",
-  letterSpacing: "0.03em",
-  outline: "none",
-  boxSizing: "border-box",
-  transition: "border-color 0.3s, background 0.3s",
+/* ─── Palette — Sterling Silver × Icy Blue ─── */
+const C = {
+  bg:        "#0b0c10",
+  card:      "#0f1014",
+  panel:     "#0d0e12",
+  silver:    "#c8cdd6",       // primary sterling silver
+  silverLt:  "#e2e6ed",       // highlight silver
+  silverDim: "#8a8f9a",       // muted silver
+  ice:       "#7ec8e8",       // light blue glow
+  iceBright: "#aaddff",       // bright icy accent
+  iceDeep:   "#4aa8d0",       // deeper blue for structure
+  frost:     "#cce8f8",       // near-white frost
+  border:    "rgba(200,205,214,0.16)",
+  muted:     "rgba(255,255,255,0.38)",
+  text:      "rgba(255,255,255,0.82)",
 };
 
-const labelStyle = {
-  display: "block",
-  fontSize: "11px",
-  letterSpacing: "0.15em",
-  textTransform: "uppercase",
-  color: GOLD,
-  marginBottom: "8px",
-  fontFamily: "'Cormorant Garamond', serif",
-  fontWeight: 600,
+/* ─── Film grain overlay (SVG turbulence) ─── */
+const GrainOverlay = () => (
+  <svg style={{ position:"fixed", inset:0, width:"100%", height:"100%", pointerEvents:"none", zIndex:9999, opacity:0.045 }}>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+    <rect width="100%" height="100%" filter="url(#grain)"/>
+  </svg>
+);
+
+/* ─── Letterbox bars ─── */
+const Letterbox = () => (
+  <>
+    <div style={{ position:"fixed", top:0, left:0, right:0, height:"48px", background:"#000", zIndex:9998 }}/>
+    <div style={{ position:"fixed", bottom:0, left:0, right:0, height:"48px", background:"#000", zIndex:9998 }}/>
+  </>
+);
+
+/* ─── Rain canvas ─── */
+function RainCanvas() {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let W = canvas.offsetWidth, H = canvas.offsetHeight;
+    canvas.width = W; canvas.height = H;
+
+    const resize = () => {
+      W = canvas.offsetWidth; H = canvas.offsetHeight;
+      canvas.width = W; canvas.height = H;
+    };
+    window.addEventListener("resize", resize);
+
+    const DROPS = 220;
+    const drops = Array.from({ length: DROPS }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      len: 8 + Math.random() * 22,
+      speed: 6 + Math.random() * 12,
+      opacity: 0.08 + Math.random() * 0.28,
+      width: 0.4 + Math.random() * 0.8,
+    }));
+
+    let raf;
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      drops.forEach(d => {
+        const grad = ctx.createLinearGradient(d.x, d.y, d.x - d.len * 0.15, d.y + d.len);
+        grad.addColorStop(0, `rgba(200,210,220,0)`);
+        grad.addColorStop(0.5, `rgba(180,210,235,${d.opacity})`);
+        grad.addColorStop(1, `rgba(126,200,232,${d.opacity * 0.55})`);
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x - d.len * 0.15, d.y + d.len);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = d.width;
+        ctx.stroke();
+
+        d.y += d.speed;
+        if (d.y > H + 30) { d.y = -30; d.x = Math.random() * W; }
+      });
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={ref} style={{ position:"absolute", inset:0, width:"100%", height:"100%", pointerEvents:"none" }}/>;
+}
+
+
+/* ─── Neon sign ─── */
+const NeonSign = () => {
+  const [flicker, setFlicker] = useState(1);
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (Math.random() < 0.08) {
+        setFlicker(0.3);
+        setTimeout(() => setFlicker(1), 80 + Math.random() * 120);
+      }
+    }, 800);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div style={{
+      position:"absolute", top:"28px", left:"28px",
+      fontFamily:"'Special Elite', monospace",
+      fontSize:"13px", letterSpacing:"0.28em",
+      color: C.silver,
+      textShadow:`0 0 6px ${C.silverLt}, 0 0 18px rgba(200,205,214,0.45)`,
+      opacity: flicker,
+      transition:"opacity 0.06s",
+      userSelect:"none",
+    }}>
+      ✦ STUDIO
+    </div>
+  );
 };
 
-function InputField({ label, type = "text", placeholder, value, onChange, delay = 0 }) {
+/* ─── Spotlight that follows mouse ─── */
+function SpotlightPanel({ children }) {
+  const ref = useRef(null);
+  const [pos, setPos] = useState({ x: 50, y: 60 });
+
+  const onMove = (e) => {
+    const r = ref.current?.getBoundingClientRect();
+    if (!r) return;
+    setPos({
+      x: ((e.clientX - r.left) / r.width) * 100,
+      y: ((e.clientY - r.top) / r.height) * 100,
+    });
+  };
+
+  return (
+    <div ref={ref} onMouseMove={onMove} style={{ position:"relative", flex:"0 0 400px", overflow:"hidden", background: C.panel }}>
+      {/* Base texture revealed by spotlight */}
+      <div style={{
+        position:"absolute", inset:0,
+        backgroundImage:`
+          repeating-linear-gradient(0deg, rgba(200,205,214,0.04) 0px, rgba(200,205,214,0.04) 1px, transparent 1px, transparent 40px),
+          repeating-linear-gradient(90deg, rgba(126,200,232,0.03) 0px, rgba(126,200,232,0.03) 1px, transparent 1px, transparent 40px)
+        `,
+      }}/>
+      {/* Spotlight cone — cool silver-blue */}
+      <div style={{
+        position:"absolute", inset:0, pointerEvents:"none",
+        background:`radial-gradient(ellipse 260px 320px at ${pos.x}% ${pos.y}%, rgba(190,215,235,0.10) 0%, rgba(126,200,232,0.05) 35%, transparent 65%)`,
+        transition:"background 0.08s",
+      }}/>
+      <RainCanvas/>
+      {children}
+    </div>
+  );
+}
+
+/* ─── Typewriter text ─── */
+function Typewriter({ text, delay = 0 }) {
+  const [displayed, setDisplayed] = useState("");
+  const [started, setStarted] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setStarted(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  useEffect(() => {
+    if (!started) return;
+    let i = 0;
+    const iv = setInterval(() => {
+      setDisplayed(text.slice(0, i + 1));
+      i++;
+      if (i >= text.length) clearInterval(iv);
+    }, 38);
+    return () => clearInterval(iv);
+  }, [started, text]);
+  return (
+    <span style={{ fontStyle:"italic" }}>
+      {displayed}
+      <span style={{
+        display:"inline-block", width:"1px", height:"1em",
+        background: C.silver, marginLeft:"2px", verticalAlign:"text-bottom",
+        animation:"blink 1s step-end infinite",
+      }}/>
+    </span>
+  );
+}
+
+/* ─── Input ─── */
+function Field({ label, type = "text", placeholder, value, onChange, delay = 0 }) {
   const [focused, setFocused] = useState(false);
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
-      style={{ marginBottom: "20px" }}
+      initial={{ opacity: 0, x: 12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.4, delay }}
+      style={{ marginBottom:"18px" }}
     >
-      <label style={labelStyle}>{label}</label>
+      <label style={{
+        display:"block", fontSize:"10px", letterSpacing:"0.22em",
+        textTransform:"uppercase", color: C.silverDim,
+        marginBottom:"7px", fontFamily:"'Special Elite', monospace",
+        textShadow: focused ? `0 0 8px ${C.ice}60` : "none",
+        transition:"text-shadow 0.3s",
+      }}>{label}</label>
       <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        type={type} placeholder={placeholder} value={value} onChange={onChange}
+        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         style={{
-          ...inputStyle,
-          borderColor: focused ? GOLD : "rgba(168,169,173,0.2)",
-          background: focused ? "rgba(168,169,173,0.05)" : "rgba(255,255,255,0.04)",
+          width:"100%", padding:"12px 15px",
+          background: focused ? "rgba(126,200,232,0.05)" : "rgba(255,255,255,0.03)",
+          border: `1px solid ${focused ? "rgba(126,200,232,0.45)" : "rgba(200,205,214,0.15)"}`,
+          borderRadius:"6px", color:"#fff",
+          fontSize:"14px", fontFamily:"'Cormorant Garamond', serif",
+          outline:"none", boxSizing:"border-box",
+          boxShadow: focused ? `0 0 14px rgba(126,200,232,0.12), inset 0 0 8px rgba(126,200,232,0.04)` : "none",
+          transition:"all 0.3s", letterSpacing:"0.04em",
         }}
       />
     </motion.div>
   );
 }
 
-const GoldDivider = () => (
-  <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "20px 0" }}>
-    <div style={{ flex: 1, height: "1px", background: "rgba(168,169,173,0.18)" }} />
-    <span style={{ color: TEXT_MUTED, fontSize: "11px", letterSpacing: "0.12em", fontFamily: "'Cormorant Garamond', serif" }}>OR</span>
-    <div style={{ flex: 1, height: "1px", background: "rgba(168,169,173,0.18)" }} />
+/* ─── Divider ─── */
+const Divider = () => (
+  <div style={{ display:"flex", alignItems:"center", gap:"10px", margin:"18px 0" }}>
+    <div style={{ flex:1, height:"1px", background:`linear-gradient(90deg, transparent, rgba(200,205,214,0.25))` }}/>
+    <span style={{ fontSize:"10px", color: C.muted, fontFamily:"'Special Elite', monospace", letterSpacing:"0.15em" }}>OR</span>
+    <div style={{ flex:1, height:"1px", background:`linear-gradient(90deg, rgba(200,205,214,0.25), transparent)` }}/>
   </div>
 );
 
-const DecorativeGlyph = () => (
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{ marginBottom: "24px" }}>
-    <circle cx="24" cy="24" r="23" stroke={GOLD} strokeWidth="0.8" strokeDasharray="4 3" />
-    <circle cx="24" cy="24" r="16" stroke={GOLD} strokeWidth="0.5" opacity="0.5" />
-    <line x1="24" y1="8" x2="24" y2="40" stroke={GOLD} strokeWidth="0.6" opacity="0.6" />
-    <line x1="8" y1="24" x2="40" y2="24" stroke={GOLD} strokeWidth="0.6" opacity="0.6" />
-    <circle cx="24" cy="24" r="3" fill={GOLD} opacity="0.9" />
-    <polygon points="24,17 26,21 30,21 27,24 28,28 24,25 20,28 21,24 18,21 22,21" fill={GOLD} opacity="0.7" />
-  </svg>
-);
+/* ─── Primary button ─── */
+function NeonButton({ children, onClick, disabled }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width:"100%", padding:"13px",
+        border: `1px solid ${disabled ? "rgba(200,205,214,0.12)" : hovered ? "rgba(200,205,214,0.7)" : "rgba(200,205,214,0.35)"}`,
+        borderRadius:"6px", cursor: disabled ? "not-allowed" : "pointer",
+        background: disabled
+          ? "rgba(200,205,214,0.04)"
+          : hovered
+          ? `rgba(200,205,214,0.12)`
+          : `rgba(200,205,214,0.06)`,
+        color: disabled ? "rgba(255,255,255,0.2)" : hovered ? C.silverLt : C.silver,
+        fontSize:"11px", letterSpacing:"0.24em", textTransform:"uppercase",
+        fontFamily:"'Special Elite', monospace",
+        boxShadow: (!disabled && hovered)
+          ? `0 0 20px rgba(126,200,232,0.2), 0 0 40px rgba(200,205,214,0.08), inset 0 0 16px rgba(200,205,214,0.04)`
+          : "none",
+        transition:"all 0.25s", marginBottom:"18px",
+      }}
+    >{children}</button>
+  );
+}
 
-const FloatingOrbs = () => (
-  <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-    {[
-      { w: 320, h: 320, top: "-80px", left: "-60px", delay: 0 },
-      { w: 240, h: 240, bottom: "60px", right: "-40px", delay: 1.5 },
-      { w: 180, h: 180, top: "40%", left: "20%", delay: 3 },
-    ].map((o, i) => (
-      <motion.div
-        key={i}
-        animate={{ scale: [1, 1.08, 1], opacity: [0.06, 0.12, 0.06] }}
-        transition={{ duration: 6 + i * 2, repeat: Infinity, delay: o.delay, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          width: o.w,
-          height: o.h,
-          top: o.top,
-          bottom: o.bottom,
-          left: o.left,
-          right: o.right,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${GOLD} 0%, transparent 70%)`,
-        }}
-      />
-    ))}
-  </div>
-);
-
-const BrandingPanel = () => (
-  <div style={{
-    flex: "0 0 420px",
-    background: BG_PANEL,
-    borderRight: `1px solid ${BORDER}`,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "60px 48px",
-    position: "relative",
-    overflow: "hidden",
-  }}>
-    <FloatingOrbs />
-    <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-      <DecorativeGlyph />
-      <div style={{ marginBottom: "6px" }}>
-        <span style={{
-          fontSize: "11px",
-          letterSpacing: "0.3em",
-          color: GOLD,
-          textTransform: "uppercase",
-          fontFamily: "'Cormorant Garamond', serif",
-          fontWeight: 600,
-        }}>The Art Of</span>
-      </div>
-      <h1 style={{
-        fontFamily: "'Playfair Display', serif",
-        fontSize: "52px",
-        fontWeight: 700,
-        color: "#fff",
-        margin: "0 0 6px",
-        lineHeight: 1.05,
-        letterSpacing: "-0.01em",
-      }}>Prompting</h1>
-      <div style={{
-        width: "60px",
-        height: "2px",
-        background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)`,
-        margin: "20px auto 28px",
-      }} />
-      <p style={{
-        fontFamily: "'Cormorant Garamond', serif",
-        fontSize: "16px",
-        color: "rgba(255,255,255,0.5)",
-        lineHeight: 1.75,
-        maxWidth: "280px",
-        margin: "0 auto 40px",
-        fontStyle: "italic",
-      }}>
-        Master the language of intelligence. Shape thoughts into precision.
-      </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-        {[
-          { icon: "◈", text: "Craft powerful prompts" },
-          { icon: "◇", text: "Explore prompt patterns" },
-          { icon: "◆", text: "Learn advanced techniques" },
-        ].map((item, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 + i * 0.15, duration: 0.5 }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "14px",
-              padding: "12px 16px",
-              background: "rgba(168,169,173,0.06)",
-              borderRadius: "10px",
-              border: `1px solid rgba(168,169,173,0.12)`,
-            }}>
-            <span style={{ color: GOLD, fontSize: "16px" }}>{item.icon}</span>
-            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "14px", color: "rgba(255,255,255,0.65)", letterSpacing: "0.04em" }}>{item.text}</span>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
-const formVariants = {
-  enter: (dir) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
-};
-
-function LoginForm({ onSwitch }) {
+/* ─── Login form ─── */
+function LoginForm({ onSwitch, onLogin }) {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [pw, setPw] = useState("");
+
+  const handleSubmit = () => {
+    if (!email) return;
+    onLogin?.({ email, name: email.split("@")[0] });
+  };
+
   return (
     <div>
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <p style={{ fontSize: "11px", letterSpacing: "0.25em", color: GOLD, textTransform: "uppercase", fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, marginBottom: "8px" }}>Welcome back</p>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "34px", color: "#fff", margin: "0 0 8px", fontWeight: 700 }}>Sign In</h2>
-        <p style={{ color: TEXT_MUTED, fontSize: "14px", fontFamily: "'Cormorant Garamond', serif", marginBottom: "32px" }}>Access your prompting workspace</p>
+      <motion.div initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }}>
+        <p style={{ fontSize:"10px", letterSpacing:"0.3em", color: C.ice, fontFamily:"'Special Elite', monospace", textTransform:"uppercase", marginBottom:"6px", textShadow:`0 0 10px ${C.ice}80` }}>✦ Welcome Back</p>
+        <h2 style={{ fontFamily:"'Playfair Display', serif", fontSize:"32px", color:"#fff", margin:"0 0 6px", fontWeight:700, lineHeight:1.1 }}>Sign In</h2>
+        <p style={{ color: C.muted, fontSize:"13px", fontFamily:"'Cormorant Garamond', serif", marginBottom:"28px", fontStyle:"italic" }}>
+          <Typewriter text="The city never sleeps. Neither do we." delay={300}/>
+        </p>
       </motion.div>
-      <InputField label="Email Address" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} delay={0.1} />
-      <InputField label="Password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} delay={0.2} />
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} style={{ textAlign: "right", marginTop: "-12px", marginBottom: "24px" }}>
-        <span style={{ fontSize: "12px", color: GOLD, cursor: "pointer", fontFamily: "'Cormorant Garamond', serif", letterSpacing: "0.05em" }}>Forgot password?</span>
+      <Field label="Email ID" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} delay={0.1}/>
+      <Field label="Password" type="password" placeholder="••••••••" value={pw} onChange={e => setPw(e.target.value)} delay={0.18}/>
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.22 }} style={{ textAlign:"right", marginBottom:"20px", marginTop:"-10px" }}>
+        <span style={{ fontSize:"11px", color: C.silverDim, cursor:"pointer", fontFamily:"'Special Elite', monospace", letterSpacing:"0.08em", textShadow:`0 0 8px ${C.ice}40` }}>
+          Forgot password?
+        </span>
       </motion.div>
-      <motion.button
-        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-        whileHover={{ scale: 1.02, boxShadow: `0 8px 32px rgba(168,169,173,0.25)` }}
-        whileTap={{ scale: 0.98 }}
-        style={{
-          width: "100%", padding: "14px", borderRadius: "10px",
-          background: `linear-gradient(135deg, ${GOLD} 0%, ${GOLD_LIGHT} 50%, ${GOLD} 100%)`,
-          backgroundSize: "200% 100%",
-          border: "none", color: "#0A0A0F", fontSize: "13px",
-          fontFamily: "'Cormorant Garamond', serif", fontWeight: 700,
-          letterSpacing: "0.18em", textTransform: "uppercase",
-          cursor: "pointer", marginBottom: "20px",
-        }}>
-        Enter the Studio
-      </motion.button>
-      <GoldDivider />
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} style={{ textAlign: "center" }}>
-        <span style={{ color: TEXT_MUTED, fontSize: "13px", fontFamily: "'Cormorant Garamond', serif" }}>New to the art? </span>
-        <span
-          onClick={onSwitch}
-          style={{ color: GOLD, fontSize: "13px", cursor: "pointer", fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, textDecoration: "underline", textDecorationColor: "rgba(168,169,173,0.4)" }}>
-          Create an account →
+      <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.28 }}>
+        <NeonButton onClick={handleSubmit}>Enter the Studio</NeonButton>
+      </motion.div>
+      <Divider/>
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.35 }} style={{ textAlign:"center" }}>
+        <span style={{ color: C.muted, fontSize:"12px", fontFamily:"'Cormorant Garamond', serif" }}>New here? </span>
+        <span onClick={onSwitch} style={{ color: C.silver, fontSize:"12px", cursor:"pointer", fontFamily:"'Special Elite', monospace", letterSpacing:"0.06em", textShadow:`0 0 8px ${C.ice}60` }}>
+          Create an Account →
         </span>
       </motion.div>
     </div>
   );
 }
 
-function SignupForm({ onSwitch }) {
+/* ─── Signup form ─── */
+function SignupForm({ onSwitch, onLogin }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [pw, setPw] = useState("");
   const [confirm, setConfirm] = useState("");
   const [agreed, setAgreed] = useState(false);
+
+  const handleSubmit = () => {
+    if (!agreed || !email) return;
+    onLogin?.({ email, name: name || email.split("@")[0] });
+  };
   return (
     <div>
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <p style={{ fontSize: "11px", letterSpacing: "0.25em", color: GOLD, textTransform: "uppercase", fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, marginBottom: "8px" }}>Begin your journey</p>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "34px", color: "#fff", margin: "0 0 8px", fontWeight: 700 }}>Create Account</h2>
-        <p style={{ color: TEXT_MUTED, fontSize: "14px", fontFamily: "'Cormorant Garamond', serif", marginBottom: "28px" }}>Join the art of intelligent conversation</p>
+      <motion.div initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }}>
+        <p style={{ fontSize:"10px", letterSpacing:"0.3em", color: C.ice, fontFamily:"'Special Elite', monospace", textTransform:"uppercase", marginBottom:"6px", textShadow:`0 0 10px ${C.ice}80` }}>New Recruit</p>
+        <h2 style={{ fontFamily:"'Playfair Display', serif", fontSize:"32px", color:"#fff", margin:"0 0 6px", fontWeight:700, lineHeight:1.1 }}>Create Account</h2>
+        <p style={{ color: C.muted, fontSize:"13px", fontFamily:"'Cormorant Garamond', serif", marginBottom:"24px", fontStyle:"italic" }}>
+          <Typewriter text="Leave a trace. Join the art of prompting." delay={300}/>
+        </p>
       </motion.div>
-      <InputField label="Full Name" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} delay={0.1} />
-      <InputField label="Email Address" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} delay={0.18} />
-      <InputField label="Password" type="password" placeholder="Create a strong password" value={password} onChange={e => setPassword(e.target.value)} delay={0.26} />
-      <InputField label="Confirm Password" type="password" placeholder="Repeat your password" value={confirm} onChange={e => setConfirm(e.target.value)} delay={0.34} />
+      <Field label="Alias" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} delay={0.08}/>
+      <Field label="Contact" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} delay={0.14}/>
+      <Field label="Password" type="password" placeholder="Create a strong password" value={pw} onChange={e => setPw(e.target.value)} delay={0.2}/>
+      <Field label="Confirm Password" type="password" placeholder="Repeat your password" value={confirm} onChange={e => setConfirm(e.target.value)} delay={0.26}/>
       <motion.div
-        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}
+        initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3 }}
         onClick={() => setAgreed(v => !v)}
-        style={{
-          display: "flex", alignItems: "center", gap: "12px",
-          marginBottom: "20px", cursor: "pointer", userSelect: "none",
-        }}>
+        style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"18px", cursor:"pointer", userSelect:"none" }}
+      >
         <div style={{
-          width: "17px", height: "17px", borderRadius: "4px", flexShrink: 0,
-          border: `1.5px solid ${agreed ? GOLD : "rgba(168,169,173,0.35)"}`,
-          background: agreed ? GOLD : "transparent",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "all 0.2s ease",
-          boxShadow: agreed ? `0 0 8px rgba(168,169,173,0.3)` : "none",
+          width:"16px", height:"16px", borderRadius:"3px", flexShrink:0,
+          border:`1.5px solid ${agreed ? C.silver : "rgba(200,205,214,0.25)"}`,
+          background: agreed ? "rgba(200,205,214,0.15)" : "transparent",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          boxShadow: agreed ? `0 0 10px rgba(126,200,232,0.35)` : "none",
+          transition:"all 0.2s",
         }}>
-          {agreed && (
-            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-              <path d="M1 3.5L3.8 6.5L9 1" stroke="#0A0A0F" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
+          {agreed && <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3L3.5 5.5L8 1" stroke={C.silverLt} strokeWidth="1.5" strokeLinecap="round" fill="none"/></svg>}
         </div>
-        <span style={{
-          fontFamily: "'Cormorant Garamond', serif", fontSize: "13px",
-          color: agreed ? "rgba(255,255,255,0.7)" : TEXT_MUTED,
-          letterSpacing: "0.03em", lineHeight: 1.4,
-          transition: "color 0.2s ease",
-        }}>
-          I agree to share my details for account creation
+        <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"12px", color: agreed ? C.text : C.muted, letterSpacing:"0.03em", transition:"color 0.2s" }}>
+          I agree to share my details for enlistment
         </span>
       </motion.div>
-      <motion.button
-        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-        whileHover={agreed ? { scale: 1.02, boxShadow: `0 8px 32px rgba(168,169,173,0.25)` } : {}}
-        whileTap={agreed ? { scale: 0.98 } : {}}
-        style={{
-          width: "100%", padding: "14px", borderRadius: "10px",
-          background: agreed
-            ? `linear-gradient(135deg, ${GOLD} 0%, ${GOLD_LIGHT} 50%, ${GOLD} 100%)`
-            : "rgba(168,169,173,0.08)",
-          border: agreed ? "none" : "1px solid rgba(168,169,173,0.15)",
-          color: agreed ? "#0A0A0F" : "rgba(255,255,255,0.2)", fontSize: "13px",
-          fontFamily: "'Cormorant Garamond', serif", fontWeight: 700,
-          letterSpacing: "0.18em", textTransform: "uppercase",
-          cursor: agreed ? "pointer" : "not-allowed", marginBottom: "20px",
-          transition: "all 0.3s ease",
-        }}>
-        Begin the Journey
-      </motion.button>
-      <GoldDivider />
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} style={{ textAlign: "center" }}>
-        <span style={{ color: TEXT_MUTED, fontSize: "13px", fontFamily: "'Cormorant Garamond', serif" }}>Already a member? </span>
-        <span
-          onClick={onSwitch}
-          style={{ color: GOLD, fontSize: "13px", cursor: "pointer", fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, textDecoration: "underline", textDecorationColor: "rgba(168,169,173,0.4)" }}>
+      <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.34 }}>
+        <NeonButton disabled={!agreed} onClick={handleSubmit}>Begin the Journey</NeonButton>
+      </motion.div>
+      <Divider/>
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.4 }} style={{ textAlign:"center" }}>
+        <span style={{ color: C.muted, fontSize:"12px", fontFamily:"'Cormorant Garamond', serif" }}>Already enlisted? </span>
+        <span onClick={onSwitch} style={{ color: C.silver, fontSize:"12px", cursor:"pointer", fontFamily:"'Special Elite', monospace", letterSpacing:"0.06em", textShadow:`0 0 8px ${C.ice}60` }}>
           ← Sign in
         </span>
       </motion.div>
@@ -316,110 +357,172 @@ function SignupForm({ onSwitch }) {
   );
 }
 
-export default function AuthPage() {
+
+/* ─── Branding panel content ─── */
+const BrandFeature = ({ icon, text, delay }) => (
+  <motion.div
+    initial={{ opacity:0, x:-16 }} animate={{ opacity:1, x:0 }} transition={{ delay, duration:0.45 }}
+    style={{
+      display:"flex", alignItems:"center", gap:"12px", padding:"10px 14px",
+      background:"rgba(200,205,214,0.04)", borderRadius:"8px",
+      border:`1px solid rgba(200,205,214,0.10)`,
+    }}
+  >
+    <span style={{ color: C.ice, fontSize:"14px", textShadow:`0 0 8px ${C.ice}70` }}>{icon}</span>
+    <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"13px", color:"rgba(255,255,255,0.6)", letterSpacing:"0.05em" }}>{text}</span>
+  </motion.div>
+);
+
+/* ─── Tab switcher ─── */
+function TabBar({ mode, onSwitch }) {
+  return (
+    <div style={{
+      position:"absolute", top:"22px", right:"22px",
+      display:"flex", gap:"3px", background:"rgba(15,16,20,0.8)",
+      borderRadius:"8px", padding:"3px", border:`1px solid rgba(200,205,214,0.16)`,
+      backdropFilter:"blur(8px)",
+    }}>
+      {["login", "signup"].map(m => (
+        <button key={m} onClick={() => onSwitch(m)} style={{
+          padding:"6px 16px", borderRadius:"6px", border:"none",
+          background: mode === m ? "rgba(200,205,214,0.14)" : "transparent",
+          color: mode === m ? C.silverLt : C.muted,
+          boxShadow: mode === m ? `0 0 12px rgba(126,200,232,0.2)` : "none",
+          fontSize:"10px", letterSpacing:"0.14em", textTransform:"uppercase",
+          fontFamily:"'Special Elite', monospace", cursor:"pointer", transition:"all 0.22s",
+        }}>{m === "login" ? "Sign In" : "Sign Up"}</button>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Root ─── */
+export default function NeoNoirAuth({ onLogin }) {
   const [mode, setMode] = useState("login");
-  const [direction, setDirection] = useState(1);
+  const [dir, setDir] = useState(1);
 
   const switchTo = (next) => {
-    setDirection(next === "signup" ? 1 : -1);
+    setDir(next === "signup" ? 1 : -1);
     setMode(next);
+  };
+
+  const formVariants = {
+    enter:  (d) => ({ x: d > 0 ? 50 : -50, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit:   (d) => ({ x: d > 0 ? -50 : 50, opacity: 0 }),
   };
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: ${BG_DEEP}; }
-        input::placeholder { color: rgba(255,255,255,0.2); }
-        input:focus { outline: none; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(168,169,173,0.3); border-radius: 2px; }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Special+Elite&display=swap');
+        * { box-sizing:border-box; margin:0; padding:0; }
+        body { background:#0b0c10; }
+        input::placeholder { color:rgba(255,255,255,0.18); }
+        input:focus { outline:none; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        ::-webkit-scrollbar { width:3px; }
+        ::-webkit-scrollbar-thumb { background:rgba(200,205,214,0.25); border-radius:2px; }
       `}</style>
+
+      <GrainOverlay/>
+      <Letterbox/>
+
       <div style={{
-        minHeight: "100vh",
-        background: BG_DEEP,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px",
-        fontFamily: "'Cormorant Garamond', serif",
+        minHeight:"100vh", background: C.bg,
+        display:"flex", alignItems:"center", justifyContent:"center",
+        padding:"72px 24px", fontFamily:"'Cormorant Garamond', serif",
       }}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+          initial={{ opacity:0, scale:0.96 }}
+          animate={{ opacity:1, scale:1 }}
+          transition={{ duration:0.65, ease:[0.22,1,0.36,1] }}
           style={{
-            display: "flex",
-            width: "900px",
-            maxWidth: "100%",
-            minHeight: "600px",
-            background: BG_CARD,
-            borderRadius: "20px",
-            border: `1px solid ${BORDER}`,
-            overflow: "hidden",
-            boxShadow: "0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(168,169,173,0.08)",
-          }}>
-          <BrandingPanel />
-          <div style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            padding: "56px 52px",
-            position: "relative",
-            overflow: "hidden",
-          }}>
-            <div style={{
-              position: "absolute",
-              top: "24px",
-              right: "24px",
-              display: "flex",
-              gap: "4px",
-              background: "rgba(255,255,255,0.04)",
-              borderRadius: "10px",
-              padding: "4px",
-              border: `1px solid ${BORDER}`,
-            }}>
-              {["login", "signup"].map(m => (
-                <motion.button
-                  key={m}
-                  onClick={() => switchTo(m)}
-                  style={{
-                    padding: "7px 18px",
-                    borderRadius: "7px",
-                    border: "none",
-                    background: mode === m ? GOLD : "transparent",
-                    color: mode === m ? "#0A0A0F" : TEXT_MUTED,
-                    fontSize: "11px",
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.25s",
-                  }}
-                  whileHover={mode !== m ? { color: "rgba(255,255,255,0.7)" } : {}}
-                >
-                  {m === "login" ? "Sign In" : "Sign Up"}
-                </motion.button>
-              ))}
-            </div>
+            display:"flex", width:"880px", maxWidth:"100%", minHeight:"580px",
+            background: C.card, borderRadius:"16px",
+            border:`1px solid rgba(200,205,214,0.14)`,
+            overflow:"hidden",
+            boxShadow:`0 0 0 1px rgba(200,205,214,0.06), 0 40px 100px rgba(0,0,0,0.75), 0 0 60px rgba(126,200,232,0.05)`,
+          }}
+        >
+          {/* ─── Left: Branding panel ─── */}
+          <SpotlightPanel>
+            <NeonSign/>
 
-            <AnimatePresence mode="wait" custom={direction}>
+            {/* Dark vignette over rain for readability */}
+            <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(11,12,16,0.6) 100%)", pointerEvents:"none" }}/>
+
+            <div style={{ position:"relative", zIndex:2, display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", height:"100%", padding:"60px 40px", textAlign:"center" }}>
+
+              {/* Decorative reticle */}
+              <motion.div
+                animate={{ rotate: 360 }} transition={{ duration: 40, repeat:Infinity, ease:"linear" }}
+                style={{ marginBottom:"22px" }}
+              >
+                <svg width="52" height="52" viewBox="0 0 52 52">
+                  <circle cx="26" cy="26" r="24" stroke={C.silver} strokeWidth="0.6" strokeDasharray="6 4" opacity="0.55"/>
+                  <circle cx="26" cy="26" r="16" stroke={C.ice} strokeWidth="0.4" opacity="0.4"/>
+                  <line x1="26" y1="10" x2="26" y2="42" stroke={C.silver} strokeWidth="0.5" opacity="0.4"/>
+                  <line x1="10" y1="26" x2="42" y2="26" stroke={C.silver} strokeWidth="0.5" opacity="0.4"/>
+                  {/* 4-pointed star */}
+                  <path
+                    d="M26 20 L27.4 24.6 L32 26 L27.4 27.4 L26 32 L24.6 27.4 L20 26 L24.6 24.6 Z"
+                    fill={C.silverLt}
+                    opacity="0.95"
+                    filter="url(#starGlow)"
+                  />
+                  <defs>
+                    <filter id="starGlow" x="-80%" y="-80%" width="260%" height="260%">
+                      <feGaussianBlur stdDeviation="1.8" result="blur"/>
+                      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                  </defs>
+                </svg>
+              </motion.div>
+
+              <span style={{ fontSize:"13px", letterSpacing:"0.3em", color: C.ice, textTransform:"uppercase", fontFamily:"'Special Elite', monospace", textShadow:`0 0 8px ${C.ice}70`, marginBottom:"6px", display:"block" }}>The Art Of</span>
+
+              <h1 style={{
+                fontFamily:"'Playfair Display', serif", fontSize:"50px", fontWeight:700,
+                color:"#fff", lineHeight:1.05, margin:"0 0 4px",
+                textShadow:`0 0 30px rgba(180,210,235,0.25)`,
+              }}>Prompting</h1>
+
+              <div style={{ width:"50px", height:"1px", background:`linear-gradient(90deg, transparent, ${C.silver}, transparent)`, margin:"18px auto 22px", boxShadow:`0 0 8px rgba(200,205,214,0.4)` }}/>
+
+              <p style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"15px", color:"rgba(255,255,255,0.42)", lineHeight:1.8, maxWidth:"240px", margin:"0 auto 32px", fontStyle:"italic" }}>
+                In the rain-soaked streets of intelligence, precision is your only weapon.
+              </p>
+
+              <div style={{ display:"flex", flexDirection:"column", gap:"12px", width:"100%" }}>
+                <BrandFeature icon="◈" text="Craft powerful prompts" delay={0.5}/>
+                <BrandFeature icon="◇" text="Explore prompt patterns" delay={0.65}/>
+                <BrandFeature icon="◆" text="Learn advanced techniques" delay={0.8}/>
+              </div>
+            </div>
+          </SpotlightPanel>
+
+          {/* ─── Right: Form panel ─── */}
+          <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center", padding:"52px 48px", position:"relative", overflow:"hidden", background: C.card }}>
+            {/* Subtle scanlines */}
+            <div style={{
+              position:"absolute", inset:0, pointerEvents:"none", opacity:0.025,
+              backgroundImage:"repeating-linear-gradient(0deg, rgba(255,255,255,0.5) 0px, rgba(255,255,255,0.5) 1px, transparent 1px, transparent 3px)",
+            }}/>
+
+            <TabBar mode={mode} onSwitch={switchTo}/>
+
+            <AnimatePresence mode="wait" custom={dir}>
               <motion.div
                 key={mode}
-                custom={direction}
+                custom={dir}
                 variants={formVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
+                initial="enter" animate="center" exit="exit"
+                transition={{ duration:0.38, ease:[0.25,0.46,0.45,0.94] }}
               >
                 {mode === "login"
-                  ? <LoginForm onSwitch={() => switchTo("signup")} />
-                  : <SignupForm onSwitch={() => switchTo("login")} />
+                  ? <LoginForm onSwitch={() => switchTo("signup")} onLogin={onLogin}/>
+                  : <SignupForm onSwitch={() => switchTo("login")} onLogin={onLogin}/>
                 }
               </motion.div>
             </AnimatePresence>

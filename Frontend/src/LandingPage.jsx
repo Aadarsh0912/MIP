@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import NeoNoirAuth from "./AuthPage";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const S = {
@@ -1189,8 +1190,118 @@ const Orbs = ({ visible = true }) => (
   </motion.div>
 );
 
+// ─── Avatar Dropdown ──────────────────────────────────────────────────────────
+const AvatarMenu = ({ user, onSignOut, onOpenAuth }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const initial = user ? (user.name || user.email || "A").charAt(0).toUpperCase() : null;
+
+  if (!user) {
+    return (
+      <motion.button
+        onClick={onOpenAuth}
+        whileHover={{ scale:1.03, background:"rgba(168,169,173,0.12)" }}
+        whileTap={{ scale:0.96 }}
+        style={{
+          background:"rgba(168,169,173,0.07)",
+          border:"1px solid rgba(168,169,173,0.22)",
+          borderRadius:"8px", padding:"8px 18px",
+          color:S.silverLt, fontSize:"11px",
+          letterSpacing:"0.13em", textTransform:"uppercase",
+          fontFamily:"'Cormorant Garamond', serif", fontWeight:600,
+          cursor:"pointer",
+        }}
+      >
+        Sign In
+      </motion.button>
+    );
+  }
+
+  return (
+    <div ref={ref} style={{ position:"relative" }}>
+      <motion.button
+        onClick={() => setOpen(v => !v)}
+        whileHover={{ scale:1.06 }}
+        whileTap={{ scale:0.94 }}
+        style={{
+          width:"34px", height:"34px", borderRadius:"50%",
+          background:"linear-gradient(135deg, rgba(168,169,173,0.22) 0%, rgba(168,169,173,0.10) 100%)",
+          border:"1px solid rgba(168,169,173,0.35)",
+          color:S.silverLt,
+          fontFamily:"'Playfair Display', serif",
+          fontSize:"14px", fontWeight:700,
+          display:"flex", alignItems:"center", justifyContent:"center",
+          cursor:"pointer",
+          boxShadow: open ? "0 0 0 2px rgba(168,169,173,0.25), 0 0 14px rgba(168,169,173,0.12)" : "none",
+          transition:"box-shadow 0.2s",
+        }}
+      >
+        {initial}
+      </motion.button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity:0, y:-8, scale:0.96 }}
+            animate={{ opacity:1, y:0, scale:1 }}
+            exit={{ opacity:0, y:-8, scale:0.96 }}
+            transition={{ duration:0.18, ease:[0.25,0.46,0.45,0.94] }}
+            style={{
+              position:"absolute", top:"calc(100% + 10px)", right:0,
+              minWidth:"170px",
+              background:"rgba(15,15,26,0.96)",
+              border:"1px solid rgba(168,169,173,0.18)",
+              borderRadius:"10px",
+              backdropFilter:"blur(18px)",
+              boxShadow:"0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(168,169,173,0.06)",
+              overflow:"hidden",
+              zIndex:200,
+            }}
+          >
+            {/* Profile row */}
+            <div style={{ padding:"12px 16px", borderBottom:"1px solid rgba(168,169,173,0.10)" }}>
+              <div style={{ fontFamily:"'Playfair Display', serif", fontSize:"13px", color:S.white, fontWeight:600, marginBottom:"2px" }}>
+                {user.name || "Explorer"}
+              </div>
+              <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"11px", color:S.muted, letterSpacing:"0.03em" }}>
+                {user.email || ""}
+              </div>
+            </div>
+
+            {/* Sign out */}
+            <button
+              onClick={() => { setOpen(false); onSignOut?.(); }}
+              style={{
+                width:"100%", padding:"11px 16px",
+                background:"transparent",
+                border:"none",
+                color:"rgba(168,169,173,0.7)",
+                fontFamily:"'Cormorant Garamond', serif",
+                fontSize:"12px", letterSpacing:"0.08em", textTransform:"uppercase",
+                textAlign:"left", cursor:"pointer",
+                transition:"background 0.15s, color 0.15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background="rgba(168,169,173,0.08)"; e.currentTarget.style.color=S.silverLt; }}
+              onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="rgba(168,169,173,0.7)"; }}
+            >
+              Sign Out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 // ─── Navbar ───────────────────────────────────────────────────────────────────
-const Navbar = ({ onBack, showBack, onNav, activeView }) => (
+const Navbar = ({ onBack, showBack, onNav, activeView, user, onSignOut, onOpenAuth }) => (
   <motion.nav initial={{ y:-60, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.6, ease:[0.25,0.46,0.45,0.94] }}
     style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, height:"64px", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 40px", background:"rgba(8,8,15,0.9)", backdropFilter:"blur(20px)", borderBottom:"1px solid rgba(168,169,173,0.09)" }}>
     <motion.div onClick={() => onNav?.("home")} whileHover={{ opacity:0.85 }} style={{ display:"flex", alignItems:"center", gap:"10px", cursor:"pointer" }}>
@@ -1203,23 +1314,26 @@ const Navbar = ({ onBack, showBack, onNav, activeView }) => (
         The Art of Prompting
       </span>
     </motion.div>
-    {showBack ? (
-      <motion.button onClick={onBack} whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
-        style={{ background:"rgba(168,169,173,0.08)", border:"1px solid rgba(168,169,173,0.18)", borderRadius:"8px", padding:"8px 20px", color:S.silverLt, fontSize:"11px", letterSpacing:"0.14em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, cursor:"pointer" }}>
-        Back to Journey
-      </motion.button>
-    ) : (
-      <div style={{ display:"flex", gap:"6px" }}>
-        {[["Prompt Lab","lab"],["Challenges","challenges"],["Dashboard","dashboard"]].map(([label,dest]) => (
-          <motion.button key={label}
-            onClick={() => onNav?.(dest)}
-            whileHover={{ scale:1.03, background:"rgba(168,169,173,0.1)" }} whileTap={{ scale:0.96 }}
-            style={{ background: activeView===dest ? "rgba(168,169,173,0.14)" : "rgba(168,169,173,0.05)", border: activeView===dest ? "1px solid rgba(168,169,173,0.3)" : "1px solid rgba(168,169,173,0.12)", borderRadius:"8px", padding:"8px 16px", color: activeView===dest ? S.silverLt : S.muted, fontSize:"11px", letterSpacing:"0.1em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, cursor:"pointer", transition:"all 0.2s" }}>
-            {label}
-          </motion.button>
-        ))}
-      </div>
-    )}
+    <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+      {showBack ? (
+        <motion.button onClick={onBack} whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
+          style={{ background:"rgba(168,169,173,0.08)", border:"1px solid rgba(168,169,173,0.18)", borderRadius:"8px", padding:"8px 20px", color:S.silverLt, fontSize:"11px", letterSpacing:"0.14em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, cursor:"pointer" }}>
+          Back to Journey
+        </motion.button>
+      ) : (
+        <div style={{ display:"flex", gap:"6px" }}>
+          {[["Prompt Lab","lab"],["Challenges","challenges"],["Dashboard","dashboard"]].map(([label,dest]) => (
+            <motion.button key={label}
+              onClick={() => onNav?.(dest)}
+              whileHover={{ scale:1.03, background:"rgba(168,169,173,0.1)" }} whileTap={{ scale:0.96 }}
+              style={{ background: activeView===dest ? "rgba(168,169,173,0.14)" : "rgba(168,169,173,0.05)", border: activeView===dest ? "1px solid rgba(168,169,173,0.3)" : "1px solid rgba(168,169,173,0.12)", borderRadius:"8px", padding:"8px 16px", color: activeView===dest ? S.silverLt : S.muted, fontSize:"11px", letterSpacing:"0.1em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, cursor:"pointer", transition:"all 0.2s" }}>
+              {label}
+            </motion.button>
+          ))}
+        </div>
+      )}
+      <AvatarMenu user={user} onSignOut={onSignOut} onOpenAuth={onOpenAuth} />
+    </div>
   </motion.nav>
 );
 
@@ -1510,7 +1624,7 @@ const LessonPage = ({ stage, completed, stageStars, onBack, onOpenQuiz }) => {
 };
 
 // ─── Home Page ────────────────────────────────────────────────────────────────
-const HomePage = ({ completed, stageStarsMap, onOpenStage }) => {
+const HomePage = ({ completed, stageStarsMap, onOpenStage, user }) => {
   const { scrollY } = useScroll();
   const heroY  = useTransform(scrollY, [0,350], [0,-50]);
   const heroOp = useTransform(scrollY, [0,280], [1,0.65]);
@@ -1523,7 +1637,7 @@ const HomePage = ({ completed, stageStarsMap, onOpenStage }) => {
         <div style={{ textAlign:"center", padding:"72px 32px 36px" }}>
           <motion.h1 initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15, duration:0.6 }}
             style={{ fontFamily:"'Playfair Display', serif", fontSize:"clamp(38px,6vw,68px)", fontWeight:700, color:S.white, margin:"0 0 6px", lineHeight:1.06 }}>
-            Welcome, <span style={{ color:S.silverLt }}>Aadarsh Rao</span>
+            {user ? <>Welcome, <span style={{ color:S.silverLt }}>{user.name}</span></> : <>Welcome, <span style={{ color:S.silverLt }}>Explorer</span></>}
           </motion.h1>
           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.25 }}
             style={{ width:"60px", height:"1.5px", background:`linear-gradient(90deg, transparent, ${S.silver}, transparent)`, margin:"14px auto 20px" }}/>
@@ -3720,13 +3834,18 @@ const ConstraintAuctionChallenge = ({ onComplete }) => {
   const ALLOWED = 3;
   const todayIndex = Math.floor(Date.now() / 86400000) % CONSTRAINT_AUCTION_DAYS.length;
 
-  const [challengeIndex, setChallengeIndex] = useState(todayIndex);
-  const [selectedIds, setSelectedIds]       = useState([]);
-  const [ranking, setRanking]               = useState([]);
-  const [phase, setPhase]                   = useState("pick"); // pick | rank | rank-result | result
-  const [score, setScore]                   = useState(null);
-  const [rankAttempts, setRankAttempts]     = useState(0);
-  const [rankFeedback, setRankFeedback]     = useState(null);
+  // Key daily state by today's date so it auto-resets tomorrow
+  const todayKey = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+  const savedKey = "pe_dailyChallenge_" + todayKey;
+  const saved = (() => { try { const s = localStorage.getItem(savedKey); return s ? JSON.parse(s) : null; } catch { return null; } })();
+
+  const [challengeIndex, setChallengeIndex] = useState(saved?.challengeIndex ?? todayIndex);
+  const [selectedIds, setSelectedIds]       = useState(saved?.selectedIds   ?? []);
+  const [ranking, setRanking]               = useState(saved?.ranking       ?? []);
+  const [phase, setPhase]                   = useState(saved?.phase         ?? "pick");
+  const [score, setScore]                   = useState(saved?.score         ?? null);
+  const [rankAttempts, setRankAttempts]     = useState(saved?.rankAttempts  ?? 0);
+  const [rankFeedback, setRankFeedback]     = useState(saved?.rankFeedback  ?? null);
   const [countdown, setCountdown]           = useState("");
 
   const data = CONSTRAINT_AUCTION_DAYS[challengeIndex % CONSTRAINT_AUCTION_DAYS.length];
@@ -3758,7 +3877,16 @@ const ConstraintAuctionChallenge = ({ onComplete }) => {
     setRankFeedback(null);
   };
 
-  const [locked, setLocked] = useState(false);
+  const [locked, setLocked] = useState(saved?.locked ?? false);
+
+  // Persist all daily challenge state whenever anything changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(savedKey, JSON.stringify({
+        challengeIndex, selectedIds, ranking, phase, score, rankAttempts, rankFeedback, locked
+      }));
+    } catch {}
+  }, [challengeIndex, selectedIds, ranking, phase, score, rankAttempts, rankFeedback, locked]);
 
   const goToNext = () => {
     setLocked(true);
@@ -7554,7 +7682,7 @@ function ChallengesCompletedCard({ done, total }) {
   );
 }
 
-function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, completedChallengeIds, onOpenStage }) {
+function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, completedChallengeIds, onOpenStage, user }) {
   const completedIds = completed || [];
   const starsMap = stageStarsMap || {};
   const activeStage = completedIds.length < 11 ? completedIds.length + 1 : 11;
@@ -7590,8 +7718,8 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
         <div className="obs-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", animationDelay: "0ms" }}>
           <div>
             <div style={{ fontSize: "10px", letterSpacing: "0.22em", color: DS.muted, marginBottom: "4px", fontFamily: "'Playfair Display', serif" }}>THE OBSERVATORY</div>
-            <div style={{ fontSize: "28px", fontWeight: "700", fontFamily: "'Playfair Display', serif", lineHeight: 1.1, color: DS.white }}>Welcome back,</div>
-            <div style={{ fontSize: "28px", fontWeight: "400", fontFamily: "'Playfair Display', serif", lineHeight: 1.1, color: DS.silver, fontStyle: "italic" }}>Pathfinder</div>
+            <div style={{ fontSize: "28px", fontWeight: "700", fontFamily: "'Playfair Display', serif", lineHeight: 1.1, color: DS.white }}>{user ? "Welcome back," : "Welcome,"}</div>
+            <div style={{ fontSize: "28px", fontWeight: "400", fontFamily: "'Playfair Display', serif", lineHeight: 1.1, color: DS.silver, fontStyle: "italic" }}>{user ? user.name : "Explorer"}</div>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "6px" }}>CURRENT RANK</div>
@@ -7733,18 +7861,55 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
   );
 }
 
+// ─── localStorage helpers ─────────────────────────────────────────────────────
+function lsGet(key, fallback) {
+  try { const s = localStorage.getItem(key); return s !== null ? JSON.parse(s) : fallback; } catch { return fallback; }
+}
+function lsSet(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
+function lsDel(key) {
+  try { localStorage.removeItem(key); } catch {}
+}
+
 export default function App() {
   const [introComplete, setIntroComplete] = useState(false);
   const [showAppWave,   setShowAppWave]   = useState(false);
   const [view,         setView]         = useState("home");
   const [activeStage,  setActiveStage]  = useState(null);
-  const [completed,    setCompleted]    = useState([]);
-  const [stageStarsMap,setStageStarsMap]= useState({});
   const [quizOpen,     setQuizOpen]     = useState(false);
-  const [streak,       setStreak]       = useState(0);
-  const [streakDays,   setStreakDays]   = useState(Array(7).fill(false));
-  const [challengesDone, setChallengesDone] = useState(0);
-  const [completedChallengeIds, setCompletedChallengeIds] = useState([]);
+
+  // ─── Persisted progress state ─────────────────────────────────────────────
+  const [completed,             setCompleted]             = useState(() => lsGet("pe_completed", []));
+  const [stageStarsMap,         setStageStarsMap]         = useState(() => lsGet("pe_stageStars", {}));
+  const [streak,                setStreak]                = useState(() => lsGet("pe_streak", 0));
+  const [streakDays,            setStreakDays]            = useState(() => lsGet("pe_streakDays", Array(7).fill(false)));
+  const [challengesDone,        setChallengesDone]        = useState(() => lsGet("pe_challengesDone", 0));
+  const [completedChallengeIds, setCompletedChallengeIds] = useState(() => lsGet("pe_completedChallengeIds", []));
+
+  // Sync persisted state to localStorage whenever it changes
+  useEffect(() => { lsSet("pe_completed",             completed);             }, [completed]);
+  useEffect(() => { lsSet("pe_stageStars",            stageStarsMap);         }, [stageStarsMap]);
+  useEffect(() => { lsSet("pe_streak",                streak);                }, [streak]);
+  useEffect(() => { lsSet("pe_streakDays",            streakDays);            }, [streakDays]);
+  useEffect(() => { lsSet("pe_challengesDone",        challengesDone);        }, [challengesDone]);
+  useEffect(() => { lsSet("pe_completedChallengeIds", completedChallengeIds); }, [completedChallengeIds]);
+
+  // ─── Auth state ───────────────────────────────────────────────────────────
+  const [user,     setUser]     = useState(() => lsGet("pe_user", null));
+  const [authOpen, setAuthOpen] = useState(false);
+
+  const handleLogin = (userData) => { setUser(userData); setAuthOpen(false); lsSet("pe_user", userData); };
+  const handleSignOut = () => {
+    setUser(null); lsDel("pe_user");
+    // Clear all progress on sign-out so a new user starts fresh
+    setCompleted([]); lsDel("pe_completed");
+    setStageStarsMap({}); lsDel("pe_stageStars");
+    setStreak(0); lsDel("pe_streak");
+    setStreakDays(Array(7).fill(false)); lsDel("pe_streakDays");
+    setChallengesDone(0); lsDel("pe_challengesDone");
+    setCompletedChallengeIds([]); lsDel("pe_completedChallengeIds");
+  };
 
   const openStage       = (stage) => { setActiveStage(stage); setView("lesson"); window.scrollTo({ top:0, behavior:"smooth" }); };
   const goBack          = () => { setView("home"); setActiveStage(null); setQuizOpen(false); setTimeout(() => window.scrollTo({ top:0, behavior:"smooth" }), 50); };
@@ -7778,7 +7943,6 @@ export default function App() {
       return next;
     });
     setStreak(prev => {
-      // Only increment if today hasn't been counted yet
       const today2 = new Date().getDay();
       const idx = today2 === 0 ? 6 : today2 - 1;
       if (streakDays[idx]) return prev;
@@ -7814,12 +7978,20 @@ export default function App() {
         animate={introComplete ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 1.0, ease: [0.4, 0, 0.2, 1], delay: introComplete ? 0.05 : 0 }}
       >
-        <Navbar onBack={goBack} showBack={view==="lesson"} onNav={handleNav} activeView={view}/>
+        <Navbar
+          onBack={goBack}
+          showBack={view==="lesson"}
+          onNav={handleNav}
+          activeView={view}
+          user={user}
+          onSignOut={handleSignOut}
+          onOpenAuth={() => setAuthOpen(true)}
+        />
 
         <AnimatePresence mode="wait">
           {view === "home" && (
             <motion.div key="home" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.3 }}>
-              <HomePage completed={completed} stageStarsMap={stageStarsMap} onOpenStage={openStage}/>
+              <HomePage completed={completed} stageStarsMap={stageStarsMap} onOpenStage={openStage} user={user}/>
             </motion.div>
           )}
           {view === "lesson" && (
@@ -7845,7 +8017,7 @@ export default function App() {
           )}
           {view === "dashboard" && (
             <motion.div key="dashboard" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.3 }}>
-              <ObservatoryDashboard completed={completed} stageStarsMap={stageStarsMap} streak={streak} streakDays={streakDays} completedChallengeIds={completedChallengeIds} onOpenStage={openStage}/>
+              <ObservatoryDashboard completed={completed} stageStarsMap={stageStarsMap} streak={streak} streakDays={streakDays} completedChallengeIds={completedChallengeIds} onOpenStage={openStage} user={user}/>
             </motion.div>
           )}
         </AnimatePresence>
@@ -7859,6 +8031,52 @@ export default function App() {
 
       {/* Silver wave plays ON TOP of homepage at the exact moment it appears */}
       <SilverWaveTransition active={showAppWave} onDone={() => setShowAppWave(false)} />
+
+      {/* ─── Auth Modal Overlay ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {authOpen && (
+          <motion.div
+            key="auth-overlay"
+            initial={{ opacity:0 }}
+            animate={{ opacity:1 }}
+            exit={{ opacity:0 }}
+            transition={{ duration:0.25 }}
+            style={{
+              position:"fixed", inset:0, zIndex:500,
+              background:"rgba(8,8,15,0.88)",
+              backdropFilter:"blur(10px)",
+              display:"flex", alignItems:"center", justifyContent:"center",
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setAuthOpen(false); }}
+          >
+            <motion.div
+              initial={{ opacity:0, scale:0.96, y:24 }}
+              animate={{ opacity:1, scale:1, y:0 }}
+              exit={{ opacity:0, scale:0.96, y:16 }}
+              transition={{ duration:0.35, ease:[0.22,1,0.36,1] }}
+              style={{ position:"relative" }}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setAuthOpen(false)}
+                style={{
+                  position:"absolute", top:"-14px", right:"-14px", zIndex:10,
+                  width:"30px", height:"30px", borderRadius:"50%",
+                  background:"rgba(168,169,173,0.14)",
+                  border:"1px solid rgba(168,169,173,0.25)",
+                  color:"rgba(168,169,173,0.8)",
+                  fontSize:"14px", cursor:"pointer",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  lineHeight:1,
+                }}
+              >
+                ×
+              </button>
+              <NeoNoirAuth onLogin={handleLogin} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
