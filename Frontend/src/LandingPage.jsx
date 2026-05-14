@@ -1756,7 +1756,14 @@ function analysePrompt(text) {
   return { words, chars, clarity, signals:{ hasRole, hasFmt, hasCon, hasCot, hasAud, hasCtx }, tips: tips.slice(0,3) };
 }
 
-const BACKEND = "http://localhost:5000";
+const BACKEND = (() => {
+  // Vite exposes env vars via import.meta.env (must be prefixed VITE_)
+  // CRA exposes them via process.env (must be prefixed REACT_APP_)
+  // Falls back to localhost for local development when neither is set
+  const fromVite = typeof import.meta !== "undefined" && import.meta.env?.VITE_BACKEND_URL;
+  const fromCRA  = typeof process  !== "undefined" && process.env?.REACT_APP_BACKEND_URL;
+  return fromVite || fromCRA || "http://localhost:5000";
+})();
 
 const PromptLabPage = ({ onBack }) => {
   const [prompt,       setPrompt]       = useState("");

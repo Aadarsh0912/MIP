@@ -1128,3 +1128,62 @@
 2026-05-14 02:20:34,128 INFO Response from: llama-3.3-70b-versatile
 2026-05-14 02:20:34,129 INFO 127.0.0.1 - - [14/May/2026 02:20:34] "POST /api/generate HTTP/1.1" 200 -
 2026-05-14 02:20:34,134 INFO 127.0.0.1 - - [14/May/2026 02:20:34] "GET /api/history HTTP/1.1" 200 -
+2026-05-14 16:23:52,286 INFO QualityAnalyser loaded.
+2026-05-14 16:23:52,384 INFO IntentClassifier loaded.
+2026-05-14 16:23:52,388 INFO Prompt Lab | primary=llama-3.3-70b-versatile | port=5000 | key=set
+2026-05-14 16:23:52,434 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.6:5000
+2026-05-14 16:23:52,435 INFO [33mPress CTRL+C to quit[0m
+2026-05-14 16:23:59,026 INFO 127.0.0.1 - - [14/May/2026 16:23:59] "GET /api/health HTTP/1.1" 200 -
+2026-05-14 16:23:59,291 INFO 127.0.0.1 - - [14/May/2026 16:23:59] "GET /api/health HTTP/1.1" 200 -
+2026-05-14 16:23:59,336 INFO 127.0.0.1 - - [14/May/2026 16:23:59] "GET /api/history HTTP/1.1" 200 -
+2026-05-14 16:23:59,354 INFO 127.0.0.1 - - [14/May/2026 16:23:59] "GET /api/history/saved HTTP/1.1" 200 -
+2026-05-14 16:24:04,882 INFO 127.0.0.1 - - [14/May/2026 16:24:04] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-14 16:24:05,362 WARNING llama-3.3-70b-versatile exception: HTTPSConnectionPool(host='api.groq.com', port=443): Max retries exceeded with url: /openai/v1/chat/completions (Caused by NameResolutionError("HTTPSConnection(host='api.groq.com', port=443): Failed to resolve 'api.groq.com' ([Errno 11001] getaddrinfo failed)"))
+2026-05-14 16:24:05,362 WARNING llama-3.3-70b-versatile exception: HTTPSConnectionPool(host='api.groq.com', port=443): Max retries exceeded with url: /openai/v1/chat/completions (Caused by NameResolutionError("HTTPSConnection(host='api.groq.com', port=443): Failed to resolve 'api.groq.com' ([Errno 11001] getaddrinfo failed)"))
+2026-05-14 16:24:05,395 WARNING llama-3.1-8b-instant exception: HTTPSConnectionPool(host='api.groq.com', port=443): Max retries exceeded with url: /openai/v1/chat/completions (Caused by NameResolutionError("HTTPSConnection(host='api.groq.com', port=443): Failed to resolve 'api.groq.com' ([Errno 11001] getaddrinfo failed)"))
+2026-05-14 16:24:05,395 WARNING llama-3.1-8b-instant exception: HTTPSConnectionPool(host='api.groq.com', port=443): Max retries exceeded with url: /openai/v1/chat/completions (Caused by NameResolutionError("HTTPSConnection(host='api.groq.com', port=443): Failed to resolve 'api.groq.com' ([Errno 11001] getaddrinfo failed)"))
+2026-05-14 16:24:05,431 WARNING gemma2-9b-it exception: HTTPSConnectionPool(host='api.groq.com', port=443): Max retries exceeded with url: /openai/v1/chat/completions (Caused by NameResolutionError("HTTPSConnection(host='api.groq.com', port=443): Failed to resolve 'api.groq.com' ([Errno 11001] getaddrinfo failed)"))
+2026-05-14 16:24:05,431 WARNING gemma2-9b-it exception: HTTPSConnectionPool(host='api.groq.com', port=443): Max retries exceeded with url: /openai/v1/chat/completions (Caused by NameResolutionError("HTTPSConnection(host='api.groq.com', port=443): Failed to resolve 'api.groq.com' ([Errno 11001] getaddrinfo failed)"))
+2026-05-14 16:24:05,432 ERROR Response failed: All models failed. Last error: HTTPSConnectionPool(host='api.groq.com', port=443): Max retries exceeded with url: /openai/v1/chat/completions (Caused by NameResolutionError("HTTPSConnection(host='api.groq.com', port=443): Failed to resolve 'api.groq.com' ([Errno 11001] getaddrinfo failed)"))
+2026-05-14 16:24:05,432 WARNING Tips failed (non-fatal): All models failed. Last error: HTTPSConnectionPool(host='api.groq.com', port=443): Max retries exceeded with url: /openai/v1/chat/completions (Caused by NameResolutionError("HTTPSConnection(host='api.groq.com', port=443): Failed to resolve 'api.groq.com' ([Errno 11001] getaddrinfo failed)"))
+2026-05-14 16:24:05,433 INFO 127.0.0.1 - - [14/May/2026 16:24:05] "[35m[1mPOST /api/generate HTTP/1.1[0m" 502 -
+2026-05-14 16:24:05,465 INFO 127.0.0.1 - - [14/May/2026 16:24:05] "GET /api/history HTTP/1.1" 200 -
+2026-05-14 16:24:09,737 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:09,905 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:09,907 INFO 127.0.0.1 - - [14/May/2026 16:24:09] "POST /api/generate HTTP/1.1" 200 -
+2026-05-14 16:24:10,216 INFO 127.0.0.1 - - [14/May/2026 16:24:10] "GET /api/history HTTP/1.1" 200 -
+2026-05-14 16:24:20,751 INFO 127.0.0.1 - - [14/May/2026 16:24:20] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:21,577 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:21,578 INFO 127.0.0.1 - - [14/May/2026 16:24:21] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:22,698 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:22,698 INFO 127.0.0.1 - - [14/May/2026 16:24:22] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:23,867 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:23,868 INFO 127.0.0.1 - - [14/May/2026 16:24:23] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:25,779 INFO 127.0.0.1 - - [14/May/2026 16:24:25] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:26,606 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:26,607 INFO 127.0.0.1 - - [14/May/2026 16:24:26] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:26,821 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:26,822 INFO 127.0.0.1 - - [14/May/2026 16:24:26] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:27,397 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:27,398 INFO 127.0.0.1 - - [14/May/2026 16:24:27] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:28,661 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:28,661 INFO 127.0.0.1 - - [14/May/2026 16:24:28] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:29,972 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:29,973 INFO 127.0.0.1 - - [14/May/2026 16:24:29] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:31,403 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:31,403 INFO 127.0.0.1 - - [14/May/2026 16:24:31] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:31,796 INFO 127.0.0.1 - - [14/May/2026 16:24:31] "OPTIONS /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:32,723 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:32,724 INFO 127.0.0.1 - - [14/May/2026 16:24:32] "POST /api/analyse HTTP/1.1" 200 -
+2026-05-14 16:24:33,306 INFO 127.0.0.1 - - [14/May/2026 16:24:33] "OPTIONS /api/generate HTTP/1.1" 200 -
+2026-05-14 16:24:34,214 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:35,106 INFO Response from: llama-3.3-70b-versatile
+2026-05-14 16:24:35,106 INFO 127.0.0.1 - - [14/May/2026 16:24:35] "POST /api/generate HTTP/1.1" 200 -
+2026-05-14 16:24:35,113 INFO 127.0.0.1 - - [14/May/2026 16:24:35] "GET /api/history HTTP/1.1" 200 -
+2026-05-14 16:25:19,047 INFO 127.0.0.1 - - [14/May/2026 16:25:19] "GET /api/health HTTP/1.1" 200 -
+2026-05-14 16:25:19,307 INFO 127.0.0.1 - - [14/May/2026 16:25:19] "GET /api/health HTTP/1.1" 200 -
+2026-05-14 16:25:19,354 INFO 127.0.0.1 - - [14/May/2026 16:25:19] "GET /api/history HTTP/1.1" 200 -
+2026-05-14 16:25:19,370 INFO 127.0.0.1 - - [14/May/2026 16:25:19] "GET /api/history/saved HTTP/1.1" 200 -
