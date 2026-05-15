@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import NeoNoirAuth from "./AuthPage";
+import confetti from "canvas-confetti";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const S = {
@@ -1350,6 +1351,20 @@ const QuizModal = ({ stage, onClose, onPass }) => {
   const stars = scoreToStars(score);
   const passed = score >= 5;
 
+  // Scroll to top then fire two confetti bursts once scroll settles
+  useEffect(() => {
+    if (phase !== "score" || !passed) return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    const colors = [stage.color, "#C8C9CC", "#FFFFFF", "#A8A9AD"];
+    const t1 = setTimeout(() =>
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, colors, scalar: 1.1 }), 600
+    );
+    const t2 = setTimeout(() =>
+      confetti({ particleCount: 60, spread: 110, origin: { y: 0.5 }, colors, scalar: 0.9 }), 900
+    );
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSelect = (idx) => { if (selected !== null) return; setSelected(idx); };
   const handleNext = () => {
     const next = [...answers, { sel:selected, ans:q.ans }];
@@ -1756,14 +1771,7 @@ function analysePrompt(text) {
   return { words, chars, clarity, signals:{ hasRole, hasFmt, hasCon, hasCot, hasAud, hasCtx }, tips: tips.slice(0,3) };
 }
 
-const BACKEND = (() => {
-  // Vite exposes env vars via import.meta.env (must be prefixed VITE_)
-  // CRA exposes them via process.env (must be prefixed REACT_APP_)
-  // Falls back to localhost for local development when neither is set
-  const fromVite = typeof import.meta !== "undefined" && import.meta.env?.VITE_BACKEND_URL;
-  const fromCRA  = typeof process  !== "undefined" && process.env?.REACT_APP_BACKEND_URL;
-  return fromVite || fromCRA || "http://localhost:5000";
-})();
+const BACKEND = "http://localhost:5000";
 
 const PromptLabPage = ({ onBack }) => {
   const [prompt,       setPrompt]       = useState("");
@@ -3831,7 +3839,7 @@ const CHALLENGES = [
 const difficultyColor = { Starter:"#A8A9AD", Medium:"#8B9ED4", Hard:"#C47FA0", Expert:"#EF9F27" };
 
 // ─── Constraint Auction Challenge Component ───────────────────────────────────
-const ConstraintAuctionChallenge = ({ onComplete }) => {
+const ConstraintAuctionChallenge = ({ onComplete, user }) => {
   // silver palette — no gold
   const silver     = "#A8A9AD";
   const silverDim  = "rgba(168,169,173,0.55)";
@@ -3884,16 +3892,33 @@ const ConstraintAuctionChallenge = ({ onComplete }) => {
     setRankFeedback(null);
   };
 
-  const [locked, setLocked] = useState(saved?.locked ?? false);
+  // Never restore locked from storage when no user is signed in
+  const [locked, setLocked] = useState(() => !!user && !!(saved?.locked));
 
-  // Persist all daily challenge state whenever anything changes
+  // Reset lock + all state immediately whenever user signs out
   useEffect(() => {
+    if (!user) {
+      setLocked(false);
+      setSelectedIds([]);
+      setRanking([]);
+      setPhase("pick");
+      setScore(null);
+      setRankAttempts(0);
+      setRankFeedback(null);
+      // Also wipe the stored key so a refresh with no user starts clean
+      try { localStorage.removeItem(savedKey); } catch {}
+    }
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist only when a user is signed in — guard prevents re-saving locked:true after logout
+  useEffect(() => {
+    if (!user) return;
     try {
       localStorage.setItem(savedKey, JSON.stringify({
         challengeIndex, selectedIds, ranking, phase, score, rankAttempts, rankFeedback, locked
       }));
     } catch {}
-  }, [challengeIndex, selectedIds, ranking, phase, score, rankAttempts, rankFeedback, locked]);
+  }, [challengeIndex, selectedIds, ranking, phase, score, rankAttempts, rankFeedback, locked, user]);
 
   const goToNext = () => {
     setLocked(true);
@@ -4344,7 +4369,7 @@ const ConstraintAuctionChallenge = ({ onComplete }) => {
   );
 };
 
-const ChallengesPage = ({ onBack, onChallengeComplete, completedChallengeIds: externalCompletedIds, onChallengePass }) => {
+const ChallengesPage = ({ onBack, onChallengeComplete, completedChallengeIds: externalCompletedIds, onChallengePass, user }) => {
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [phase, setPhase] = useState("map"); // map | challenge | result
   // Use external completed IDs lifted to App so dashboard can read them
@@ -4395,7 +4420,7 @@ const ChallengesPage = ({ onBack, onChallengeComplete, completedChallengeIds: ex
             </motion.div>
 
             {/* ── Challenge for the Day ── */}
-            <ConstraintAuctionChallenge onComplete={onChallengeComplete} />
+            <ConstraintAuctionChallenge onComplete={onChallengeComplete} user={user} />
 
             {/* Trails */}
             {trails.map((trail,ti)=>{
@@ -7916,6 +7941,8 @@ export default function App() {
     setStreakDays(Array(7).fill(false)); lsDel("pe_streakDays");
     setChallengesDone(0); lsDel("pe_challengesDone");
     setCompletedChallengeIds([]); lsDel("pe_completedChallengeIds");
+    // Remove daily challenge so the locked screen never persists after logout
+    try { localStorage.removeItem("pe_dailyChallenge_" + new Date().toISOString().slice(0, 10)); } catch {}
   };
 
   const openStage       = (stage) => { setActiveStage(stage); setView("lesson"); window.scrollTo({ top:0, behavior:"smooth" }); };
@@ -8019,7 +8046,7 @@ export default function App() {
           )}
           {view === "challenges" && (
             <motion.div key="challenges" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.3 }}>
-              <ChallengesPage onBack={goBack} onChallengeComplete={handleChallengeComplete} completedChallengeIds={completedChallengeIds} onChallengePass={(id) => setCompletedChallengeIds(prev => prev.includes(id) ? prev : [...prev, id])}/>
+              <ChallengesPage onBack={goBack} onChallengeComplete={handleChallengeComplete} completedChallengeIds={completedChallengeIds} onChallengePass={(id) => setCompletedChallengeIds(prev => prev.includes(id) ? prev : [...prev, id])} user={user}/>
             </motion.div>
           )}
           {view === "dashboard" && (
