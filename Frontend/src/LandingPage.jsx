@@ -7966,22 +7966,26 @@ export default function App() {
   };
 
   const handleChallengeComplete = () => {
+    // Compute derived values BEFORE any setters run.
+    // React batches state updates, so reading `streakDays` inside a setter
+    // callback sees the stale closure value from this render, not the
+    // post-update value. Resolving everything upfront eliminates the
+    // double-increment and missed-day bugs entirely.
+    const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+    const alreadyDoneToday = streakDays[todayIdx];
+
     setChallengesDone(prev => prev + 1);
-    // Mark today in the week strip (Mon=0 … Sun=6)
-    const today = new Date().getDay();
-    const todayIdx = today === 0 ? 6 : today - 1;
-    setStreakDays(prev => {
-      if (prev[todayIdx]) return prev; // already counted today
-      const next = [...prev];
-      next[todayIdx] = true;
-      return next;
-    });
-    setStreak(prev => {
-      const today2 = new Date().getDay();
-      const idx = today2 === 0 ? 6 : today2 - 1;
-      if (streakDays[idx]) return prev;
-      return prev + 1;
-    });
+
+    if (!alreadyDoneToday) {
+      // Mark today's slot in the week strip (Mon=0 … Sun=6)
+      setStreakDays(prev => {
+        const next = [...prev];
+        next[todayIdx] = true;
+        return next;
+      });
+      // Increment streak — safe because alreadyDoneToday was resolved above
+      setStreak(prev => prev + 1);
+    }
   };
 
   return (
