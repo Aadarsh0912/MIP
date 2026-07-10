@@ -8050,39 +8050,6 @@ export default function App() {
     const newStarsMap  = { ...stageStarsMap, [stageId]: Math.max(prevStars, stars) };
     setCompleted(newCompleted);
     setStageStarsMap(newStarsMap);
-
-    // ── Streak update ──────────────────────────────────────────────────────
-    // Resolve today's slot index upfront (Mon=0 … Sun=6) so we read the
-    // current render's streakDays snapshot, not a stale setter callback.
-    const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-    const alreadyDoneToday = streakDays[todayIdx];
-
-    // Only count the first activity of the day — passing a quiz when a
-    // challenge was already done (or vice-versa) must not double-increment.
-    if (!alreadyDoneToday) {
-      setStreakDays(prev => {
-        const next = [...prev];
-        next[todayIdx] = true;
-        return next;
-      });
-      setStreak(prev => prev + 1);
-
-      const todayStr = new Date().toISOString().slice(0, 10);
-      lsSet(userKey(user, "pe_lastActiveDate"), todayStr);
-
-      // Write this week's Monday key so the integrity check never sees a
-      // mismatch and silently resets streakDays back to all-false.
-      const _now = new Date(); _now.setHours(0,0,0,0);
-      const _dow = _now.getDay();
-      const _mon = new Date(_now);
-      _mon.setDate(_now.getDate() - (_dow === 0 ? 6 : _dow - 1));
-      lsSet(userKey(user, "pe_streakWeek"), _mon.toISOString().slice(0,10));
-
-      setStreakHistory(prev => {
-        if (prev.includes(todayStr)) return prev;
-        return [...prev, todayStr].sort();
-      });
-    }
   };
 
   const handleChallengeComplete = () => {
