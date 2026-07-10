@@ -326,8 +326,9 @@ export default function IntroAnimation({ onComplete }) {
         {/* ── App name watermark fading in during pre phase ── */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.22 }}
-          transition={{ duration: 1.2, delay: 0.3 }}
+          animate={{ opacity: 0.7 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5, delay: 0.6 }}
           style={{
             position: "absolute",
             bottom: "8vh",
@@ -336,7 +337,7 @@ export default function IntroAnimation({ onComplete }) {
             fontFamily: "'Playfair Display', serif",
             fontSize: "clamp(11px, 1.4vw, 13px)",
             letterSpacing: "0.32em",
-            color: S.silver,
+            color: "#FFFFFF",
             textTransform: "uppercase",
             whiteSpace: "nowrap",
             userSelect: "none",

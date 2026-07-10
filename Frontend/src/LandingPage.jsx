@@ -3562,7 +3562,7 @@ const ConstraintAuctionChallenge = ({ onComplete, user }) => {
   // Never restore locked from storage when no user is signed in
   const [locked, setLocked] = useState(() => !!user && !!(saved?.locked));
 
-  // Reset lock + all state immediately whenever user signs out
+  // Reset state on logout, or restore it on login
   useEffect(() => {
     if (!user) {
       setLocked(false);
@@ -3572,9 +3572,22 @@ const ConstraintAuctionChallenge = ({ onComplete, user }) => {
       setScore(null);
       setRankAttempts(0);
       setRankFeedback(null);
-      // Do NOT remove savedKey — lock state must survive logout so it restores on next login.
+    } else {
+      try {
+        const s = localStorage.getItem(savedKey);
+        if (s) {
+          const parsed = JSON.parse(s);
+          setLocked(!!parsed.locked);
+          if (parsed.selectedIds) setSelectedIds(parsed.selectedIds);
+          if (parsed.ranking) setRanking(parsed.ranking);
+          if (parsed.phase) setPhase(parsed.phase);
+          if (parsed.score !== undefined) setScore(parsed.score);
+          if (parsed.rankAttempts !== undefined) setRankAttempts(parsed.rankAttempts);
+          if (parsed.rankFeedback) setRankFeedback(parsed.rankFeedback);
+        }
+      } catch {}
     }
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, savedKey]);
 
   // Persist only when a user is signed in — guard prevents re-saving locked:true after logout
   useEffect(() => {
@@ -6783,9 +6796,9 @@ function IntroAnimation({ onComplete }) {
 
           {/* Watermark */}
           <motion.div
-            initial={{ opacity:0 }} animate={{ opacity:0.22 }}
+            initial={{ opacity:0 }} animate={{ opacity:0.7 }}
             transition={{ duration:1.2, delay:0.3 }}
-            style={{ position:"absolute", bottom:"8vh", left:"50%", transform:"translateX(-50%)", fontFamily:"'Playfair Display',serif", fontSize:"clamp(11px,1.4vw,13px)", letterSpacing:"0.32em", color:"#A8A9AD", textTransform:"uppercase", whiteSpace:"nowrap", userSelect:"none" }}
+            style={{ position:"absolute", bottom:"8vh", left:"50%", transform:"translateX(-50%)", fontFamily:"'Playfair Display',serif", fontSize:"clamp(11px,1.4vw,13px)", letterSpacing:"0.32em", color:"#FFFFFF", textTransform:"uppercase", whiteSpace:"nowrap", userSelect:"none" }}
           >
             Prompt Engineering · Mastery
           </motion.div>
