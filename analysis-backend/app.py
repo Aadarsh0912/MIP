@@ -28,6 +28,8 @@ from urllib3.util.retry import Retry
 # pyrefly: ignore [missing-import]
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -43,6 +45,17 @@ log = logging.getLogger(__name__)
 # ── App ───────────────────────────────────────────────────────────────────────
 app = Flask(__name__)
 CORS(app)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["1000 per day"],
+    storage_uri="memory://"
+)
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({"error": "ratelimit exceeded", "message": "The AI is currently overwhelmed charting other constellations. Please wait a moment before your next prompt."}), 429
 
 # ── Config ────────────────────────────────────────────────────────────────────
 # Auto-load .env file so GROQ_API_KEY doesn't need to be set manually each time
@@ -365,6 +378,7 @@ def test():
 
 
 @app.route("/api/generate", methods=["POST"])
+@limiter.limit("5 per minute")
 def generate():
     body   = request.get_json(force=True)
     prompt = body.get("prompt", "").strip()
@@ -421,6 +435,7 @@ def generate():
 
 
 @app.route("/api/analyse", methods=["POST"])
+@limiter.limit("5 per minute")
 def analyse():
     body   = request.get_json(force=True)
     prompt = body.get("prompt", "").strip()

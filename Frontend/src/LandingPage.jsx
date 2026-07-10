@@ -1379,11 +1379,14 @@ const PromptLabPage = ({ onBack, user }) => {
           body: JSON.stringify({ prompt }),
         });
         const data = await res.json();
+        if (!res.ok) throw new Error(data.message || data.error);
         if (data.quality)          setNlpAnalysis(data.quality);
         if (data.intent)           setNlpIntent(data.intent);
         setNlpRewritten(data.rewritten_prompt || "");
-      } catch {}
-    }, 400);
+      } catch (e) {
+        // Silently fail on live analysis (e.g. rate limit hit), it will just keep previous state
+      }
+    }, 2000);
     return () => clearTimeout(analyseTimer.current);
   }, [prompt, backendOk]);
 
@@ -1425,6 +1428,10 @@ const PromptLabPage = ({ onBack, user }) => {
         body: JSON.stringify({ prompt, max_words: 350 }),
       });
       const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.message || data.error || "Request failed with status " + res.status);
+      }
 
       // Set response text
       const text = data.generation?.response || "No response returned.";
