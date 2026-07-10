@@ -1091,7 +1091,7 @@ const HomePage = ({ completed, stageStarsMap, onOpenStage, onNav, user }) => {
               ))}
             </div>
             <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"14px", fontWeight:"600", color:"#FFFFFF", letterSpacing:"0.15em", textTransform: "uppercase", textShadow:"0 2px 10px rgba(0,0,0,1), 0 0 25px rgba(0,0,0,0.8)" }}>
-              {completed.length} OF {STAGES.length} STAGES COMPLETED
+              <span style={{ fontSize:"17px", fontFamily:"'Playfair Display', serif", fontWeight:700 }}>{completed.length}</span> OF <span style={{ fontSize:"17px", fontFamily:"'Playfair Display', serif", fontWeight:700 }}>{STAGES.length}</span> STAGES COMPLETED
             </span>
           </motion.div>
         </div>
