@@ -111,6 +111,7 @@ def get_progress():
             "challengesDone":        user.get("challengesDone", 0),
             "completedChallengeIds": user.get("completedChallengeIds", []),
             "lastActiveDate":        user.get("lastActiveDate", ""),
+            "streakHistory":         user.get("streakHistory", []),
         }
     }), 200
 
@@ -132,7 +133,8 @@ def save_progress():
     # Only update fields that are present in the request
     allowed = [
         "completed", "stageStars", "streak", "streakDays",
-        "challengesDone", "completedChallengeIds", "lastActiveDate"
+        "challengesDone", "completedChallengeIds", "lastActiveDate",
+        "streakHistory"
     ]
     for field in allowed:
         if field in data:

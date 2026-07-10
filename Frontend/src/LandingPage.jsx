@@ -8025,8 +8025,8 @@ export default function App() {
   // ─── Sync progress with MongoDB ───────────────────────────────────────────
   useProgressSync(
     user,
-    { completed, stageStars: stageStarsMap, streak, streakDays, challengesDone, completedChallengeIds },
-    { setCompleted, setStageStarsMap, setStreak, setStreakDays, setChallengesDone, setCompletedChallengeIds },
+    { completed, stageStars: stageStarsMap, streak, streakDays, challengesDone, completedChallengeIds, streakHistory },
+    { setCompleted, setStageStarsMap, setStreak, setStreakDays, setChallengesDone, setCompletedChallengeIds, setStreakHistory },
     streakCheckedRef
   );
 

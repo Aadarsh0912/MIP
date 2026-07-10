@@ -19,12 +19,13 @@ import { getProgress, saveProgress } from "./api";
 export function useProgressSync(user, progress, setters, streakCheckedRef) {
   const {
     completed, stageStars, streak, streakDays,
-    challengesDone, completedChallengeIds,
+    challengesDone, completedChallengeIds, streakHistory
   } = progress;
 
   const {
     setCompleted, setStageStarsMap, setStreak,
     setStreakDays, setChallengesDone, setCompletedChallengeIds,
+    setStreakHistory
   } = setters;
 
   const saveTimer    = useRef(null);
@@ -61,6 +62,8 @@ export function useProgressSync(user, progress, setters, streakCheckedRef) {
           setChallengesDone(p.challengesDone);
         if (Array.isArray(p.completedChallengeIds) && p.completedChallengeIds.length > 0)
           setCompletedChallengeIds(p.completedChallengeIds);
+        if (Array.isArray(p.streakHistory)         && p.streakHistory.length > 0)
+          setStreakHistory(p.streakHistory);
       })
       .catch(() => {
         // Silently fall back to localStorage values already in state
@@ -86,6 +89,7 @@ export function useProgressSync(user, progress, setters, streakCheckedRef) {
         streakDays,
         challengesDone,
         completedChallengeIds,
+        streakHistory,
         lastActiveDate: new Date().toISOString().slice(0, 10),
       }).catch(() => {
         // Silent fail — localStorage is the offline backup
@@ -95,5 +99,5 @@ export function useProgressSync(user, progress, setters, streakCheckedRef) {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [user, completed, stageStars, streak, streakDays, challengesDone, completedChallengeIds]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, completed, stageStars, streak, streakDays, challengesDone, completedChallengeIds, streakHistory]); // eslint-disable-line react-hooks/exhaustive-deps
 }
