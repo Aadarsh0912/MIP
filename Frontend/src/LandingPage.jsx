@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import NeoNoirAuth from "./AuthPage";
 import confetti from "canvas-confetti";
+import { useProgressSync } from "./useProgressSync";
+import { getPromptHistory, savePromptHistoryEntry, getSavedPrompts, saveSavedPromptEntry, deleteSavedPromptEntry } from "./api";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const S = {
@@ -468,728 +470,121 @@ const StarRow = ({ earned, size = 13, gap = 3 }) => (
   </span>
 );
 
-// ─── Silver Wave SVG ──────────────────────────────────────────────────────────
-const SilverWaves = () => {
-  const waves = [
-    { dur: 18, delay: 0,   opacity: 0.09, scaleY: 1.0,  yOffset: "72%" },
-    { dur: 22, delay: 3,   opacity: 0.065, scaleY: 0.85, yOffset: "60%" },
-    { dur: 26, delay: 6,   opacity: 0.045, scaleY: 0.7,  yOffset: "48%" },
-    { dur: 20, delay: 1.5, opacity: 0.028, scaleY: 0.55, yOffset: "35%" },
-  ];
-  return (
-    <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:1, overflow:"hidden" }}>
-      {waves.map((w, i) => (
-        <motion.div key={i}
-          style={{ position:"absolute", bottom:0, left:"-10%", width:"120%", top: w.yOffset, opacity: w.opacity }}
-          animate={{ x: ["0%", "-25%", "0%"] }}
-          transition={{ duration: w.dur, delay: w.delay, repeat: Infinity, ease: "easeInOut" }}>
-          <svg viewBox="0 0 1440 320" preserveAspectRatio="none"
-            style={{ width:"100%", height:"100%", display:"block" }}>
-            <defs>
-              <linearGradient id={`wg${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%"   stopColor="#A8A9AD" stopOpacity="0"/>
-                <stop offset="25%"  stopColor="#C8C9CC" stopOpacity="1"/>
-                <stop offset="50%"  stopColor="#E0E0E2" stopOpacity="1"/>
-                <stop offset="75%"  stopColor="#C8C9CC" stopOpacity="1"/>
-                <stop offset="100%" stopColor="#A8A9AD" stopOpacity="0"/>
-              </linearGradient>
-            </defs>
-            <motion.path
-              d={`M0,${80 + i*10} C240,${20 + i*8} 480,${140 + i*12} 720,${80 + i*10} C960,${20 + i*8} 1200,${140 + i*12} 1440,${80 + i*10} L1440,320 L0,320 Z`}
-              fill={`url(#wg${i})`}
-              animate={{
-                d: [
-                  `M0,${80+i*10} C240,${20+i*8} 480,${140+i*12} 720,${80+i*10} C960,${20+i*8} 1200,${140+i*12} 1440,${80+i*10} L1440,320 L0,320 Z`,
-                  `M0,${110+i*10} C240,${60+i*8} 480,${100+i*12} 720,${110+i*10} C960,${60+i*8} 1200,${100+i*12} 1440,${110+i*10} L1440,320 L0,320 Z`,
-                  `M0,${80+i*10} C240,${20+i*8} 480,${140+i*12} 720,${80+i*10} C960,${20+i*8} 1200,${140+i*12} 1440,${80+i*10} L1440,320 L0,320 Z`,
-                ]
-              }}
-              transition={{ duration: w.dur * 0.8, delay: w.delay, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </svg>
-        </motion.div>
-      ))}
-    </div>
-  );
-};
-
-// ─── Flying Book (fish-leap animation) ────────────────────────────────────────
-// ─── Harry Potter Flying Book ─────────────────────────────────────────────────
-const FlyingBook = ({ isBackground = false }) => {
-  const canvasRef  = useRef(null);
-  const rafRef     = useRef(null);
-  const stateRef   = useRef({
-    phase:      "idle",   // "idle" | "flying"
-    t:          0,        // 0→1 progress along arc
-    dir:        1,        // 1=R→L, -1=L→R; alternates each leap
-    startTime:  null,
-    // Ocean particles (spray + droplets)
-    particles:  [],
-    // Glitter flakes that follow the book
-    glitter:    [],
-    // Foam rings at entry/exit
-    foam:       [],
-    // Motion-trail ghost positions
-    trail:      [],
-  });
-
-  // ─── Bezier math ────────────────────────────────────────────────────────────
-  const cubicBez = (t, p0, p1, p2, p3) => {
-    const u = 1 - t;
-    return {
-      x: u*u*u*p0.x + 3*u*u*t*p1.x + 3*u*t*t*p2.x + t*t*t*p3.x,
-      y: u*u*u*p0.y + 3*u*u*t*p1.y + 3*u*t*t*p2.y + t*t*t*p3.y,
-    };
-  };
-  const cubicBezTan = (t, p0, p1, p2, p3) => {
-    const u = 1 - t;
-    return {
-      x: 3*(u*u*(p1.x-p0.x) + 3*u*t*(p2.x-p1.x)/2 + t*t*(p3.x-p2.x)),
-      y: 3*(u*u*(p1.y-p0.y) + 3*u*t*(p2.y-p1.y)/2 + t*t*(p3.y-p2.y)),
-    };
-  };
-
-  // ─── Control points for arc ──────────────────────────────────────────────
-  const getArcPoints = (dir, W, H) => ({
-    p0: { x: dir===1 ? W*0.84 : W*0.16, y: H + 80 },
-    p1: { x: dir===1 ? W*0.70 : W*0.30, y: H*0.18  },
-    p2: { x: dir===1 ? W*0.30 : W*0.70, y: H*0.15  },
-    p3: { x: dir===1 ? W*0.16 : W*0.84, y: H + 80  },
-  });
-
-  // ─── Spawn ocean spray burst ─────────────────────────────────────────────
-  const spawnSpray = (x, y, count, upward) => {
-    const s = stateRef.current;
-    for (let i = 0; i < count; i++) {
-      const angle = upward
-        ? -Math.PI/2 + (Math.random()-0.5) * Math.PI * 0.85   // fan upward
-        :  Math.PI/2 + (Math.random()-0.5) * Math.PI * 0.9;   // fan downward
-      const speed  = 1.8 + Math.random() * 4.5;
-      const size   = 1.5 + Math.random() * 4;
-      const type   = Math.random() < 0.55 ? "drop" : "foam";  // mix of droplets & foam
-      s.particles.push({
-        x, y,
-        vx: Math.cos(angle) * speed * (0.5 + Math.random()*0.8),
-        vy: Math.sin(angle) * speed,
-        life: 1, decay: 0.012 + Math.random()*0.022,
-        size, type,
-        shimmer: Math.random() < 0.35,   // some drops catch light
-        wobble:  Math.random() * Math.PI * 2,
-      });
-    }
-  };
-
-  // ─── Spawn glitter flakes ─────────────────────────────────────────────────
-  const spawnGlitter = (x, y, count) => {
-    const s = stateRef.current;
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const spd   = 0.4 + Math.random() * 2.2;
-      s.glitter.push({
-        x: x + (Math.random()-0.5)*30,
-        y: y + (Math.random()-0.5)*20,
-        vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd - 0.8,
-        life: 1,
-        decay: 0.008 + Math.random()*0.018,
-        size:  1 + Math.random()*2.5,
-        phase: Math.random()*Math.PI*2,   // glint phase offset
-        hue:   200 + Math.random()*40,    // blue-silver range
-      });
-    }
-  };
-
-  // ─── Spawn foam ring at splash point ─────────────────────────────────────
-  const spawnFoam = (x, y) => {
-    stateRef.current.foam.push({ x, y, r: 4, life: 1, maxR: 55 + Math.random()*20 });
-  };
-
-  // ─── Draw the entire scene ────────────────────────────────────────────────
-  const draw = useCallback((elapsed) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const W = canvas.width, H = canvas.height;
-    ctx.clearRect(0, 0, W, H);
-
-    const s = stateRef.current;
-    if (s.phase === "idle" && !s.particles.length && !s.glitter.length && !s.foam.length) return;
-
-    const TOTAL_DUR = 3600;
-    const t = s.t;
-    const dir = s.dir;
-    const { p0, p1, p2, p3 } = getArcPoints(dir, W, H);
-
-    // Book position & angle
-    const pos = cubicBez(t, p0, p1, p2, p3);
-    const tan = cubicBezTan(t, p0, p1, p2, p3);
-    const angle = Math.atan2(tan.y, tan.x);
-
-    // Speed factor: how fast the book is moving (normalised)
-    const speedFactor = Math.sqrt(tan.x*tan.x + tan.y*tan.y) / (W * 0.015);
-    const atApex = t > 0.40 && t < 0.62;
-    const inWater = t < 0.10 || t > 0.90;
-
-    // ── Update & spawn particles every frame ──────────────────────────────
-    if (s.phase === "flying") {
-      // Continuous light spray trailing from spine when near water
-      if (t < 0.14) spawnSpray(pos.x, pos.y, 2, true);
-      if (t > 0.86) spawnSpray(pos.x, pos.y, 2, false);
-
-      // Continuous glitter: thin trail throughout flight
-      if (Math.random() < 0.45) spawnGlitter(pos.x, pos.y, 1);
-      // Dense glitter at apex
-      if (atApex && Math.random() < 0.70) spawnGlitter(pos.x, pos.y, 2);
-
-      // Motion trail snapshot
-      if (s.trail.length > 8) s.trail.shift();
-      s.trail.push({ x: pos.x, y: pos.y, angle, t });
-    }
-
-    // ── Draw motion trail (ghost blur) ────────────────────────────────────
-    s.trail.forEach((pt, i) => {
-      const alpha = (i / s.trail.length) * 0.12;
-      const sc    = 0.55 + (i / s.trail.length) * 0.45;
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.translate(pt.x, pt.y);
-      ctx.rotate(pt.angle + Math.PI/2);
-      ctx.scale(sc, sc);
-      // Ghost book silhouette
-      ctx.fillStyle = "rgba(190,200,230,0.5)";
-      ctx.beginPath(); ctx.roundRect(-20, -26, 40, 52, 2); ctx.fill();
-      ctx.restore();
-    });
-
-    // ── Draw foam rings ───────────────────────────────────────────────────
-    s.foam = s.foam.filter(f => f.life > 0);
-    s.foam.forEach(f => {
-      f.r += (f.maxR - f.r) * 0.07;
-      f.life -= 0.025;
-      ctx.save();
-      ctx.globalAlpha = f.life * 0.55;
-      // Elliptical ring (perspective: wider than tall)
-      ctx.strokeStyle = `rgba(200,215,240,${f.life * 0.7})`;
-      ctx.lineWidth = 2 * f.life;
-      ctx.beginPath();
-      ctx.ellipse(f.x, f.y, f.r, f.r * 0.3, 0, 0, Math.PI*2);
-      ctx.stroke();
-      // Inner foam texture dots
-      if (f.r > 12) {
-        for (let i = 0; i < 6; i++) {
-          const fa = (i/6)*Math.PI*2 + f.r*0.04;
-          const fr = f.r * 0.7;
-          ctx.fillStyle = `rgba(230,238,255,${f.life*0.4})`;
-          ctx.beginPath();
-          ctx.arc(f.x + Math.cos(fa)*fr, f.y + Math.sin(fa)*fr*0.3, Math.max(0, 2.5*f.life), 0, Math.PI*2);
-          ctx.fill();
-        }
-      }
-      ctx.restore();
-    });
-
-    // ── Update & draw ocean particles ─────────────────────────────────────
-    s.particles = s.particles.filter(p => p.life > 0);
-    s.particles.forEach(p => {
-      p.vy   += 0.09;  // gravity
-      p.vx   *= 0.97;  // air resistance
-      p.x    += p.vx;
-      p.y    += p.vy;
-      p.life -= p.decay;
-      p.wobble += 0.18;
-
-      ctx.save();
-      ctx.globalAlpha = Math.max(0, p.life) * (p.type==="foam" ? 0.65 : 0.82);
-
-      if (p.type === "drop") {
-        // Teardrop shape: elongated in direction of travel
-        const len = Math.max(p.size, Math.sqrt(p.vx*p.vx+p.vy*p.vy)*0.6);
-        const dropAngle = Math.atan2(p.vy, p.vx);
-        ctx.translate(p.x, p.y);
-        ctx.rotate(dropAngle);
-        if (p.shimmer) {
-          // Glinting droplet: bright core
-          const grd = ctx.createRadialGradient(0,0,0, 0,0,p.size*1.5);
-          grd.addColorStop(0, `rgba(255,255,255,${p.life*0.95})`);
-          grd.addColorStop(0.4, `rgba(185,200,235,${p.life*0.7})`);
-          grd.addColorStop(1, "rgba(140,160,210,0)");
-          ctx.fillStyle = grd;
-          ctx.beginPath(); ctx.ellipse(0,0, len*0.7, p.size*0.55, 0, 0, Math.PI*2); ctx.fill();
-        } else {
-          const grd = ctx.createRadialGradient(-len*0.15, 0, 0, 0, 0, p.size*1.2);
-          grd.addColorStop(0, `rgba(210,225,250,${p.life*0.85})`);
-          grd.addColorStop(0.6, `rgba(170,190,230,${p.life*0.5})`);
-          grd.addColorStop(1, "rgba(140,165,215,0)");
-          ctx.fillStyle = grd;
-          ctx.beginPath(); ctx.ellipse(0,0, len*0.55, p.size*0.45, 0, 0, Math.PI*2); ctx.fill();
-        }
-      } else {
-        // Foam bubble: wobbly circle with specular highlight
-        const wobR = Math.max(0, p.size * (1 + 0.12*Math.sin(p.wobble)));
-        const grd = ctx.createRadialGradient(-wobR*0.3, -wobR*0.3, 0, 0, 0, wobR*1.1);
-        grd.addColorStop(0, `rgba(255,255,255,${p.life*0.8})`);
-        grd.addColorStop(0.5, `rgba(200,215,245,${p.life*0.35})`);
-        grd.addColorStop(1, `rgba(160,185,230,${p.life*0.1})`);
-        ctx.translate(p.x, p.y);
-        ctx.fillStyle = grd;
-        ctx.beginPath(); ctx.arc(0, 0, wobR, 0, Math.PI*2); ctx.fill();
-        // Thin bubble outline
-        ctx.strokeStyle = `rgba(200,218,250,${p.life*0.4})`;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-      }
-      ctx.restore();
-    });
-
-    // ── Update & draw glitter flakes ──────────────────────────────────────
-    s.glitter = s.glitter.filter(g => g.life > 0);
-    s.glitter.forEach(g => {
-      g.vx *= 0.96; g.vy += 0.04;
-      g.x  += g.vx; g.y  += g.vy;
-      g.life -= g.decay;
-      g.phase += 0.22;
-
-      // Glitter flashes: brightness oscillates like a rotating facet
-      const glintBright = 0.5 + 0.5*Math.sin(g.phase);
-      const alpha = Math.max(0, g.life) * glintBright;
-      const size  = g.size * (0.7 + 0.5*glintBright);
-
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.translate(g.x, g.y);
-      ctx.rotate(g.phase * 0.5);
-
-      // 4-point star (lens flare shape)
-      const r1 = size, r2 = size*0.28;
-      ctx.fillStyle = `hsla(${g.hue}, 60%, ${75 + glintBright*22}%, 1)`;
-      ctx.beginPath();
-      for (let i = 0; i < 8; i++) {
-        const a = (i/8)*Math.PI*2;
-        const r = i%2===0 ? r1 : r2;
-        i===0 ? ctx.moveTo(Math.cos(a)*r, Math.sin(a)*r)
-              : ctx.lineTo(Math.cos(a)*r, Math.sin(a)*r);
-      }
-      ctx.closePath(); ctx.fill();
-
-      // Bright centre dot
-      if (glintBright > 0.65) {
-        ctx.fillStyle = `rgba(255,255,255,${(glintBright-0.65)*2.5})`;
-        ctx.beginPath(); ctx.arc(0, 0, Math.max(0, size*0.22), 0, Math.PI*2); ctx.fill();
-      }
-      ctx.restore();
-    });
-
-    // ── Draw the book ─────────────────────────────────────────────────────
-    if (s.phase !== "idle") {
-
-      // ══════════════════════════════════════════════════════════════════
-      // SMOOTH BIRD-WING FLAP — physically correct 3-D hinge projection
-      //
-      // Each wing is a panel hinged at the book spine, rotating in 3-D.
-      // At angle θ from horizontal:
-      //   screen_x(d) = dir * d * cos(θ)   — foreshortened width
-      //   screen_y(d) =     − d * sin(θ)   — actual vertical displacement
-      //                                       (−ve = upward in canvas coords)
-      //
-      // Timing — albatross / eagle style (heavy, powerful, slow):
-      //   Period: 2 800 ms (glide apex) / 1 800 ms (climbing phase)
-      //   0 → 40% of cycle : slow ease-in upstroke  0° → +82°
-      //   40 → 100%         : powerful downstroke  +82° → −48° → back to 0°
-      //
-      // Wing tip lags shoulder by 18% of the cycle → natural flex under
-      // air load. Both shoulders move identically (symmetric bird).
-      //
-      // The book body (cover + spine) is drawn SEPARATELY in travel-
-      // rotated space AFTER the wings, so they never fight each other.
-      // ══════════════════════════════════════════════════════════════════
-
-      // ── Smooth angle curve (C1-continuous, no kinks) ──────────────
-      // We use a single cosine-arch mapping so the curve and its first
-      // derivative are both continuous at every transition point.
-      const PERIOD   = atApex ? 2800 : 1800;   // ms per flap cycle
-      const UP_END   = 0.40;                    // 0→UP_END = upstroke
-      const UP_AMP   = 1.432;                   // +82°  (just below vertical)
-      const DOWN_AMP = 0.838;                   // −48°  (below horizontal)
-
-      // smoothAngle(t): t is 0→1 within a cycle; returns radians
-      // +ve = above horizontal (canvas −y), −ve = below (canvas +y)
-      const smoothAngle = (t) => {
-        if (t < UP_END) {
-          // Upstroke: 0 → UP_AMP, ease-in-out (cosine arch)
-          const p = t / UP_END;                          // 0→1
-          return UP_AMP * 0.5 * (1 - Math.cos(p * Math.PI));
-        } else {
-          // Downstroke: UP_AMP → −DOWN_AMP → 0, single smooth arch
-          // At p=0: angle = UP_AMP; at p=0.5: angle = −DOWN_AMP; at p=1: angle = 0
-          const p    = (t - UP_END) / (1 - UP_END);     // 0→1
-          const mid  = (UP_AMP - DOWN_AMP) * 0.5;       // vertical midpoint
-          const span = (UP_AMP + DOWN_AMP) * 0.5;       // half-span
-          return mid + span * Math.cos(p * Math.PI);
-        }
-      };
-
-      const cycleT       = (elapsed % PERIOD) / PERIOD;            // 0→1
-      const shoulderA    = smoothAngle(cycleT);
-      const tipA         = smoothAngle(((cycleT - 0.18) + 1) % 1); // tip lags 18%
-
-      // ── Dimensions ────────────────────────────────────────────────
-      const BW        = 44;   // cover width  (px)
-      const BH        = 58;   // cover height (px)
-      const SPINE     = 10;   // spine thickness
-      const PAGES     = 6;    // page-block edge width
-      const WING_FLAT = 76;   // flat half-wingspan per side
-      const SEGS      = 7;    // segments per wing (more = smoother flex curve)
-      const sw        = WING_FLAT / SEGS;
-      const atApexLocal = atApex;
-
-      // ── 1. WINGS — screen-space, hinge at book centre ─────────────
-      ctx.save();
-      ctx.translate(pos.x, pos.y);
-
-      // Glow aura (dims slightly on downstroke, peaks on upstroke)
-      const glowPulse = 0.5 + 0.5 * Math.sin(cycleT * Math.PI * 2);
-      const auraStr   = atApexLocal ? (0.28 + glowPulse * 0.18) : (0.10 + glowPulse * 0.08);
-      const aura      = ctx.createRadialGradient(0, 0, 4, 0, 0, 115);
-      aura.addColorStop(0,    `rgba(215,228,255,${auraStr})`);
-      aura.addColorStop(0.42, `rgba(172,198,242,${auraStr * 0.28})`);
-      aura.addColorStop(1,    "rgba(140,170,232,0)");
-      ctx.fillStyle = aura;
-      ctx.beginPath(); ctx.ellipse(0, 0, 115, 68, 0, 0, Math.PI * 2); ctx.fill();
-
-      // drawWing — one side
-      const drawWing = (dir, rootA, tipA_) => {
-        for (let i = 0; i < SEGS; i++) {
-          // Lerp angle smoothly from root (spine) to tip
-          const fA = i       / SEGS;
-          const fB = (i + 1) / SEGS;
-          const θA = rootA + (tipA_ - rootA) * fA;
-          const θB = rootA + (tipA_ - rootA) * fB;
-          const θM = (θA + θB) * 0.5;
-
-          // 3-D → 2-D projection (see header comment)
-          const dA = i       * sw;
-          const dB = (i + 1) * sw;
-          const xA = dir *  dA * Math.cos(θA);
-          const yA =       -dA * Math.sin(θA);
-          const xB = dir *  dB * Math.cos(θB);
-          const yB =       -dB * Math.sin(θB);
-
-          // Taper: outer segment is slightly narrower (natural wing shape)
-          const hA = BH * (1 - fA * 0.26);
-          const hB = BH * (1 - fB * 0.26);
-
-          // Lighting model:
-          //   cos(θM) = 1 → horizontal, full top face lit
-          //   cos(θM) = 0 → edge-on, face vanishes (naturally handled by foreshortening)
-          //   cos(θM) < 0 → underside visible, darker and cooler
-          const cosM    = Math.cos(θM);
-          const topFace = cosM >= 0;
-
-          const L = topFace
-            ? Math.round(72 + cosM * 24)         // 72 – 96 % bright top face
-            : Math.round(36 - cosM * 12);         // 36 – 48 % cooler underside
-          const Sat = topFace ? 13 : 22;
-
-          ctx.shadowColor = topFace
-            ? `rgba(185,210,245,${0.15 + cosM * 0.45})`
-            : `rgba(25, 40, 95,${0.25 + Math.abs(cosM) * 0.40})`;
-          ctx.shadowBlur  = 4 + Math.abs(cosM) * 18;
-
-          const grd = ctx.createLinearGradient(xA, yA - hA * 0.5, xB, yB + hB * 0.5);
-          grd.addColorStop(0,    `hsl(226,${Sat}%,${L + 13}%)`);
-          grd.addColorStop(0.40, `hsl(226,${Sat}%,${L + 2}%)`);
-          grd.addColorStop(1,    `hsl(226,${Sat + 5}%,${L - 9}%)`);
-          ctx.fillStyle = grd;
-
-          ctx.beginPath();
-          ctx.moveTo(xA,  yA - hA * 0.5);
-          ctx.lineTo(xB,  yB - hB * 0.5);
-          ctx.lineTo(xB,  yB + hB * 0.5);
-          ctx.lineTo(xA,  yA + hA * 0.5);
-          ctx.closePath();
-          ctx.fill();
-
-          // Specular highlight (sky catching the top face on upstroke)
-          if (topFace && cosM > 0.12) {
-            ctx.shadowBlur = 0;
-            const shine = ctx.createLinearGradient(xA, yA - hA * 0.5, xB, yB - hB * 0.5);
-            shine.addColorStop(0,   `rgba(255,255,255,${cosM * 0.50})`);
-            shine.addColorStop(0.5, `rgba(255,255,255,${cosM * 0.16})`);
-            shine.addColorStop(1,   "rgba(255,255,255,0)");
-            ctx.fillStyle = shine;
-            ctx.beginPath();
-            ctx.moveTo(xA,  yA - hA * 0.5);
-            ctx.lineTo(xB,  yB - hB * 0.5);
-            ctx.lineTo(xB,  yB + hB * 0.5);
-            ctx.lineTo(xA,  yA + hA * 0.5);
-            ctx.closePath();
-            ctx.fill();
-          }
-
-          // Edge rib (subtle page-spine line)
-          ctx.shadowBlur  = 0;
-          ctx.strokeStyle = `rgba(95,105,142,${0.22 * Math.abs(cosM)})`;
-          ctx.lineWidth   = 0.65;
-          ctx.beginPath();
-          ctx.moveTo(xA, yA);
-          ctx.lineTo(xB, yB);
-          ctx.stroke();
-        }
-      };
-
-      drawWing(-1, shoulderA, tipA);   // left wing
-      drawWing( 1, shoulderA, tipA);   // right wing
-
-      ctx.restore();
-
-      // ── 2. BOOK BODY — travel-rotated coordinate space ────────────
-      ctx.save();
-      ctx.translate(pos.x, pos.y);
-      ctx.rotate(angle + Math.PI / 2);
-
-      // ── SPINE (hardcover) ──────────────────────────────────────────────
-      ctx.shadowColor = "rgba(160,180,225,0.6)";
-      ctx.shadowBlur  = atApexLocal ? 22 : 10;
-      const spineGrd = ctx.createLinearGradient(-BW/2-SPINE, 0, -BW/2, 0);
-      spineGrd.addColorStop(0,   "#8A8CA0");
-      spineGrd.addColorStop(0.35,"#BEC0CE");
-      spineGrd.addColorStop(0.7, "#A8AAB8");
-      spineGrd.addColorStop(1,   "#9698A8");
-      ctx.fillStyle = spineGrd;
-      ctx.beginPath();
-      ctx.moveTo(-BW/2,       -BH/2+2);
-      ctx.lineTo(-BW/2-SPINE, -BH/2+5);
-      ctx.lineTo(-BW/2-SPINE,  BH/2-5);
-      ctx.lineTo(-BW/2,        BH/2-2);
-      ctx.closePath(); ctx.fill();
-      // Spine highlight ridge
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = "rgba(210,215,230,0.7)";
-      ctx.lineWidth = 0.9;
-      ctx.beginPath();
-      ctx.moveTo(-BW/2-SPINE+2.5, -BH/2+6);
-      ctx.lineTo(-BW/2-SPINE+2.5,  BH/2-6);
-      ctx.stroke();
-      // Spine label lines
-      [0.28, 0.5, 0.72].forEach(frac => {
-        const sy = -BH/2 + frac*BH;
-        ctx.strokeStyle = "rgba(165,168,185,0.5)";
-        ctx.lineWidth = 0.5;
-        ctx.beginPath(); ctx.moveTo(-BW/2-SPINE+4, sy); ctx.lineTo(-BW/2-2, sy); ctx.stroke();
-      });
-
-      // ── COVER FACE (between spine and pages) ──────────────────────────
-      ctx.shadowColor = "rgba(180,200,235,0.5)";
-      ctx.shadowBlur  = atApexLocal ? 20 : 10;
-      const covGrd = ctx.createLinearGradient(-BW/2, -BH/2, BW/2-PAGES, BH/2);
-      covGrd.addColorStop(0,   "#D5D7E5");
-      covGrd.addColorStop(0.18,"#EEF0F6");
-      covGrd.addColorStop(0.5, "#E4E6F0");
-      covGrd.addColorStop(0.82,"#C8CADC");
-      covGrd.addColorStop(1,   "#AEAFC0");
-      ctx.fillStyle = covGrd;
-      ctx.beginPath();
-      ctx.roundRect(-BW/2, -BH/2, BW-PAGES, BH, [2,1,1,2]);
-      ctx.fill();
-
-      // Shimmer sweep across cover
-      const shimX = -BW/2 + ((elapsed*0.00015) % 1) * (BW-PAGES);
-      const shimGrd = ctx.createLinearGradient(shimX-18, -BH/2, shimX+18, BH/2);
-      shimGrd.addColorStop(0, "rgba(255,255,255,0)");
-      shimGrd.addColorStop(0.45, `rgba(255,255,255,${atApexLocal?0.55:0.3})`);
-      shimGrd.addColorStop(1, "rgba(255,255,255,0)");
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = shimGrd;
-      ctx.beginPath();
-      ctx.roundRect(-BW/2, -BH/2, BW-PAGES, BH, [2,1,1,2]);
-      ctx.fill();
-
-      // Cover border
-      ctx.strokeStyle = "rgba(165,170,192,0.85)";
-      ctx.lineWidth = 0.8;
-      ctx.beginPath(); ctx.roundRect(-BW/2, -BH/2, BW-PAGES, BH, [2,1,1,2]); ctx.stroke();
-      // Inner decorative frame
-      ctx.strokeStyle = "rgba(148,152,175,0.45)";
-      ctx.lineWidth = 0.55;
-      ctx.beginPath(); ctx.roundRect(-BW/2+4, -BH/2+5, BW-PAGES-8, BH-10, 2); ctx.stroke();
-
-      // Title bars
-      ctx.fillStyle = "rgba(118,122,148,0.6)";
-      ctx.beginPath(); ctx.roundRect(-BW/2+7, -BH/2+12, BW-PAGES-14, 3.5, 1); ctx.fill();
-      ctx.fillStyle = "rgba(118,122,148,0.42)";
-      ctx.beginPath(); ctx.roundRect(-BW/2+7, -BH/2+19, BW-PAGES-20, 2.5, 1); ctx.fill();
-      ctx.beginPath(); ctx.roundRect(-BW/2+7, -BH/2+25, BW-PAGES-17, 2.5, 1); ctx.fill();
-
-      // Crest / seal
-      ctx.strokeStyle = "rgba(145,150,175,0.55)";
-      ctx.lineWidth = 0.75;
-      ctx.beginPath(); ctx.arc(0, 7, 7.5, 0, Math.PI*2); ctx.stroke();
-      ctx.beginPath(); ctx.arc(0, 7, 4.5, 0, Math.PI*2); ctx.stroke();
-      // 5-point star in crest
-      const glintStar = 0.5 + 0.5*Math.sin(elapsed*0.003);
-      ctx.fillStyle = `rgba(190,195,220,${0.5 + glintStar*0.35})`;
-      ctx.beginPath();
-      for (let i=0; i<10; i++) {
-        const sa = (i/10)*Math.PI*2 - Math.PI/2;
-        const sr = i%2===0 ? 3.8 : 1.6;
-        i===0 ? ctx.moveTo(Math.cos(sa)*sr, 7+Math.sin(sa)*sr)
-              : ctx.lineTo(Math.cos(sa)*sr, 7+Math.sin(sa)*sr);
-      }
-      ctx.closePath(); ctx.fill();
-
-      // Author rule
-      ctx.fillStyle = "rgba(118,122,148,0.38)";
-      ctx.beginPath(); ctx.roundRect(-BW/2+7, BH/2-16, BW-PAGES-24, 2, 1); ctx.fill();
-
-      // ── PAGE THICKNESS BLOCK ──────────────────────────────────────────
-      const pgThkGrd = ctx.createLinearGradient(BW/2-PAGES, 0, BW/2, 0);
-      pgThkGrd.addColorStop(0,   "#BEC0CA");
-      pgThkGrd.addColorStop(0.3, "#DCDEE6");
-      pgThkGrd.addColorStop(0.7, "#CACED8");
-      pgThkGrd.addColorStop(1,   "#B2B4C0");
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = pgThkGrd;
-      ctx.beginPath();
-      ctx.moveTo(BW/2-PAGES, -BH/2+3);
-      ctx.lineTo(BW/2,       -BH/2+1);
-      ctx.lineTo(BW/2,        BH/2-1);
-      ctx.lineTo(BW/2-PAGES,  BH/2-3);
-      ctx.closePath(); ctx.fill();
-      for (let i=1; i<=7; i++) {
-        const py = -BH/2+3 + (BH-6)*i/8;
-        ctx.strokeStyle = "rgba(155,158,170,0.32)";
-        ctx.lineWidth = 0.55;
-        ctx.beginPath(); ctx.moveTo(BW/2-PAGES+1, py); ctx.lineTo(BW/2-1, py); ctx.stroke();
-      }
-
-      ctx.restore(); // book transform
-    }
-  }, []);
-
-  // ─── Main animation tick ─────────────────────────────────────────────────
-  const TOTAL_DUR = 3600;
-
-  const startLeap = useCallback(() => {
-    const s = stateRef.current;
-    s.phase     = "flying";
-    s.t         = 0;
-    s.dir      *= -1;
-    s.startTime = null;
-    s.trail     = [];
-
-    const W = window.innerWidth, H = window.innerHeight;
-    const { p0, p3 } = getArcPoints(s.dir, W, H);
-
-    // Breach spray & foam (entry)
-    setTimeout(() => {
-      spawnSpray(p0.x, H*0.88, 28, true);
-      spawnSpray(p0.x, H*0.88, 12, true);
-      spawnGlitter(p0.x, H*0.88, 18);
-      spawnFoam(p0.x, H*0.92);
-    }, 60);
-
-    // Apex glitter burst
-    setTimeout(() => {
-      const W2 = window.innerWidth, H2 = window.innerHeight;
-      const mid = cubicBez(0.5, getArcPoints(s.dir,W2,H2).p0, getArcPoints(s.dir,W2,H2).p1, getArcPoints(s.dir,W2,H2).p2, getArcPoints(s.dir,W2,H2).p3);
-      spawnGlitter(mid.x, mid.y, 30);
-      spawnSpray(mid.x, mid.y, 8, true);
-    }, TOTAL_DUR * 0.48);
-
-    // Dive back in: spray + foam at exit point
-    setTimeout(() => {
-      spawnSpray(p3.x, H*0.88, 28, false);
-      spawnGlitter(p3.x, H*0.88, 14);
-      spawnFoam(p3.x, H*0.92);
-    }, TOTAL_DUR * 0.90);
-
-    let startT = null;
-    const tick = (now) => {
-      if (!startT) startT = now;
-      const elapsed = now - startT;
-      s.t = Math.min(elapsed / TOTAL_DUR, 1);
-
-      // Ease in-out sine for smooth arc
-      const eased = 0.5 - 0.5*Math.cos(s.t * Math.PI);
-      s.t = eased; // use eased t for bezier position
-
-      draw(elapsed);
-      s.t = Math.min(elapsed / TOTAL_DUR, 1); // restore raw t for phase tracking
-
-      if (s.t < 1) {
-        rafRef.current = requestAnimationFrame(tick);
-      } else {
-        s.phase = "idle";
-        s.trail = [];
-        // Keep drawing until particles die
-        const drain = (now2) => {
-          draw(now2 - startT + TOTAL_DUR);
-          if (s.particles.length || s.glitter.length || s.foam.length) {
-            rafRef.current = requestAnimationFrame(drain);
-          }
-        };
-        rafRef.current = requestAnimationFrame(drain);
-      }
-    };
-    rafRef.current = requestAnimationFrame(tick);
-  }, [draw]);
+// ─── Video Background — Play → Hold → Cinematic Replay ───────────────────────
+// The video plays the shooting star animation once, then stops naturally on the
+// final static frame (beautiful night scene).  After HOLD_MS it replays from
+// the beginning. To hide the browser's hardware seek glitch when jumping back
+// to 0, we use a black overlay to do a cinematic dip-to-black fade over the cut.
+
+const HOLD_MS = 7000; // ms to show the static last frame before replaying
+const FADE_MS = 800;  // duration of the dip-to-black transition
+
+const FrameBackground = ({ visible = true }) => {
+  const vidRef    = useRef(null);
+  const fadeRef   = useRef(null);
+  const t1Ref     = useRef(null);
+  const t2Ref     = useRef(null);
+  const t3Ref     = useRef(null);
 
   useEffect(() => {
-    let cancelled = false;
-    const schedule = async () => {
-      await new Promise(r => setTimeout(r, 1600));
-      while (!cancelled) {
-        startLeap();
-        await new Promise(r => setTimeout(r, TOTAL_DUR + 10000));
-      }
+    const v = vidRef.current;
+    const f = fadeRef.current;
+    if (!v || !f) return;
+
+    const onEnded = () => {
+      // 1. Wait until just before the hold period ends, then fade to black
+      t1Ref.current = setTimeout(() => {
+        f.style.transition = `opacity ${FADE_MS}ms ease`;
+        f.style.opacity = "1";
+      }, HOLD_MS - FADE_MS);
+
+      // 2. Once fully black, reset video and play
+      t2Ref.current = setTimeout(() => {
+        v.currentTime = 0;
+        v.play().catch(() => {});
+        
+        // 3. Wait a tiny bit for the first frame to decode, then fade back in
+        t3Ref.current = setTimeout(() => {
+          f.style.transition = `opacity ${FADE_MS}ms ease`;
+          f.style.opacity = "0";
+        }, 150);
+      }, HOLD_MS);
     };
-    schedule();
+
+    v.play().catch(() => {});
+    v.addEventListener("ended", onEnded);
+
     return () => {
-      cancelled = true;
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      v.removeEventListener("ended", onEnded);
+      clearTimeout(t1Ref.current);
+      clearTimeout(t2Ref.current);
+      clearTimeout(t3Ref.current);
     };
-  }, [startLeap]);
-
-  useEffect(() => {
-    const resize = () => {
-      if (canvasRef.current) {
-        canvasRef.current.width  = window.innerWidth;
-        canvasRef.current.height = window.innerHeight;
-      }
-    };
-    resize();
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
   }, []);
 
   return (
-    <canvas ref={canvasRef} style={{ position:"fixed", inset:0, zIndex: isBackground ? 0 : 5, pointerEvents:"none", opacity: isBackground ? 0.35 : 1, transition:"opacity 0.6s ease, z-index 0s" }} />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: visible ? 1 : 0 }}
+      transition={{ duration: 1.6, ease: [0.4, 0, 0.2, 1] }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: "none",
+        overflow: "hidden",
+      }}
+    >
+      <video
+        ref={vidRef}
+        src="/bg.mp4"
+        muted
+        playsInline
+        preload="auto"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "center",
+        }}
+      />
+
+      {/* Cinematic Dip-to-Black Overlay */}
+      <div
+        ref={fadeRef}
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "#08080F",
+          opacity: 0,
+          pointerEvents: "none",
+          zIndex: 1, // Sit above the video, below gradients
+        }}
+      />
+
+      {/* Dark vignette */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        background: "radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.68) 100%)",
+        pointerEvents: "none",
+        zIndex: 2,
+      }} />
+
+      {/* Top gradient — navbar readability */}
+      <div style={{
+        position: "absolute",
+        top: 0, left: 0, right: 0,
+        height: "160px",
+        background: "linear-gradient(to bottom, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0) 100%)",
+        pointerEvents: "none",
+        zIndex: 2,
+      }} />
+    </motion.div>
   );
 };
-
-// ─── Floating orbs ────────────────────────────────────────────────────────────
-const Orbs = ({ visible = true }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: visible ? 1 : 0 }}
-    transition={{ duration: 1.1, ease: [0.4, 0, 0.2, 1] }}
-    style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}
-  >
-    {/* Ambient orbs — slightly brighter than before */}
-    {[
-      { size:700, top:"-120px", left:"-200px", color:"rgba(168,169,173,0.055)", dur:14 },
-      { size:450, bottom:"8%",  right:"-100px",color:"rgba(139,158,212,0.06)",  dur:10 },
-      { size:350, top:"42%",   left:"58%",     color:"rgba(155,142,212,0.05)",  dur:17 },
-      { size:300, top:"20%",   left:"30%",     color:"rgba(190,185,220,0.04)",  dur:21 },
-    ].map((o,i) => (
-      <motion.div key={i}
-        animate={{ scale:[1,1.1,1], opacity:[0.5,1,0.5] }}
-        transition={{ duration:o.dur, repeat:Infinity, ease:"easeInOut" }}
-        style={{ position:"absolute", width:o.size, height:o.size, top:o.top, bottom:o.bottom, left:o.left, right:o.right, borderRadius:"50%", background:`radial-gradient(circle, ${o.color} 0%, transparent 70%)` }}/>
-    ))}
-    {/* Silver waves */}
-    <SilverWaves/>
-  </motion.div>
-);
 
 // ─── Avatar Dropdown ──────────────────────────────────────────────────────────
 const AvatarMenu = ({ user, onSignOut, onOpenAuth }) => {
@@ -1316,18 +711,23 @@ const Navbar = ({ onBack, showBack, onNav, activeView, user, onSignOut, onOpenAu
       </span>
     </motion.div>
     <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-      {showBack ? (
-        <motion.button onClick={onBack} whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
-          style={{ background:"rgba(168,169,173,0.08)", border:"1px solid rgba(168,169,173,0.18)", borderRadius:"8px", padding:"8px 20px", color:S.silverLt, fontSize:"11px", letterSpacing:"0.14em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, cursor:"pointer" }}>
-          Back to Journey
-        </motion.button>
-      ) : (
+      {!showBack && (
         <div style={{ display:"flex", gap:"6px" }}>
           {[["Prompt Lab","lab"],["Challenges","challenges"],["Dashboard","dashboard"]].map(([label,dest]) => (
             <motion.button key={label}
               onClick={() => onNav?.(dest)}
-              whileHover={{ scale:1.03, background:"rgba(168,169,173,0.1)" }} whileTap={{ scale:0.96 }}
-              style={{ background: activeView===dest ? "rgba(168,169,173,0.14)" : "rgba(168,169,173,0.05)", border: activeView===dest ? "1px solid rgba(168,169,173,0.3)" : "1px solid rgba(168,169,173,0.12)", borderRadius:"8px", padding:"8px 16px", color: activeView===dest ? S.silverLt : S.muted, fontSize:"11px", letterSpacing:"0.1em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, cursor:"pointer", transition:"all 0.2s" }}>
+              whileHover={{ scale:1.03, background: activeView===dest ? "rgba(200,201,204,0.22)" : "rgba(168,169,173,0.16)", boxShadow:"0 0 12px rgba(168,169,173,0.18)" }}
+              whileTap={{ scale:0.96 }}
+              style={{
+                background: activeView===dest ? "rgba(168,169,173,0.18)" : "rgba(168,169,173,0.08)",
+                border: activeView===dest ? "1px solid rgba(200,201,204,0.55)" : "1px solid rgba(168,169,173,0.35)",
+                borderRadius:"8px", padding:"8px 16px",
+                color: activeView===dest ? S.white : S.silverLt,
+                fontSize:"11px", letterSpacing:"0.1em", textTransform:"uppercase",
+                fontFamily:"'Cormorant Garamond', serif", fontWeight:600, cursor:"pointer",
+                transition:"all 0.2s",
+                boxShadow: activeView===dest ? "0 0 14px rgba(168,169,173,0.2), inset 0 1px 0 rgba(255,255,255,0.08)" : "inset 0 1px 0 rgba(255,255,255,0.05)",
+              }}>
               {label}
             </motion.button>
           ))}
@@ -1386,7 +786,7 @@ const QuizModal = ({ stage, onClose, onPass }) => {
         <div style={{ padding:"24px 28px 16px", borderBottom:"1px solid rgba(168,169,173,0.08)", position:"sticky", top:0, background:S.bg, zIndex:10, borderRadius:"22px 22px 0 0" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
             <div>
-              <span style={{ fontSize:"10px", letterSpacing:"0.22em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, color:stage.color }}>Stage {stage.id} · Quiz</span>
+              <span style={{ fontSize:"10px", letterSpacing:"0.22em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, color:stage.color }}>Stage <span style={{ fontSize:"15px", fontFamily:"'Playfair Display', serif", fontWeight:700 }}>{stage.id}</span> · Quiz</span>
               <div style={{ fontFamily:"'Playfair Display', serif", fontSize:"17px", fontWeight:700, color:S.white, marginTop:"3px" }}>{stage.title}</div>
             </div>
             <motion.button onClick={onClose} whileHover={{ scale:1.1 }} whileTap={{ scale:0.9 }}
@@ -1514,7 +914,7 @@ const StageNode = ({ stage, index, unlocked, completed, stageStars, onClick }) =
         whileHover={unlocked ? { scale:1.025, y:-3 } : {}}
         whileTap={unlocked ? { scale:0.98 } : {}}
         onClick={() => unlocked && onClick(stage)}
-        style={{ width:"300px", background: completed?`linear-gradient(135deg, rgba(${hexToRgb(stage.color)},0.1) 0%, rgba(8,8,15,0.97) 100%)`:"rgba(13,13,22,0.97)", border: completed?`1px solid rgba(${hexToRgb(stage.color)},0.32)` : unlocked?"1px solid rgba(168,169,173,0.2)":"1px solid rgba(168,169,173,0.07)", borderRadius:"16px", padding:"22px 24px", cursor:unlocked?"pointer":"default", opacity:unlocked?1:0.38, filter:unlocked?"none":"grayscale(0.7)", boxShadow: completed?`0 6px 36px rgba(${hexToRgb(stage.color)},0.16)` : unlocked?"0 3px 20px rgba(0,0,0,0.45)":"none", transition:"all 0.3s ease", position:"relative", overflow:"hidden" }}>
+        style={{ width:"300px", background: completed?`linear-gradient(135deg, rgba(${hexToRgb(stage.color)},0.1) 0%, rgba(8,8,15,0.97) 100%)`:"rgba(13,13,22,0.97)", border: completed?`1px solid rgba(${hexToRgb(stage.color)},0.32)` : unlocked?"1px solid rgba(168,169,173,0.2)":"1px solid rgba(168,169,173,0.25)", borderRadius:"16px", padding:"22px 24px", cursor:unlocked?"pointer":"default", opacity:unlocked?1:0.85, filter:"none", boxShadow: completed?`0 6px 36px rgba(${hexToRgb(stage.color)},0.16)` : unlocked?"0 3px 20px rgba(0,0,0,0.45)":"0 4px 20px rgba(0,0,0,0.6)", transition:"all 0.3s ease", position:"relative", overflow:"hidden" }}>
 
         {completed && (
           <motion.div animate={{ x:["-100%","200%"] }} transition={{ duration:3.5, repeat:Infinity, repeatDelay:5, ease:"easeInOut" }}
@@ -1522,16 +922,16 @@ const StageNode = ({ stage, index, unlocked, completed, stageStars, onClick }) =
         )}
 
         <div style={{ display:"flex", alignItems:"flex-start", gap:"14px" }}>
-          <div style={{ width:"44px", height:"44px", borderRadius:"12px", flexShrink:0, background:unlocked?`rgba(${hexToRgb(stage.color)},0.12)`:"rgba(168,169,173,0.05)", border:`1.5px solid rgba(${hexToRgb(stage.color)},${unlocked?0.38:0.12})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"18px", color:unlocked?stage.color:"rgba(168,169,173,0.25)", boxShadow:completed?`0 0 14px rgba(${hexToRgb(stage.color)},0.25)`:"none", transition:"all 0.3s" }}>
-            {unlocked ? stage.icon : <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><rect x="1" y="5" width="10" height="8" rx="2" stroke="rgba(168,169,173,0.4)" strokeWidth="1.2"/><path d="M3 5V3.5a3 3 0 016 0V5" stroke="rgba(168,169,173,0.4)" strokeWidth="1.2"/></svg>}
+          <div style={{ width:"44px", height:"44px", borderRadius:"12px", flexShrink:0, background:unlocked?`rgba(${hexToRgb(stage.color)},0.12)`:"rgba(168,169,173,0.08)", border:`1.5px solid rgba(${hexToRgb(stage.color)},${unlocked?0.38:0.25})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"18px", color:unlocked?stage.color:"rgba(168,169,173,0.6)", boxShadow:completed?`0 0 14px rgba(${hexToRgb(stage.color)},0.25)`:"none", transition:"all 0.3s" }}>
+            {unlocked ? stage.icon : <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><rect x="1" y="5" width="10" height="8" rx="2" stroke="rgba(168,169,173,0.7)" strokeWidth="1.2"/><path d="M3 5V3.5a3 3 0 016 0V5" stroke="rgba(168,169,173,0.7)" strokeWidth="1.2"/></svg>}
           </div>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"3px" }}>
-              <span style={{ fontSize:"9px", letterSpacing:"0.22em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, color:unlocked?stage.color:"rgba(168,169,173,0.25)" }}>Stage {stage.id}</span>
+              <span style={{ fontSize:"9px", letterSpacing:"0.22em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, color:unlocked?stage.color:"rgba(168,169,173,0.6)" }}>Stage <span style={{ fontSize:"14px", fontFamily:"'Playfair Display', serif", fontWeight:700 }}>{stage.id}</span></span>
               {completed && <StarRow earned={stageStars} size={11} gap={2}/>}
             </div>
-            <div style={{ fontFamily:"'Playfair Display', serif", fontSize:"15px", fontWeight:700, color:unlocked?S.white:"rgba(255,255,255,0.25)", marginBottom:"3px", lineHeight:1.2 }}>{stage.title}</div>
-            <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"12px", color:unlocked?S.muted:"rgba(255,255,255,0.18)", lineHeight:1.5, marginBottom:unlocked?"12px":"0" }}>{stage.subtitle}</div>
+            <div style={{ fontFamily:"'Playfair Display', serif", fontSize:"15px", fontWeight:700, color:unlocked?S.white:"rgba(255,255,255,0.65)", marginBottom:"3px", lineHeight:1.2 }}>{stage.title}</div>
+            <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"12px", color:unlocked?S.muted:"rgba(255,255,255,0.45)", lineHeight:1.5, marginBottom:unlocked?"12px":"0" }}>{stage.subtitle}</div>
             {unlocked && (
               <div style={{ display:"inline-flex", alignItems:"center", gap:"5px", padding:"5px 12px", borderRadius:"20px", background:`rgba(${hexToRgb(stage.color)},0.1)`, border:`1px solid rgba(${hexToRgb(stage.color)},0.22)` }}>
                 <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"10px", letterSpacing:"0.1em", textTransform:"uppercase", color:stage.color, fontWeight:600 }}>
@@ -1555,11 +955,18 @@ const LessonPage = ({ stage, completed, stageStars, onBack, onOpenQuiz }) => {
     <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-16 }} transition={{ duration:0.45, ease:[0.25,0.46,0.45,0.94] }}
       style={{ minHeight:"100vh", background:S.bg, paddingTop:"80px", paddingBottom:"100px" }}>
       <div style={{ maxWidth:"780px", margin:"0 auto", padding:"48px 32px 0" }}>
+        <motion.button onClick={onBack}
+          whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.25)" }}
+          whileTap={{ scale: 0.96 }}
+          style={{ display:"flex", alignItems:"center", gap:"8px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"20px", cursor:"pointer", color:"rgba(255,255,255,0.9)", fontFamily:"'Cormorant Garamond', serif", fontSize:"11px", letterSpacing:"0.16em", textTransform:"uppercase", fontWeight:"600", padding:"6px 16px 6px 12px", backdropFilter:"blur(4px)", boxShadow:"0 4px 12px rgba(0,0,0,0.2)", width:"fit-content", marginBottom:"42px" }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Back to Journey
+        </motion.button>
 
         {/* Hero */}
         <motion.div initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1 }}>
           <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"14px" }}>
-            <span style={{ fontSize:"10px", letterSpacing:"0.24em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, color:stage.color }}>Stage {stage.id}</span>
+            <span style={{ fontSize:"10px", letterSpacing:"0.24em", textTransform:"uppercase", fontFamily:"'Cormorant Garamond', serif", fontWeight:600, color:stage.color }}>Stage <span style={{ fontSize:"15px", fontFamily:"'Playfair Display', serif", fontWeight:700 }}>{stage.id}</span></span>
             {completed && (
               <span style={{ display:"inline-flex", alignItems:"center", gap:"6px", padding:"3px 10px", borderRadius:"20px", background:`rgba(${hexToRgb(stage.color)},0.1)`, border:`1px solid rgba(${hexToRgb(stage.color)},0.25)`, fontFamily:"'Cormorant Garamond', serif", fontSize:"10px", color:stage.color, letterSpacing:"0.1em", textTransform:"uppercase" }}>
                 Completed · <StarRow earned={stageStars} size={10} gap={2}/>
@@ -1639,14 +1046,28 @@ const LessonPage = ({ stage, completed, stageStars, onBack, onOpenQuiz }) => {
 };
 
 // ─── Home Page ────────────────────────────────────────────────────────────────
-const HomePage = ({ completed, stageStarsMap, onOpenStage, user }) => {
+const AboutNavContext = createContext(null);
+const AboutFooterBtn = () => {
+  const onNav = useContext(AboutNavContext);
+  return (
+    <button onClick={() => onNav?.("about")}
+      style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"'Cormorant Garamond', serif", fontSize:"13px", letterSpacing:"0.14em", color:"rgba(255,255,255,0.9)", textTransform:"uppercase", borderBottom:"1px solid rgba(255,255,255,0.3)", padding:"0 0 2px 0", transition:"all 0.2s", textShadow:"0 1px 8px rgba(0,0,0,0.85)" }}
+      onMouseEnter={e => { e.currentTarget.style.color="#ffffff"; e.currentTarget.style.borderColor="rgba(255,255,255,0.8)"; }}
+      onMouseLeave={e => { e.currentTarget.style.color="rgba(255,255,255,0.9)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.3)"; }}>
+      About
+    </button>
+  );
+};
+
+const HomePage = ({ completed, stageStarsMap, onOpenStage, onNav, user }) => {
   const { scrollY } = useScroll();
   const heroY  = useTransform(scrollY, [0,350], [0,-50]);
   const heroOp = useTransform(scrollY, [0,280], [1,0.65]);
   const courseComplete = completed.length === STAGES.length;
 
   return (
-    <div style={{ background:S.bg, minHeight:"100vh", paddingTop:"64px" }}>
+    <AboutNavContext.Provider value={onNav}>
+    <div style={{ background:"transparent", minHeight:"100vh", paddingTop:"64px" }}>
       {/* Hero */}
       <motion.div style={{ y:heroY, opacity:heroOp }} initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.75, ease:[0.25,0.46,0.45,0.94] }}>
         <div style={{ textAlign:"center", padding:"72px 32px 36px" }}>
@@ -1657,7 +1078,7 @@ const HomePage = ({ completed, stageStarsMap, onOpenStage, user }) => {
           <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.25 }}
             style={{ width:"60px", height:"1.5px", background:`linear-gradient(90deg, transparent, ${S.silver}, transparent)`, margin:"14px auto 20px" }}/>
           <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.3 }}
-            style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"16px", color:S.muted, maxWidth:"520px", margin:"0 auto 28px", lineHeight:1.8 }}>
+            style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"16px", color:"rgba(255,255,255,0.92)", maxWidth:"520px", margin:"0 auto 28px", lineHeight:1.8, textShadow:"0 1px 12px rgba(0,0,0,0.85), 0 0 32px rgba(0,0,0,0.6)" }}>
             Master the art of prompt engineering through an interactive journey. Each stage brings you closer to becoming a prompt expert.
           </motion.p>
 
@@ -1669,8 +1090,8 @@ const HomePage = ({ completed, stageStarsMap, onOpenStage, user }) => {
                 <div key={s.id} style={{ width:"22px", height:"4px", borderRadius:"2px", background: completed.includes(s.id) ? s.color : "rgba(168,169,173,0.12)", boxShadow: completed.includes(s.id) ? `0 0 6px ${s.glow}` : "none", transition:"all 0.4s" }}/>
               ))}
             </div>
-            <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"11px", color:S.muted, letterSpacing:"0.08em" }}>
-              {completed.length} of {STAGES.length} stages completed
+            <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"14px", fontWeight:"600", color:"#FFFFFF", letterSpacing:"0.15em", textTransform: "uppercase", textShadow:"0 2px 10px rgba(0,0,0,1), 0 0 25px rgba(0,0,0,0.8)" }}>
+              {completed.length} OF {STAGES.length} STAGES COMPLETED
             </span>
           </motion.div>
         </div>
@@ -1682,7 +1103,7 @@ const HomePage = ({ completed, stageStarsMap, onOpenStage, user }) => {
         <h2 style={{ fontFamily:"'Playfair Display', serif", fontSize:"clamp(22px,3.5vw,34px)", fontWeight:700, color:S.white, marginBottom:"8px" }}>
           Your Learning Journey
         </h2>
-        <p style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"13px", color:S.muted }}>
+        <p style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"13px", color:"rgba(255,255,255,0.88)", textShadow:"0 1px 10px rgba(0,0,0,0.85)" }}>
           {courseComplete ? "All stages complete — review any stage below." : "Select an unlocked stage to begin learning"}
         </p>
       </motion.div>
@@ -1715,20 +1136,138 @@ const HomePage = ({ completed, stageStarsMap, onOpenStage, user }) => {
           <motion.div
             animate={courseComplete ? { boxShadow:["0 0 10px rgba(200,201,204,0.1)","0 0 30px rgba(200,201,204,0.4)","0 0 10px rgba(200,201,204,0.1)"] } : { y:[0,-4,0] }}
             transition={{ duration: courseComplete?2:3, repeat:Infinity, ease:"easeInOut" }}
-            style={{ width:"52px", height:"52px", borderRadius:"50%", background: courseComplete?"rgba(200,201,204,0.12)":"rgba(168,169,173,0.05)", border:`1.5px solid ${courseComplete?"rgba(200,201,204,0.45)":"rgba(168,169,173,0.14)"}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            style={{ width:"52px", height:"52px", borderRadius:"50%", background: courseComplete?"rgba(200,201,204,0.12)":"rgba(200,201,204,0.08)", border:`1.5px solid ${courseComplete?"rgba(200,201,204,0.6)":"rgba(200,201,204,0.3)"}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <polygon points="10,2 12,8 18,8 13,12 15,18 10,14 5,18 7,12 2,8 8,8" fill={courseComplete?"#FFD700":"rgba(168,169,173,0.3)"} />
+              <polygon points="10,2 12,8 18,8 13,12 15,18 10,14 5,18 7,12 2,8 8,8" fill={courseComplete?"#FFD700":"rgba(200,201,204,0.75)"} />
             </svg>
           </motion.div>
-          <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"10px", color: courseComplete?S.silverLt:S.muted, letterSpacing:"0.14em", textTransform:"uppercase" }}>
+          <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"12px", color: courseComplete ? "#FFFFFF" : "rgba(200,201,204,0.8)", letterSpacing:"0.16em", textTransform:"uppercase", fontWeight:"600", textShadow:"0 1px 12px rgba(0,0,0,0.8)" }}>
             {courseComplete ? "Prompt Master — Achieved" : "Prompt Master"}
           </span>
           {courseComplete && <StarRow earned={3} size={14} gap={4}/>}
         </motion.div>
       </div>
+
+      {/* ── Site footer ──────────────────────────────────────────────────── */}
+      <motion.div initial={{ opacity:0 }} whileInView={{ opacity:1 }} viewport={{ once:true }} transition={{ duration:0.6 }}
+        style={{ borderTop:"1px solid rgba(255,255,255,0.2)", margin:"0 32px", padding:"36px 0", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"13px", letterSpacing:"0.18em", color:"rgba(255,255,255,0.9)", textTransform:"uppercase", textShadow:"0 1px 12px rgba(0,0,0,0.9), 0 0 24px rgba(0,0,0,0.8)" }}>
+          © 2025 · The Art of Prompting
+        </span>
+        <div style={{ display:"flex", gap:"32px", alignItems:"center" }}>
+          {[["Github","#"],["Contact","#"],["Twitter / X","#"]].map(([label, href]) => (
+            <a key={label} href={href}
+              style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"13px", letterSpacing:"0.14em", color:"rgba(255,255,255,0.9)", textDecoration:"none", textTransform:"uppercase", borderBottom:"1px solid rgba(255,255,255,0.3)", paddingBottom:"2px", transition:"all 0.2s", textShadow:"0 1px 8px rgba(0,0,0,0.85)" }}
+              onMouseEnter={e => { e.currentTarget.style.color="#ffffff"; e.currentTarget.style.borderColor="rgba(255,255,255,0.8)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color="rgba(255,255,255,0.9)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.3)"; }}
+            >{label}</a>
+          ))}
+          <AboutFooterBtn/>
+        </div>
+      </motion.div>
     </div>
+    </AboutNavContext.Provider>
   );
 };
+const AboutPage = ({ onBack }) => (
+  <div style={{ background:S.bg, minHeight:"100vh", paddingTop:"64px" }}>
+    <div style={{ maxWidth:"860px", margin:"0 auto", padding:"64px 32px 100px" }}>
+
+      {/* Back */}
+      <motion.button
+        initial={{ opacity:0, x:-8 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.4 }}
+        onClick={onBack}
+        whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.25)" }}
+        whileTap={{ scale: 0.96 }}
+        style={{ display:"flex", alignItems:"center", gap:"8px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"20px", cursor:"pointer", color:"rgba(255,255,255,0.9)", fontFamily:"'Cormorant Garamond', serif", fontSize:"11px", letterSpacing:"0.16em", textTransform:"uppercase", fontWeight:"600", marginBottom:"52px", padding:"6px 16px 6px 12px", backdropFilter:"blur(4px)", width:"fit-content", boxShadow:"0 4px 12px rgba(0,0,0,0.2)" }}>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        Back
+      </motion.button>
+
+      {/* Top: headline + avatar */}
+      <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, ease:[0.25,0.46,0.45,0.94] }}
+        style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:"48px", alignItems:"flex-start", paddingBottom:"52px", borderBottom:"1px solid rgba(168,169,173,0.09)", marginBottom:"52px" }}>
+        <div>
+          <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"12px", letterSpacing:"0.26em", color:"#7ec8e8", textTransform:"uppercase", fontWeight:"600", marginBottom:"18px", textShadow:"0 1px 12px rgba(126,200,232,0.4)" }}>
+            About the project
+          </div>
+          <h1 style={{ fontFamily:"'Playfair Display', serif", fontSize:"clamp(30px,4vw,44px)", fontWeight:700, color:S.white, lineHeight:1.1, letterSpacing:"-0.02em", margin:"0 0 22px" }}>
+            Built for anyone who wants<br/>to think <em style={{ color:S.silver, fontStyle:"italic" }}>clearly</em> with AI.
+          </h1>
+          <p style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"15px", lineHeight:1.85, color:"rgba(200,201,204,0.6)", maxWidth:"480px", margin:0 }}>
+            The Art of Prompting started as a personal obsession — a frustration with how little structured guidance existed for communicating well with language models. Every stage here was written, tested, and refined against real outputs. No filler. No fluff.
+          </p>
+        </div>
+
+        {/* Avatar card */}
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"12px", paddingTop:"6px" }}>
+          <div style={{ width:"80px", height:"80px", borderRadius:"50%", border:"1px solid rgba(168,169,173,0.22)", background:"rgba(168,169,173,0.05)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <svg width="26" height="26" viewBox="0 0 26 26">
+              <circle cx="13" cy="13" r="12" stroke={S.silver} strokeWidth="0.6" strokeDasharray="4 2" fill="none"/>
+              <polygon points="13,7 15,11 19.5,11 16,14 17.5,18.5 13,15.5 8.5,18.5 10,14 6.5,11 11,11" fill="#C8C9CC" opacity="0.85"/>
+            </svg>
+          </div>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"12px", letterSpacing:"0.14em", color:"rgba(255,255,255,0.75)", textTransform:"uppercase", fontWeight:"600", textShadow:"0 1px 8px rgba(0,0,0,0.6)" }}>Creator & Author</div>
+            <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"10px", letterSpacing:"0.1em", color:"rgba(255,255,255,0.45)", textTransform:"uppercase", marginTop:"4px" }}>Independent Project</div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Three pillars */}
+      <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.12, ease:[0.25,0.46,0.45,0.94] }}
+        style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"0", border:"1px solid rgba(168,169,173,0.09)", borderRadius:"14px", overflow:"hidden", marginBottom:"52px" }}>
+        {[
+          { icon:"◈", title:"Open learning", body:"All 10 stages free. No paywall. Knowledge should move fast and stay accessible." },
+          { icon:"◇", title:"Practical first", body:"Every concept is paired with real before/after examples you can steal immediately." },
+          { icon:"○", title:"Built to last", body:"Principles over tricks. The fundamentals here won't age out when models change." },
+        ].map((card, i) => (
+          <div key={i} style={{ padding:"36px 32px", background:"rgba(168,169,173,0.03)", borderRight: i < 2 ? "1px solid rgba(168,169,173,0.08)" : "none" }}>
+            <div style={{ fontSize:"20px", color:"rgba(168,169,173,0.4)", marginBottom:"14px" }}>{card.icon}</div>
+            <div style={{ fontFamily:"'Playfair Display', serif", fontSize:"15px", fontWeight:700, color:S.silverLt, marginBottom:"10px" }}>{card.title}</div>
+            <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"13px", lineHeight:1.8, color:"rgba(168,169,173,0.45)" }}>{card.body}</div>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Stats row */}
+      <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.2, ease:[0.25,0.46,0.45,0.94] }}
+        style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"0", border:"1px solid rgba(168,169,173,0.09)", borderRadius:"14px", overflow:"hidden", marginBottom:"52px" }}>
+        {[
+          { num:"10", label:"Learning stages" },
+          { num:"100+", label:"Real examples" },
+          { num:"∞", label:"Better outputs" },
+        ].map((s, i) => (
+          <div key={i} style={{ padding:"32px", textAlign:"center", background:"rgba(168,169,173,0.02)", borderRight: i < 2 ? "1px solid rgba(168,169,173,0.08)" : "none" }}>
+            <div style={{ fontFamily:"'Playfair Display', serif", fontSize:"34px", fontWeight:400, color:S.silverLt, letterSpacing:"-0.02em", marginBottom:"6px" }}>{s.num}</div>
+            <div style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"12px", letterSpacing:"0.2em", color:"#7ec8e8", textTransform:"uppercase", fontWeight:"600", textShadow:"0 1px 12px rgba(126,200,232,0.4)" }}>{s.label}</div>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Closing quote */}
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:0.7, delay:0.28 }}
+        style={{ borderLeft:"1px solid rgba(168,169,173,0.18)", paddingLeft:"28px", marginBottom:"52px" }}>
+        <p style={{ fontFamily:"'Playfair Display', serif", fontSize:"17px", fontWeight:400, fontStyle:"italic", color:"rgba(200,201,204,0.5)", lineHeight:1.75, margin:0 }}>
+          "Prompting is not a workaround — it is the interface. Learning it is learning to think alongside a new kind of mind."
+        </p>
+      </motion.div>
+
+      {/* Footer strip */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", paddingTop:"28px", borderTop:"1px solid rgba(168,169,173,0.07)" }}>
+        <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"11px", letterSpacing:"0.18em", color:"rgba(255,255,255,0.45)", textTransform:"uppercase" }}>
+          © 2025 · The Art of Prompting
+        </span>
+        <div style={{ display:"flex", gap:"24px" }}>
+          {["Github","Contact","Twitter / X"].map(link => (
+            <a key={link} href="#" style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"11px", letterSpacing:"0.14em", color:"rgba(255,255,255,0.75)", textDecoration:"none", textTransform:"uppercase", borderBottom:"1px solid rgba(255,255,255,0.3)", paddingBottom:"1px" }}>{link}</a>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  </div>
+);
 
 // ─── Prompt Lab ───────────────────────────────────────────────────────────────
 const TECHNIQUES = [
@@ -1773,39 +1312,65 @@ function analysePrompt(text) {
 
 const BACKEND = "http://localhost:5000";
 
-const PromptLabPage = ({ onBack }) => {
+const PromptLabPage = ({ onBack, user }) => {
+  const historyKey = user ? `pe_promptHistory_${user.id || user.email}` : null;
   const [prompt,       setPrompt]       = useState("");
   const [response,     setResponse]     = useState("");
   const [loading,      setLoading]      = useState(false);
-  const [history,      setHistory]      = useState([]);
+  const [history,      setHistory]      = useState(() => historyKey ? lsGet(historyKey, []) : []);
   const [activeTab,    setActiveTab]    = useState("lab");
   const [saved,        setSaved]        = useState([]);
   const [isSaved,      setIsSaved]      = useState(false);
   const [backendOk,    setBackendOk]    = useState(null); // null=checking, true, false
   const [nlpAnalysis,  setNlpAnalysis]  = useState(null); // from backend
   const [nlpIntent,    setNlpIntent]    = useState(null);
+  const [nlpRewritten, setNlpRewritten] = useState("");   // AI-rewritten prompt
   const responseRef  = useRef(null);
   const textareaRef  = useRef(null);
   const analyseTimer = useRef(null);
 
-  // ── Check backend health on mount ───────────────────────────────────────────
+  // ── Check backend health — retries every 3s until online ───────────────────
   useEffect(() => {
-    fetch(`${BACKEND}/api/health`)
-      .then(r => r.json())
-      .then(d => setBackendOk(d.all_ready === true))
-      .catch(() => setBackendOk(false));
-  }, []);
-
-  // ── Load history + saved from backend on mount ───────────────────────────
-  useEffect(() => {
-    if (!backendOk) return;
-    fetch(`${BACKEND}/api/history`).then(r=>r.json()).then(d => setHistory(d.history||[])).catch(()=>{});
-    fetch(`${BACKEND}/api/history/saved`).then(r=>r.json()).then(d => setSaved(d.saved||[])).catch(()=>{});
+    let cancelled = false;
+    const check = () => {
+      fetch(`${BACKEND}/api/health`)
+        .then(r => r.json())
+        .then(d => { if (!cancelled) setBackendOk(!!d.status); })
+        .catch(() => { if (!cancelled) setBackendOk(false); });
+    };
+    check();
+    const interval = setInterval(() => { if (!backendOk) check(); }, 3000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, [backendOk]);
+
+  // ── Persist history to user-scoped localStorage on every change ────────────
+  useEffect(() => {
+    if (!historyKey) return;
+    lsSet(historyKey, history);
+  }, [historyKey, history]);
+
+  // ── Load history from MongoDB (auth backend) on login/mount ──────────────────
+  useEffect(() => {
+    if (!user) return; // only load when logged in
+    getPromptHistory()
+      .then(d => { if (d.history?.length > 0) setHistory(d.history); })
+      .catch(() => {
+        // Fallback: load from user-scoped localStorage if MongoDB unreachable
+        if (historyKey) setHistory(lsGet(historyKey, []));
+      });
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Load saved from MongoDB on mount ───────────────────────────
+  useEffect(() => {
+    if (!user) return; // only load when logged in
+    getSavedPrompts()
+      .then(d => { if (d.saved) setSaved(d.saved); })
+      .catch(() => {});
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Live analysis as user types (debounced 400ms) ─────────────────────────
   useEffect(() => {
-    if (!backendOk || prompt.length < 10) { setNlpAnalysis(null); setNlpIntent(null); return; }
+    if (!backendOk || prompt.length < 10) { setNlpAnalysis(null); setNlpIntent(null); setNlpRewritten(""); return; }
     clearTimeout(analyseTimer.current);
     analyseTimer.current = setTimeout(async () => {
       try {
@@ -1814,8 +1379,9 @@ const PromptLabPage = ({ onBack }) => {
           body: JSON.stringify({ prompt }),
         });
         const data = await res.json();
-        if (data.quality) setNlpAnalysis(data.quality);
-        if (data.intent)  setNlpIntent(data.intent);
+        if (data.quality)          setNlpAnalysis(data.quality);
+        if (data.intent)           setNlpIntent(data.intent);
+        setNlpRewritten(data.rewritten_prompt || "");
       } catch {}
     }, 400);
     return () => clearTimeout(analyseTimer.current);
@@ -1830,15 +1396,21 @@ const PromptLabPage = ({ onBack }) => {
     words:    nlpAnalysis.stats?.word_count  ?? localAnalysis.words,
     chars:    nlpAnalysis.stats?.char_count  ?? localAnalysis.chars,
     signals: {
-      hasRole: nlpAnalysis.signals?.has_role        ?? false,
-      hasFmt:  nlpAnalysis.signals?.has_format       ?? false,
-      hasCon:  nlpAnalysis.signals?.has_constraints  ?? false,
-      hasCot:  nlpAnalysis.signals?.has_cot          ?? false,
-      hasAud:  nlpAnalysis.signals?.has_audience     ?? false,
-      hasCtx:  nlpAnalysis.signals?.has_context      ?? false,
+      hasRole:   nlpAnalysis.signals?.has_role               ?? false,
+      hasFmt:    nlpAnalysis.signals?.has_format              ?? false,
+      hasCon:    nlpAnalysis.signals?.has_constraints         ?? false,
+      hasCot:    nlpAnalysis.signals?.has_cot                 ?? false,
+      hasAud:    nlpAnalysis.signals?.has_audience            ?? false,
+      hasCtx:    nlpAnalysis.signals?.has_context             ?? false,
+      hasEx:     nlpAnalysis.signals?.has_examples            ?? false,
+      hasSpec:   nlpAnalysis.signals?.has_specificity         ?? false,
+      hasOutput: nlpAnalysis.signals?.has_output_type         ?? false,
+      hasTone:   nlpAnalysis.signals?.has_tone                ?? false,
+      hasNeg:    nlpAnalysis.signals?.has_negative_constraint ?? false,
     },
-    tips: (nlpAnalysis.tips||[]).map(t=>({ t: t.title, d: t.description })),
-  } : localAnalysis;
+    tips:      (nlpAnalysis.tips||[]).map(t=>({ t: t.title, d: t.description })),
+    rewritten: nlpRewritten,
+  } : { ...localAnalysis, signals: { ...localAnalysis.signals, hasEx:false, hasSpec:false, hasOutput:false, hasTone:false, hasNeg:false }, rewritten: "" };
 
   // ── Generate via Python backend ────────────────────────────────────────────
   const generate = async () => {
@@ -1860,11 +1432,30 @@ const PromptLabPage = ({ onBack }) => {
       if (responseRef.current) responseRef.current.scrollTop = responseRef.current.scrollHeight;
 
       // Update NLP analysis from generate response (more accurate — full pipeline ran)
-      if (data.quality) setNlpAnalysis(data.quality);
-      if (data.intent)  setNlpIntent(data.intent);
+      if (data.quality)          setNlpAnalysis(data.quality);
+      if (data.intent)           setNlpIntent(data.intent);
+      setNlpRewritten(data.rewritten_prompt || "");
 
-      // Refresh history from backend
-      fetch(`${BACKEND}/api/history`).then(r=>r.json()).then(d=>setHistory(d.history||[])).catch(()=>{});
+      // Build the history entry
+      const entry = {
+        id:       Date.now().toString(),
+        prompt,
+        response: text,
+        quality:  data.quality  || null,
+        intent:   data.intent   || null,
+        ts:       new Date().toISOString(),
+      };
+
+      // 1. Update local state immediately (instant UI)
+      setHistory(prev => [entry, ...prev].slice(0, 100));
+
+      // 2. Persist to MongoDB (fire-and-forget — silent fail is fine)
+      if (user) {
+        savePromptHistoryEntry(entry).catch(() => {
+          // Also save to localStorage as offline fallback
+          if (historyKey) lsSet(historyKey, [entry, ...lsGet(historyKey, [])].slice(0, 100));
+        });
+      }
 
     } catch(e) {
       setResponse("⚠ " + (e.message || "Request failed."));
@@ -1882,25 +1473,30 @@ const PromptLabPage = ({ onBack }) => {
 
   const savePrompt = async () => {
     if (!prompt.trim()) return;
-    try {
-      await fetch(`${BACKEND}/api/history/save`, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ prompt }),
-      });
-      const d = await fetch(`${BACKEND}/api/history/saved`).then(r=>r.json());
-      setSaved(d.saved||[]);
-    } catch {
-      setSaved(s => [{ id:Date.now(), prompt, ts:new Date().toISOString() }, ...s].slice(0,10));
-    }
+    const entry = { prompt, ts: new Date().toISOString() };
+    
+    // Optimistic UI update
+    const tempId = Date.now().toString();
+    setSaved(s => [{ id: tempId, ...entry }, ...s].slice(0, 200));
     setIsSaved(true);
+
+    if (user) {
+      try {
+        const res = await saveSavedPromptEntry(entry);
+        if (res.ok) {
+           const d = await getSavedPrompts();
+           if (d.saved) setSaved(d.saved);
+        }
+      } catch (e) {}
+    }
   };
 
   const deleteSaved = async (id) => {
-    try {
-      await fetch(`${BACKEND}/api/history/saved/${id}`, { method:"DELETE" });
-      setSaved(s => s.filter(x => x.id !== id));
-    } catch {
-      setSaved(s => s.filter(x => x.id !== id));
+    setSaved(s => s.filter(x => x.id !== id)); // optimistic UI update
+    if (user) {
+      try {
+        await deleteSavedPromptEntry(id);
+      } catch (e) {}
     }
   };
 
@@ -1928,8 +1524,16 @@ const PromptLabPage = ({ onBack }) => {
 
       {/* Header */}
       <div style={{ borderBottom:"1px solid rgba(168,169,173,0.09)", background:"rgba(8,8,15,0.6)", backdropFilter:"blur(12px)", padding:"28px 48px 24px", position:"sticky", top:"64px", zIndex:50 }}>
-        <div style={{ maxWidth:"1300px", margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <div>
+        <div style={{ maxWidth:"1300px", margin:"0 auto" }}>
+          <motion.button onClick={onBack}
+            whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.25)" }}
+            whileTap={{ scale: 0.96 }}
+            style={{ display:"flex", alignItems:"center", gap:"8px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"20px", cursor:"pointer", color:"rgba(255,255,255,0.9)", fontFamily:"'Cormorant Garamond', serif", fontSize:"11px", letterSpacing:"0.16em", textTransform:"uppercase", fontWeight:"600", marginBottom:"16px", padding:"6px 16px 6px 12px", backdropFilter:"blur(4px)", width:"fit-content", boxShadow:"0 4px 12px rgba(0,0,0,0.2)" }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Back
+          </motion.button>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <div>
             <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"5px" }}>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <path d="M3 15L7 11M7 11C7 11 8 9 9 8C10 7 12 6 14 4C15 3 15 5 14 6C13 7 11 9 10 10C9 11 7 11 7 11Z" stroke={S.silver} strokeWidth="1.2" strokeLinecap="round"/>
@@ -1964,6 +1568,7 @@ const PromptLabPage = ({ onBack }) => {
                   boxShadow: activeTab===k ? "0 2px 8px rgba(0,0,0,0.3)" : "none"
                 }}>{l}</motion.button>
             ))}
+          </div>
           </div>
         </div>
       </div>
@@ -2073,18 +1678,15 @@ const PromptLabPage = ({ onBack }) => {
                         </div>
                       ) : (
                         <div style={{ height:"240px", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"12px" }}>
-                          <motion.div animate={{ opacity:[0.3,0.6,0.3], scale:[0.98,1.02,0.98] }} transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}>
+                          <motion.div animate={{ opacity:[0.6,1,0.6], scale:[0.98,1.02,0.98] }} transition={{ duration:3, repeat:Infinity, ease:"easeInOut" }}>
                             <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                              <circle cx="18" cy="18" r="16" stroke="rgba(168,169,173,0.15)" strokeWidth="1"/>
-                              <circle cx="18" cy="18" r="10" stroke="rgba(168,169,173,0.1)" strokeWidth="0.7"/>
-                              <polygon points="18,10 20,15 25,15 21,18.5 22.5,23.5 18,20.5 13.5,23.5 15,18.5 11,15 16,15" fill="rgba(168,169,173,0.18)"/>
+                              <circle cx="18" cy="18" r="16" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5"/>
+                              <circle cx="18" cy="18" r="10" stroke="rgba(255,255,255,0.25)" strokeWidth="1"/>
+                              <polygon points="18,10 20,15 25,15 21,18.5 22.5,23.5 18,20.5 13.5,23.5 15,18.5 11,15 16,15" fill="rgba(255,255,255,0.5)"/>
                             </svg>
                           </motion.div>
-                          <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"13px", color:"rgba(168,169,173,0.28)", letterSpacing:"0.05em" }}>
+                          <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"16px", color:"rgba(255,255,255,0.7)", letterSpacing:"0.05em", fontWeight:"500", textShadow:"0 1px 10px rgba(0,0,0,0.5)" }}>
                             AI response will appear here
-                          </span>
-                          <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"11px", color:"rgba(168,169,173,0.18)" }}>
-                            ⌘ + Enter to generate
                           </span>
                         </div>
                       )}
@@ -2136,12 +1738,16 @@ const PromptLabPage = ({ onBack }) => {
                       {/* Signal badges — centered prominent row */}
                       <div style={{ padding:"20px 32px", borderBottom:"1px solid rgba(168,169,173,0.07)", display:"flex", justifyContent:"center", gap:"8px", flexWrap:"wrap" }}>
                         {[
-                          ["Role",        analysis.signals.hasRole,  "◇"],
-                          ["Format",      analysis.signals.hasFmt,   "□"],
-                          ["Constraints", analysis.signals.hasCon,   "◈"],
-                          ["CoT",         analysis.signals.hasCot,   "⬡"],
-                          ["Audience",    analysis.signals.hasAud,   "◑"],
-                          ["Context",     analysis.signals.hasCtx,   "◉"],
+                          ["Role",         analysis.signals.hasRole,   "◇"],
+                          ["Format",       analysis.signals.hasFmt,    "□"],
+                          ["Constraints",  analysis.signals.hasCon,    "◈"],
+                          ["CoT",          analysis.signals.hasCot,    "⬡"],
+                          ["Audience",     analysis.signals.hasAud,    "◑"],
+                          ["Context",      analysis.signals.hasCtx,    "◉"],
+                          ["Examples",     analysis.signals.hasEx,     "◎"],
+                          ["Specificity",  analysis.signals.hasSpec,   "◆"],
+                          ["Output Type",  analysis.signals.hasOutput, "▷"],
+                          ["Tone",         analysis.signals.hasTone,   "◍"],
                         ].map(([label, active, icon]) => (
                           <span key={label} style={{ display:"inline-flex", alignItems:"center", gap:"6px", padding:"8px 16px", borderRadius:"8px", fontFamily:"'Cormorant Garamond', serif", fontSize:"12px", letterSpacing:"0.08em", fontWeight:600, transition:"all 0.3s",
                             background: active ? `rgba(${hexToRgb(clarityColor)},0.12)` : "rgba(168,169,173,0.04)",
@@ -2153,6 +1759,57 @@ const PromptLabPage = ({ onBack }) => {
                           </span>
                         ))}
                       </div>
+
+                      {/* ── Best Alternative Prompt ── */}
+                      <AnimatePresence>
+                        {analysis.rewritten && (
+                          <motion.div
+                            initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }}
+                            transition={{ duration:0.45, ease:[0.25,0.46,0.45,0.94] }}
+                            style={{ padding:"26px 32px", borderBottom:"1px solid rgba(168,169,173,0.07)" }}>
+
+                            {/* Section label */}
+                            <div style={{ display:"inline-flex", alignItems:"center", gap:"10px", marginBottom:"16px", width:"100%", justifyContent:"center" }}>
+                              <motion.div animate={{ opacity:[0.4,1,0.4] }} transition={{ duration:2, repeat:Infinity }}
+                                style={{ width:"4px", height:"4px", borderRadius:"50%", background:clarityColor }}/>
+                              <span style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:"9px", letterSpacing:"0.32em", textTransform:"uppercase", color:S.muted }}>
+                                Best Alternative Prompt
+                              </span>
+                              <motion.div animate={{ opacity:[0.4,1,0.4] }} transition={{ duration:2, repeat:Infinity, delay:1 }}
+                                style={{ width:"4px", height:"4px", borderRadius:"50%", background:clarityColor }}/>
+                            </div>
+
+                            {/* Rewritten prompt box */}
+                            <div style={{ position:"relative", background:"rgba(168,169,173,0.03)", border:`1px solid rgba(${hexToRgb(clarityColor)},0.22)`, borderRadius:"14px", padding:"20px 22px", marginBottom:"16px",
+                              boxShadow:`inset 0 0 40px rgba(${hexToRgb(clarityColor)},0.03)` }}>
+                              <p style={{ fontFamily:"'Courier New', monospace", fontSize:"13px", color:S.mutedMd, lineHeight:1.85, margin:0, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>
+                                {analysis.rewritten}
+                              </p>
+                            </div>
+
+                            {/* Action buttons */}
+                            <div style={{ display:"flex", gap:"10px", justifyContent:"center" }}>
+                              <motion.button
+                                onClick={() => {
+                                  setPrompt(analysis.rewritten);
+                                  setNlpRewritten("");
+                                  setTimeout(() => textareaRef.current?.focus(), 0);
+                                }}
+                                whileHover={{ scale:1.04, boxShadow:`0 8px 28px rgba(${hexToRgb(clarityColor)},0.22)` }}
+                                whileTap={{ scale:0.97 }}
+                                style={{ padding:"10px 26px", borderRadius:"10px", border:`1px solid rgba(${hexToRgb(clarityColor)},0.45)`, background:`rgba(${hexToRgb(clarityColor)},0.1)`, cursor:"pointer", fontFamily:"'Cormorant Garamond', serif", fontSize:"12px", fontWeight:700, color:clarityColor, letterSpacing:"0.14em", transition:"all 0.2s" }}>
+                                ✦  Use This Prompt
+                              </motion.button>
+                              <motion.button
+                                onClick={() => navigator.clipboard?.writeText(analysis.rewritten)}
+                                whileHover={{ scale:1.04 }} whileTap={{ scale:0.97 }}
+                                style={{ padding:"10px 20px", borderRadius:"10px", border:"1px solid rgba(168,169,173,0.14)", background:"rgba(168,169,173,0.05)", cursor:"pointer", fontFamily:"'Cormorant Garamond', serif", fontSize:"12px", color:S.muted, letterSpacing:"0.08em", transition:"all 0.2s" }}>
+                                Copy
+                              </motion.button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
 
                       {/* Tips — full-width grid of cards */}
                       {analysis.tips.length > 0 && (
@@ -3849,9 +3506,12 @@ const ConstraintAuctionChallenge = ({ onComplete, user }) => {
   const ALLOWED = 3;
   const todayIndex = Math.floor(Date.now() / 86400000) % CONSTRAINT_AUCTION_DAYS.length;
 
-  // Key daily state by today's date so it auto-resets tomorrow
+  // Key daily state by user ID + today's date so:
+  // 1. It auto-resets tomorrow (new date = new key)
+  // 2. Different users on the same browser never share state
   const todayKey = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
-  const savedKey = "pe_dailyChallenge_" + todayKey;
+  const userId   = user?.id || user?.email || "guest";
+  const savedKey = "pe_dailyChallenge_" + userId + "_" + todayKey;
   const saved = (() => { try { const s = localStorage.getItem(savedKey); return s ? JSON.parse(s) : null; } catch { return null; } })();
 
   const [challengeIndex, setChallengeIndex] = useState(saved?.challengeIndex ?? todayIndex);
@@ -3905,8 +3565,7 @@ const ConstraintAuctionChallenge = ({ onComplete, user }) => {
       setScore(null);
       setRankAttempts(0);
       setRankFeedback(null);
-      // Also wipe the stored key so a refresh with no user starts clean
-      try { localStorage.removeItem(savedKey); } catch {}
+      // Do NOT remove savedKey — lock state must survive logout so it restores on next login.
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -3988,10 +3647,10 @@ const ConstraintAuctionChallenge = ({ onComplete, user }) => {
   };
 
   const finaliseResult = () => {
-    // Called after rank-result when user clicks "See Full Breakdown"
+    // Called after rank-result when user clicks "See Full Breakdown" or "See Breakdown"
     if (rankFeedback === "correct") {
       setScore(100);
-      if (onComplete) onComplete(); // perfect score — update daily streak
+      if (onComplete) onComplete();
     } else {
       // Wrong ranking — partial score based on position matches
       let pos = 0;
@@ -4401,6 +4060,13 @@ const ChallengesPage = ({ onBack, onChallengeComplete, completedChallengeIds: ex
           <>
             {/* Header */}
             <motion.div initial={{opacity:0,y:-10}} animate={{opacity:1,y:0}} style={{marginBottom:"42px"}}>
+              <motion.button onClick={onBack}
+                whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.25)" }}
+                whileTap={{ scale: 0.96 }}
+                style={{ display:"flex", alignItems:"center", gap:"8px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"20px", cursor:"pointer", color:"rgba(255,255,255,0.9)", fontFamily:"'Cormorant Garamond', serif", fontSize:"11px", letterSpacing:"0.16em", textTransform:"uppercase", fontWeight:"600", marginBottom:"16px", padding:"6px 16px 6px 12px", backdropFilter:"blur(4px)", width:"fit-content", boxShadow:"0 4px 12px rgba(0,0,0,0.2)" }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Back
+              </motion.button>
               <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"10px",letterSpacing:"0.28em",textTransform:"uppercase",color:S.muted,marginBottom:"10px"}}>Prompt World</div>
               <h1 style={{fontFamily:"'Playfair Display', serif",fontSize:"clamp(32px,5vw,50px)",fontWeight:700,color:S.white,marginBottom:"8px",lineHeight:1.1}}>Challenge Arena</h1>
               <p style={{fontFamily:"'Cormorant Garamond', serif",fontSize:"15px",color:S.mutedMd,lineHeight:1.8,maxWidth:"540px",marginBottom:"24px"}}>Each challenge tests a distinct prompting skill through active practice. Read carefully — these are not trivial. Real scenarios. Real failure modes. Real stakes.</p>
@@ -7449,28 +7115,56 @@ function DashXPArcMeter({ percent }) {
 function DashStreakCalendar({ streak, streakDays }) {
   const today = new Date().getDay(); // 0=Sun,1=Mon...6=Sat
   const todayIdx = today === 0 ? 6 : today - 1; // map to M=0...S=6
+
+  const MAX_H = 60;
+  const MIN_H = 8;
+  // Pre-compute bar heights: each active day gets a height proportional to
+  // its position among the 7 days (1/7 → 7/7 of MAX_H), so the chart
+  // visually rises left-to-right as the week progresses.
+  const heights = DASH_WEEK_DAYS.map((_, i) => {
+    const active = streakDays ? streakDays[i] : false;
+    if (!active) return MIN_H;
+    // Scale by position in week so later days are taller
+    return Math.max(MIN_H + 6, Math.round(((i + 1) / 7) * MAX_H));
+  });
+
   return (
-    <div style={{ display: "flex", gap: "6px", alignItems: "flex-end" }}>
+    <div style={{ display: "flex", gap: "6px", alignItems: "flex-end", minHeight: `${MAX_H + 22}px` }}>
       {DASH_WEEK_DAYS.map((day, i) => {
         const active = streakDays ? streakDays[i] : false;
         const isToday = i === todayIdx;
+        const barH = heights[i];
+        // Brightness ramps from 45% opacity on Mon to 90% on Sun so the
+        // rightmost bars are the most vivid — clear "rising" visual effect.
+        const greenOpacity = 0.45 + (i / 6) * 0.45;
         return (
           <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
             <div style={{
               width: "28px",
-              height: active ? `${18 + i * 3}px` : "14px",
+              height: `${barH}px`,
               background: active
-                ? isToday ? "rgba(125,191,168,0.55)" : `rgba(168,169,173,${0.25 + i * 0.09})`
-                : "rgba(168,169,173,0.07)",
-              borderRadius: "2px",
-              border: isToday ? (active ? "0.5px solid #7DBFA8" : "0.5px solid rgba(168,169,173,0.35)") : "none",
-              transition: "height 0.6s ease, background 0.4s ease",
+                ? isToday
+                  ? "#7DBFA8"
+                  : `rgba(125,191,168,${greenOpacity})`
+                : "rgba(168,169,173,0.10)",
+              borderRadius: "3px 3px 2px 2px",
+              border: active
+                ? isToday ? "1px solid #7DBFA8" : "1px solid rgba(125,191,168,0.4)"
+                : "none",
+              boxShadow: active
+                ? isToday
+                  ? "0 0 12px rgba(125,191,168,0.5), 0 2px 8px rgba(125,191,168,0.2)"
+                  : `0 0 6px rgba(125,191,168,${greenOpacity * 0.5})`
+                : "none",
+              transition: "height 0.6s cubic-bezier(0.34,1.56,0.64,1), background 0.4s ease, box-shadow 0.4s ease",
             }} />
             <span style={{
               fontSize: "9px",
-              color: isToday ? (active ? "#7DBFA8" : "rgba(168,169,173,0.55)") : active ? "rgba(168,169,173,0.7)" : "rgba(168,169,173,0.25)",
+              color: isToday
+                ? active ? "#7DBFA8" : "rgba(168,169,173,0.65)"
+                : active ? "rgba(125,191,168,0.8)" : "rgba(168,169,173,0.28)",
               fontFamily: "'Cormorant Garamond', serif",
-              fontWeight: isToday ? 600 : 400,
+              fontWeight: isToday ? 700 : 400,
             }}>{day}</span>
           </div>
         );
@@ -7714,7 +7408,236 @@ function ChallengesCompletedCard({ done, total }) {
   );
 }
 
-function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, completedChallengeIds, onOpenStage, user }) {
+
+// ─── Streak History Modal ─────────────────────────────────────────────────────
+function StreakHistoryModal({ history, streak, onClose }) {
+  // Build a full monthly calendar view for every month that has activity,
+  // plus the current month even if empty.
+  const allDates = new Set(history || []);
+
+  // Determine range: earliest date in history → current month end
+  const now = new Date();
+  const currentMonthKey = now.getFullYear() * 100 + (now.getMonth() + 1);
+
+  let months = [];
+  if (allDates.size === 0) {
+    // No history yet — just show current month
+    months = [{ year: now.getFullYear(), month: now.getMonth() }];
+  } else {
+    const sorted = [...allDates].sort();
+    const first = new Date(sorted[0]);
+    let y = first.getFullYear(), m = first.getMonth();
+    while (y * 100 + (m + 1) <= currentMonthKey) {
+      months.push({ year: y, month: m });
+      m++;
+      if (m > 11) { m = 0; y++; }
+    }
+    // Show newest first
+    months.reverse();
+  }
+
+  const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const DAY_LABELS  = ["M","T","W","T","F","S","S"];
+
+  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+  // Returns 0=Mon..6=Sun first-day-of-month offset
+  const getFirstDayOffset = (year, month) => {
+    const d = new Date(year, month, 1).getDay(); // 0=Sun
+    return d === 0 ? 6 : d - 1;
+  };
+
+  const todayStr = now.toISOString().slice(0, 10);
+
+  // Count longest streak from history for display
+  const totalDays = allDates.size;
+
+  return (
+    <div
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 900,
+        background: "rgba(8,8,15,0.88)",
+        backdropFilter: "blur(14px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "24px",
+      }}
+    >
+      <div style={{
+        background: "#0F0F1A",
+        border: "0.5px solid rgba(168,169,173,0.18)",
+        borderRadius: "20px",
+        width: "min(680px, 100%)",
+        maxHeight: "85vh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
+        position: "relative",
+      }}>
+        {/* Top accent */}
+        <div style={{ height: "1px", background: "linear-gradient(90deg,transparent,rgba(168,169,173,0.35),transparent)", flexShrink: 0 }}/>
+
+        {/* Header */}
+        <div style={{ padding: "24px 28px 18px", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ fontSize: "10px", letterSpacing: "0.22em", color: "rgba(168,169,173,0.45)", marginBottom: "6px", fontFamily: "'Cormorant Garamond', serif", textTransform: "uppercase" }}>All-Time Streak History</div>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", fontWeight: 700, color: "#FFFFFF", lineHeight: 1.1 }}>Your Journey</div>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                width: "32px", height: "32px", borderRadius: "50%",
+                background: "rgba(168,169,173,0.08)",
+                border: "0.5px solid rgba(168,169,173,0.18)",
+                color: "rgba(168,169,173,0.6)",
+                fontSize: "16px", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0, marginTop: "2px",
+              }}
+            >×</button>
+          </div>
+
+          {/* Stats strip */}
+          <div style={{ display: "flex", gap: "12px", marginTop: "18px" }}>
+            {[
+              { label: "Current Streak", val: `${streak} day${streak !== 1 ? "s" : ""}`, color: "#7DBFA8" },
+              { label: "Total Days Completed", val: `${totalDays} day${totalDays !== 1 ? "s" : ""}`, color: "#A8A9AD" },
+            ].map((s, i) => (
+              <div key={i} style={{ flex: 1, padding: "10px 14px", background: "rgba(168,169,173,0.05)", border: "0.5px solid rgba(168,169,173,0.1)", borderRadius: "10px" }}>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", fontWeight: 700, color: s.color, marginBottom: "2px" }}>{s.val}</div>
+                <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "rgba(168,169,173,0.45)", fontFamily: "'Cormorant Garamond', serif", textTransform: "uppercase" }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Legend */}
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C12 2 7 7 7 13C7 15.76 9.24 18 12 18C14.76 18 17 15.76 17 13C17 10.5 15.5 8.5 14 7C14 7 14 9 12 9C10 9 9 7.5 9 6C9 4.5 10 3 12 2Z" fill="#22c55e" opacity="0.9"/>
+                <path d="M12 14C11.45 14 11 13.55 11 13C11 12 12 11 12 11C12 11 13 12 13 13C13 13.55 12.55 14 12 14Z" fill="#86efac"/>
+                <path d="M10 19C10 20.1 10.9 21 12 21C13.1 21 14 20.1 14 19C14 18 12 16.5 12 16.5C12 16.5 10 18 10 19Z" fill="#4ade80" opacity="0.7"/>
+              </svg>
+              <span style={{ fontSize: "11px", color: "rgba(168,169,173,0.5)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>Challenge completed</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ width: "14px", height: "14px", borderRadius: "3px", background: "rgba(168,169,173,0.08)", border: "0.5px solid rgba(168,169,173,0.2)" }}/>
+              <span style={{ fontSize: "11px", color: "rgba(168,169,173,0.5)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>No activity</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ width: "14px", height: "14px", borderRadius: "3px", border: "1px solid rgba(125,191,168,0.6)", background: "rgba(125,191,168,0.08)" }}/>
+              <span style={{ fontSize: "11px", color: "rgba(168,169,173,0.5)", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic" }}>Today</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ height: "0.5px", background: "rgba(168,169,173,0.08)", flexShrink: 0 }}/>
+
+        {/* Scrollable calendar grid */}
+        <div style={{ overflowY: "auto", padding: "20px 28px 28px", flex: 1 }}>
+          {months.map(({ year, month }) => {
+            const daysInMonth = getDaysInMonth(year, month);
+            const offset      = getFirstDayOffset(year, month);
+            const cells       = [];
+            for (let i = 0; i < offset; i++) cells.push(null);
+            for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+            while (cells.length % 7 !== 0) cells.push(null);
+
+            const hasActivity = [...allDates].some(d => d.startsWith(`${year}-${String(month+1).padStart(2,"0")}`));
+
+            return (
+              <div key={`${year}-${month}`} style={{ marginBottom: "28px" }}>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "14px", fontWeight: 700, color: "rgba(168,169,173,0.7)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "10px" }}>
+                  {MONTH_NAMES[month]} {year}
+                  {hasActivity && <span style={{ fontSize: "10px", color: "#7DBFA8", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", letterSpacing: "0.08em" }}>✦ active</span>}
+                </div>
+
+                {/* Day-of-week labels */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px", marginBottom: "4px" }}>
+                  {DAY_LABELS.map((d, i) => (
+                    <div key={i} style={{ textAlign: "center", fontSize: "9px", letterSpacing: "0.1em", color: "rgba(168,169,173,0.3)", fontFamily: "'Cormorant Garamond', serif", paddingBottom: "2px" }}>{d}</div>
+                  ))}
+                </div>
+
+                {/* Day cells */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px" }}>
+                  {cells.map((day, ci) => {
+                    // Empty padding cells — render nothing, no box
+                    if (!day) return <div key={ci} style={{ aspectRatio: "1" }} />;
+                    const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+                    const completed = allDates.has(dateStr);
+                    const isToday   = dateStr === todayStr;
+                    const isFuture  = dateStr > todayStr;
+
+                    return (
+                      <div key={ci} style={{
+                        aspectRatio: "1",
+                        borderRadius: "6px",
+                        display: "flex", flexDirection: "column",
+                        alignItems: "center", justifyContent: "center",
+                        gap: "2px",
+                        background: completed
+                          ? "rgba(34,197,94,0.13)"
+                          : isToday
+                          ? "rgba(125,191,168,0.07)"
+                          : "transparent",
+                        border: completed
+                          ? "1px solid rgba(34,197,94,0.35)"
+                          : isToday
+                          ? "1px solid rgba(125,191,168,0.45)"
+                          : "1px solid rgba(168,169,173,0.1)",
+                        opacity: isFuture ? 0.25 : 1,
+                        transition: "all 0.15s",
+                        cursor: "default",
+                      }}>
+                        {completed ? (
+                          <>
+                            {/* Green fire SVG icon */}
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 2C12 2 7 7 7 13C7 15.76 9.24 18 12 18C14.76 18 17 15.76 17 13C17 10.5 15.5 8.5 14 7C14 7 14 9 12 9C10 9 9 7.5 9 6C9 4.5 10 3 12 2Z" fill="#22c55e" opacity="0.9"/>
+                              <path d="M12 14C11.45 14 11 13.55 11 13C11 12 12 11 12 11C12 11 13 12 13 13C13 13.55 12.55 14 12 14Z" fill="#86efac"/>
+                              <path d="M10 19C10 20.1 10.9 21 12 21C13.1 21 14 20.1 14 19C14 18 12 16.5 12 16.5C12 16.5 10 18 10 19Z" fill="#4ade80" opacity="0.7"/>
+                            </svg>
+                            <span style={{ fontSize: "9px", fontWeight: 700, color: "#4ade80", fontFamily: "'Cormorant Garamond', serif", lineHeight: 1 }}>{day}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span style={{
+                              fontSize: "11px",
+                              fontWeight: isToday ? 700 : 500,
+                              color: isToday ? "#7DBFA8" : "rgba(168,169,173,0.55)",
+                              fontFamily: "'Cormorant Garamond', serif",
+                              lineHeight: 1,
+                            }}>{day}</span>
+                            {isToday && (
+                              <div style={{ width: "3px", height: "3px", borderRadius: "50%", background: "#7DBFA8", marginTop: "1px" }}/>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+
+          {allDates.size === 0 && (
+            <div style={{ textAlign: "center", padding: "40px 20px" }}>
+              <div style={{ fontSize: "32px", marginBottom: "12px", opacity: 0.3 }}>✦</div>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "15px", color: "rgba(168,169,173,0.4)", fontStyle: "italic" }}>
+                Complete your first daily challenge to start your history.
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, completedChallengeIds, streakHistory, onOpenStage, user }) {
   const completedIds = completed || [];
   const starsMap = stageStarsMap || {};
   const activeStage = completedIds.length < 11 ? completedIds.length + 1 : 11;
@@ -7727,12 +7650,15 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
   const nextTitle = completedIds.length < 10 ? "Sage" : "Apex";
 
   const [hoveredStage, setHoveredStage] = useState(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const DS = DASH_S;
   const cardBorder = DS.cardBorder;
 
   return (
+    <>
     <div style={{ position: "relative", overflow: "hidden", minHeight: "100vh" }}>
       <style>{`
+        @keyframes starTwinkle { 0%,100% { opacity:0.25; transform:scale(0.85); } 50% { opacity:1; transform:scale(1.15); } }
         @keyframes obs-fadein { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         @keyframes obs-shimmer { 0%,100% { opacity:0.4; } 50% { opacity:1; } }
         @keyframes obs-float { 0%,100% { transform:translateY(0px); } 50% { transform:translateY(-5px); } }
@@ -7749,7 +7675,7 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
         {/* Header */}
         <div className="obs-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", animationDelay: "0ms" }}>
           <div>
-            <div style={{ fontSize: "10px", letterSpacing: "0.22em", color: DS.muted, marginBottom: "4px", fontFamily: "'Playfair Display', serif" }}>THE OBSERVATORY</div>
+            <div style={{ fontSize: "12px", letterSpacing: "0.22em", color: DS.white, marginBottom: "4px", fontFamily: "'Playfair Display', serif", fontWeight: "600", textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>THE OBSERVATORY</div>
             <div style={{ fontSize: "28px", fontWeight: "700", fontFamily: "'Playfair Display', serif", lineHeight: 1.1, color: DS.white }}>{user ? "Welcome back," : "Welcome,"}</div>
             <div style={{ fontSize: "28px", fontWeight: "400", fontFamily: "'Playfair Display', serif", lineHeight: 1.1, color: DS.silver, fontStyle: "italic" }}>{user ? user.name : "Explorer"}</div>
           </div>
@@ -7822,6 +7748,26 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
                   : "Complete today's challenge to extend your streak"}
               </div>
             </div>
+            {/* View Full History button */}
+            <button
+              onClick={() => setHistoryOpen(true)}
+              style={{
+                marginTop: "10px", width: "100%",
+                padding: "8px 12px",
+                background: "transparent",
+                border: "0.5px solid rgba(168,169,173,0.14)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(168,169,173,0.07)"; e.currentTarget.style.borderColor = "rgba(168,169,173,0.28)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(168,169,173,0.14)"; }}
+            >
+              <span style={{ fontSize: "11px", color: "rgba(168,169,173,0.6)", fontFamily: "'Cormorant Garamond', serif", letterSpacing: "0.12em" }}>
+                ✦ View Full History
+              </span>
+            </button>
           </div>
 
           {/* Challenges Completed Card */}
@@ -7844,25 +7790,25 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
 
           {/* Active Stage + Next Up */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div className="obs-card" style={{ background: `${DASH_STAGES[activeStage - 1].color}0A`, border: `0.5px solid ${DASH_STAGES[activeStage - 1].color}40`, borderRadius: "14px", padding: "20px", animationDelay: "480ms", flex: 1 }}>
-              <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "12px" }}>ACTIVE STAR</div>
+            <div className="obs-card" style={{ background: `linear-gradient(135deg, ${DASH_STAGES[activeStage - 1].color}15 0%, rgba(13,13,22,0.96) 100%)`, border: `0.5px solid ${DASH_STAGES[activeStage - 1].color}60`, borderRadius: "14px", padding: "20px", animationDelay: "480ms", flex: 1, boxShadow: "0 8px 32px rgba(0,0,0,0.6)", backdropFilter: "blur(12px)" }}>
+              <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: "rgba(255,255,255,0.85)", marginBottom: "12px", textShadow: "0 1px 8px rgba(0,0,0,0.8)" }}>ACTIVE STAR</div>
               <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
-                <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: `${DASH_STAGES[activeStage - 1].color}18`, border: `1px solid ${DASH_STAGES[activeStage - 1].color}60`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: DASH_STAGES[activeStage - 1].color, flexShrink: 0 }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: `${DASH_STAGES[activeStage - 1].color}25`, border: `1.5px solid ${DASH_STAGES[activeStage - 1].color}70`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: DASH_STAGES[activeStage - 1].color, flexShrink: 0, boxShadow: `0 0 16px ${DASH_STAGES[activeStage - 1].color}30` }}>
                   {DASH_STAGES[activeStage - 1].icon}
                 </div>
                 <div>
-                  <div style={{ fontSize: "16px", fontWeight: "700", fontFamily: "'Playfair Display', serif", color: DS.white, lineHeight: 1.1 }}>{DASH_STAGES[activeStage - 1].name}</div>
-                  <div style={{ fontSize: "11px", color: DASH_STAGES[activeStage - 1].color, fontStyle: "italic", marginTop: "2px" }}>{DASH_STAGES[activeStage - 1].constellation} constellation</div>
+                  <div style={{ fontSize: "16px", fontWeight: "700", fontFamily: "'Playfair Display', serif", color: "#ffffff", lineHeight: 1.1, textShadow: "0 1px 12px rgba(0,0,0,0.9)" }}>{DASH_STAGES[activeStage - 1].name}</div>
+                  <div style={{ fontSize: "11px", color: DASH_STAGES[activeStage - 1].color, fontStyle: "italic", marginTop: "2px", textShadow: "0 1px 8px rgba(0,0,0,0.8)" }}>{DASH_STAGES[activeStage - 1].constellation} constellation</div>
                 </div>
               </div>
-              <div style={{ fontSize: "12px", color: DS.mutedMd, fontStyle: "italic", lineHeight: 1.6, marginBottom: "16px" }}>
+              <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)", fontStyle: "italic", lineHeight: 1.6, marginBottom: "16px", textShadow: "0 1px 10px rgba(0,0,0,0.85)" }}>
                 {activeStage <= 2 ? "Learn to craft precise, structured prompts that activate exactly the knowledge region you need." : "Teach by example, not instruction. Two to five demonstrations illuminate what a thousand words cannot."}
               </div>
               <button
                 onClick={() => { if (onOpenStage) onOpenStage(STAGES[activeStage - 1]); }}
-                style={{ width: "100%", padding: "10px", background: `${DASH_STAGES[activeStage - 1].color}18`, border: `0.5px solid ${DASH_STAGES[activeStage - 1].color}50`, borderRadius: "8px", color: DASH_STAGES[activeStage - 1].color, fontSize: "12px", fontFamily: "'Cormorant Garamond', serif", letterSpacing: "0.1em", cursor: "pointer", transition: "all 0.2s ease" }}
-                onMouseEnter={(e) => e.currentTarget.style.background = `${DASH_STAGES[activeStage - 1].color}28`}
-                onMouseLeave={(e) => e.currentTarget.style.background = `${DASH_STAGES[activeStage - 1].color}18`}>
+                style={{ width: "100%", padding: "12px", background: `linear-gradient(135deg, ${DASH_STAGES[activeStage - 1].color}25, ${DASH_STAGES[activeStage - 1].color}0A)`, border: `1px solid ${DASH_STAGES[activeStage - 1].color}70`, borderRadius: "8px", color: "#ffffff", fontSize: "12px", fontFamily: "'Cormorant Garamond', serif", letterSpacing: "0.1em", cursor: "pointer", transition: "all 0.3s ease", textShadow: "0 1px 8px rgba(0,0,0,0.8)", fontWeight: 600, boxShadow: `0 4px 16px ${DASH_STAGES[activeStage - 1].color}15` }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = `linear-gradient(135deg, ${DASH_STAGES[activeStage - 1].color}40, ${DASH_STAGES[activeStage - 1].color}15)`; e.currentTarget.style.boxShadow = `0 6px 24px ${DASH_STAGES[activeStage - 1].color}30`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = `linear-gradient(135deg, ${DASH_STAGES[activeStage - 1].color}25, ${DASH_STAGES[activeStage - 1].color}0A)`; e.currentTarget.style.boxShadow = `0 4px 16px ${DASH_STAGES[activeStage - 1].color}15`; }}>
                 Continue Charting →
               </button>
             </div>
@@ -7890,6 +7836,16 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
 
       </div>
     </div>
+
+    {/* ─── Streak History Modal ─── */}
+    {historyOpen && (
+      <StreakHistoryModal
+        history={streakHistory || []}
+        streak={currentStreak}
+        onClose={() => setHistoryOpen(false)}
+      />
+    )}
+    </>
   );
 }
 
@@ -7903,6 +7859,11 @@ function lsSet(key, value) {
 function lsDel(key) {
   try { localStorage.removeItem(key); } catch {}
 }
+// User-scoped key: isolates every user's data on the same browser
+function userKey(user, key) {
+  const uid = user?.id || user?.email || "guest";
+  return key + "_" + uid;
+}
 
 export default function App() {
   const [introComplete, setIntroComplete] = useState(false);
@@ -7911,50 +7872,156 @@ export default function App() {
   const [activeStage,  setActiveStage]  = useState(null);
   const [quizOpen,     setQuizOpen]     = useState(false);
 
-  // ─── Persisted progress state ─────────────────────────────────────────────
-  const [completed,             setCompleted]             = useState(() => lsGet("pe_completed", []));
-  const [stageStarsMap,         setStageStarsMap]         = useState(() => lsGet("pe_stageStars", {}));
-  const [streak,                setStreak]                = useState(() => lsGet("pe_streak", 0));
-  const [streakDays,            setStreakDays]            = useState(() => lsGet("pe_streakDays", Array(7).fill(false)));
-  const [challengesDone,        setChallengesDone]        = useState(() => lsGet("pe_challengesDone", 0));
-  const [completedChallengeIds, setCompletedChallengeIds] = useState(() => lsGet("pe_completedChallengeIds", []));
-
-  // Sync persisted state to localStorage whenever it changes
-  useEffect(() => { lsSet("pe_completed",             completed);             }, [completed]);
-  useEffect(() => { lsSet("pe_stageStars",            stageStarsMap);         }, [stageStarsMap]);
-  useEffect(() => { lsSet("pe_streak",                streak);                }, [streak]);
-  useEffect(() => { lsSet("pe_streakDays",            streakDays);            }, [streakDays]);
-  useEffect(() => { lsSet("pe_challengesDone",        challengesDone);        }, [challengesDone]);
-  useEffect(() => { lsSet("pe_completedChallengeIds", completedChallengeIds); }, [completedChallengeIds]);
-
-  // ─── Auth state ───────────────────────────────────────────────────────────
+  // ─── Auth state (declared first — needed by progress key derivation) ────────
   const [user,     setUser]     = useState(() => lsGet("pe_user", null));
   const [authOpen, setAuthOpen] = useState(false);
 
-  const handleLogin = (userData) => { setUser(userData); setAuthOpen(false); lsSet("pe_user", userData); };
-  const handleSignOut = () => {
-    setUser(null); lsDel("pe_user");
-    // Clear all progress on sign-out so a new user starts fresh
-    setCompleted([]); lsDel("pe_completed");
-    setStageStarsMap({}); lsDel("pe_stageStars");
-    setStreak(0); lsDel("pe_streak");
-    setStreakDays(Array(7).fill(false)); lsDel("pe_streakDays");
-    setChallengesDone(0); lsDel("pe_challengesDone");
-    setCompletedChallengeIds([]); lsDel("pe_completedChallengeIds");
-    // Remove daily challenge so the locked screen never persists after logout
-    try { localStorage.removeItem("pe_dailyChallenge_" + new Date().toISOString().slice(0, 10)); } catch {}
+  // ─── Persisted progress state (user-scoped localStorage keys) ────────────
+  // Every key is suffixed with the user ID so two accounts on the same
+  // browser never share progress data.
+  const [completed,             setCompleted]             = useState(() => lsGet(userKey(lsGet("pe_user",null), "pe_completed"), []));
+  const [stageStarsMap,         setStageStarsMap]         = useState(() => lsGet(userKey(lsGet("pe_user",null), "pe_stageStars"), {}));
+  const [streak,                setStreak]                = useState(() => lsGet(userKey(lsGet("pe_user",null), "pe_streak"), 0));
+  const [streakDays,            setStreakDays]            = useState(() => lsGet(userKey(lsGet("pe_user",null), "pe_streakDays"), Array(7).fill(false)));
+  const [challengesDone,        setChallengesDone]        = useState(() => lsGet(userKey(lsGet("pe_user",null), "pe_challengesDone"), 0));
+  const [completedChallengeIds, setCompletedChallengeIds] = useState(() => lsGet(userKey(lsGet("pe_user",null), "pe_completedChallengeIds"), []));
+  // streakHistory: sorted array of 'YYYY-MM-DD' strings for all-time completed days
+  const [streakHistory, setStreakHistory] = useState(() => lsGet(userKey(lsGet("pe_user",null), "pe_streakHistory"), []));
+
+  // Sync progress to user-scoped localStorage on every change
+  useEffect(() => { lsSet(userKey(user, "pe_completed"),             completed);             }, [user, completed]);
+  useEffect(() => { lsSet(userKey(user, "pe_stageStars"),            stageStarsMap);         }, [user, stageStarsMap]);
+  useEffect(() => { lsSet(userKey(user, "pe_streak"),                streak);                }, [user, streak]);
+  useEffect(() => { lsSet(userKey(user, "pe_streakDays"),            streakDays);            }, [user, streakDays]);
+  useEffect(() => { lsSet(userKey(user, "pe_challengesDone"),        challengesDone);        }, [user, challengesDone]);
+  useEffect(() => { lsSet(userKey(user, "pe_completedChallengeIds"), completedChallengeIds); }, [user, completedChallengeIds]);
+  useEffect(() => { lsSet(userKey(user, "pe_streakHistory"),          streakHistory);          }, [user, streakHistory]);
+
+  // ─── Streak integrity checks (run after MongoDB data loads via useProgressSync) ──
+  // These run when streak/streakDays change so they operate on the authoritative
+  // MongoDB-loaded values, not stale localStorage snapshots.
+  const streakCheckedRef = useRef(false);
+  useEffect(() => {
+    // Only run once per session after progress is loaded
+    if (streakCheckedRef.current) return;
+    if (!user) return;
+    streakCheckedRef.current = true;
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const todayIdx = now.getDay() === 0 ? 6 : now.getDay() - 1; // Mon=0…Sun=6
+
+    // ── 1. Break streak if a day was missed ──────────────────────────────────
+    const lastActive = lsGet(userKey(user, "pe_lastActiveDate"), "");
+
+    if (!lastActive) {
+      // No last-active date means the user has never completed a challenge.
+      // Any streakDays/streak stored in state is stale data — clear it.
+      setStreak(0);
+      setStreakDays(Array(7).fill(false));
+      lsSet(userKey(user, "pe_streakWeek"), "");
+      return;
+    }
+
+    const last = new Date(lastActive);
+    last.setHours(0, 0, 0, 0);
+    const daysDiff = Math.round((now - last) / 86400000);
+
+    if (daysDiff >= 2) {
+      // Missed at least one full day — break the streak entirely
+      setStreak(0);
+      setStreakDays(Array(7).fill(false));
+      lsSet(userKey(user, "pe_streakWeek"), "");
+      return;
+    }
+
+    if (daysDiff === 1) {
+      // Was active yesterday but not yet today — clear today's slot so it
+      // doesn't show as "completed" before the user has done anything.
+      setStreakDays(prev => {
+        const next = [...prev];
+        next[todayIdx] = false;
+        return next;
+      });
+    }
+
+    // ── 2. Reset streakDays strip on new week ────────────────────────────────
+    // Use a simple Monday-anchored week key: "YYYY-MM-DD" of this week's Monday
+    const dayOfWeek = now.getDay(); // 0=Sun
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - daysToMonday);
+    const thisWeekKey = monday.toISOString().slice(0, 10);
+    const lastWeekKey = lsGet(userKey(user, "pe_streakWeek"), "");
+
+    if (lastWeekKey !== thisWeekKey) {
+      setStreakDays(Array(7).fill(false));
+      lsSet(userKey(user, "pe_streakWeek"), thisWeekKey);
+    }
+  }, [user, streak, streakDays]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleLogin = (userData) => {
+    streakCheckedRef.current = false; // Allow streak check for new login
+    setUser(userData);
+    setAuthOpen(false);
+    lsSet("pe_user", userData);
+    // Load user-scoped progress from localStorage immediately
+    // (useProgressSync will then override with MongoDB data)
+    setCompleted(lsGet(userKey(userData, "pe_completed"), []));
+    setStageStarsMap(lsGet(userKey(userData, "pe_stageStars"), {}));
+    setStreak(lsGet(userKey(userData, "pe_streak"), 0));
+    setStreakDays(lsGet(userKey(userData, "pe_streakDays"), Array(7).fill(false)));
+    setChallengesDone(lsGet(userKey(userData, "pe_challengesDone"), 0));
+    setCompletedChallengeIds(lsGet(userKey(userData, "pe_completedChallengeIds"), []));
+    setStreakHistory(lsGet(userKey(userData, "pe_streakHistory"), []));
   };
+
+  const handleSignOut = () => {
+    // We do NOT call clearPromptHistory() here.
+    // The history is stored per-user in MongoDB, so it will simply not be loaded
+    // until the user logs in again. Clearing it would permanently delete it!
+    
+    // Wipe the localStorage fallback slot too
+    if (user) {
+      const hKey = `pe_promptHistory_${user.id || user.email}`;
+      lsSet(hKey, []);
+    }
+    setUser(null);
+    lsDel("pe_user");
+    streakCheckedRef.current = false;
+    // Reset state to blank — MongoDB preserves everything for next login
+    setCompleted([]);
+    setStageStarsMap({});
+    setStreak(0);
+    setStreakDays(Array(7).fill(false));
+    setChallengesDone(0);
+    setCompletedChallengeIds([]);
+    setStreakHistory([]);
+    // Daily challenge key is user-scoped and intentionally kept in
+    // localStorage so completed state survives logout/login same day.
+  };
+
+  // ─── Sync progress with MongoDB ───────────────────────────────────────────
+  useProgressSync(
+    user,
+    { completed, stageStars: stageStarsMap, streak, streakDays, challengesDone, completedChallengeIds },
+    { setCompleted, setStageStarsMap, setStreak, setStreakDays, setChallengesDone, setCompletedChallengeIds },
+    streakCheckedRef
+  );
 
   const openStage       = (stage) => { setActiveStage(stage); setView("lesson"); window.scrollTo({ top:0, behavior:"smooth" }); };
   const goBack          = () => { setView("home"); setActiveStage(null); setQuizOpen(false); setTimeout(() => window.scrollTo({ top:0, behavior:"smooth" }), 50); };
   const openLab         = () => { setView("lab"); setQuizOpen(false); window.scrollTo({ top:0, behavior:"smooth" }); };
   const openChallenges  = () => { setView("challenges"); setQuizOpen(false); window.scrollTo({ top:0, behavior:"smooth" }); };
   const openDashboard   = () => { setView("dashboard"); setQuizOpen(false); window.scrollTo({ top:0, behavior:"smooth" }); };
+  const openAbout       = () => { setView("about"); setQuizOpen(false); window.scrollTo({ top:0, behavior:"smooth" }); };
   const handleNav = (dest) => {
     if (dest==="home")       goBack();
     if (dest==="lab")        openLab();
     if (dest==="challenges") openChallenges();
     if (dest==="dashboard")  openDashboard();
+    if (dest==="about")      openAbout();
   };
 
   const handleQuizPass = (stageId, stars) => {
@@ -7963,6 +8030,39 @@ export default function App() {
     const newStarsMap  = { ...stageStarsMap, [stageId]: Math.max(prevStars, stars) };
     setCompleted(newCompleted);
     setStageStarsMap(newStarsMap);
+
+    // ── Streak update ──────────────────────────────────────────────────────
+    // Resolve today's slot index upfront (Mon=0 … Sun=6) so we read the
+    // current render's streakDays snapshot, not a stale setter callback.
+    const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+    const alreadyDoneToday = streakDays[todayIdx];
+
+    // Only count the first activity of the day — passing a quiz when a
+    // challenge was already done (or vice-versa) must not double-increment.
+    if (!alreadyDoneToday) {
+      setStreakDays(prev => {
+        const next = [...prev];
+        next[todayIdx] = true;
+        return next;
+      });
+      setStreak(prev => prev + 1);
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+      lsSet(userKey(user, "pe_lastActiveDate"), todayStr);
+
+      // Write this week's Monday key so the integrity check never sees a
+      // mismatch and silently resets streakDays back to all-false.
+      const _now = new Date(); _now.setHours(0,0,0,0);
+      const _dow = _now.getDay();
+      const _mon = new Date(_now);
+      _mon.setDate(_now.getDate() - (_dow === 0 ? 6 : _dow - 1));
+      lsSet(userKey(user, "pe_streakWeek"), _mon.toISOString().slice(0,10));
+
+      setStreakHistory(prev => {
+        if (prev.includes(todayStr)) return prev;
+        return [...prev, todayStr].sort();
+      });
+    }
   };
 
   const handleChallengeComplete = () => {
@@ -7974,18 +8074,36 @@ export default function App() {
     const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
     const alreadyDoneToday = streakDays[todayIdx];
 
+    // Guard: if already completed today, skip all updates to prevent double-counting.
+    // onComplete can fire from multiple result paths (wrong picks, wrong ranking,
+    // perfect score) so this guard ensures exactly one update per day.
+    if (alreadyDoneToday) return;
+
     setChallengesDone(prev => prev + 1);
 
-    if (!alreadyDoneToday) {
-      // Mark today's slot in the week strip (Mon=0 … Sun=6)
-      setStreakDays(prev => {
-        const next = [...prev];
-        next[todayIdx] = true;
-        return next;
-      });
-      // Increment streak — safe because alreadyDoneToday was resolved above
-      setStreak(prev => prev + 1);
-    }
+    // Mark today's slot in the week strip (Mon=0 ... Sun=6)
+    setStreakDays(prev => {
+      const next = [...prev];
+      next[todayIdx] = true;
+      return next;
+    });
+    // Increment streak — safe because alreadyDoneToday was resolved above
+    setStreak(prev => prev + 1);
+    // Save today's date (user-scoped) so missed-day detection works on next visit
+    const todayStr = new Date().toISOString().slice(0, 10);
+    lsSet(userKey(user, "pe_lastActiveDate"), todayStr);
+    // Write this week's Monday key so the integrity check never sees a
+    // mismatch and silently resets streakDays back to all-false.
+    const _now = new Date(); _now.setHours(0,0,0,0);
+    const _dow = _now.getDay();
+    const _mon = new Date(_now);
+    _mon.setDate(_now.getDate() - (_dow === 0 ? 6 : _dow - 1));
+    lsSet(userKey(user, "pe_streakWeek"), _mon.toISOString().slice(0,10));
+    // Append today to all-time streak history (deduplicated, sorted)
+    setStreakHistory(prev => {
+      if (prev.includes(todayStr)) return prev;
+      return [...prev, todayStr].sort();
+    });
   };
 
   return (
@@ -8007,14 +8125,14 @@ export default function App() {
       </AnimatePresence>
 
       {/* Background layers — fade in only after intro completes, preventing the flash */}
-      <Orbs visible={introComplete}/>
-      <FlyingBook isBackground={view==="lesson" || view==="lab" || view==="challenges" || view==="dashboard"}/>
+      <FrameBackground visible={introComplete}/>
 
       {/* Main content — simple fade in after intro, slightly delayed to match wave fade */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={introComplete ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 1.0, ease: [0.4, 0, 0.2, 1], delay: introComplete ? 0.05 : 0 }}
+        style={{ position: "relative", zIndex: 1 }}
       >
         <Navbar
           onBack={goBack}
@@ -8029,7 +8147,12 @@ export default function App() {
         <AnimatePresence mode="wait">
           {view === "home" && (
             <motion.div key="home" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.3 }}>
-              <HomePage completed={completed} stageStarsMap={stageStarsMap} onOpenStage={openStage} user={user}/>
+              <HomePage completed={completed} stageStarsMap={stageStarsMap} onOpenStage={openStage} onNav={handleNav} user={user}/>
+            </motion.div>
+          )}
+          {view === "about" && (
+            <motion.div key="about" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.3 }}>
+              <AboutPage onBack={goBack}/>
             </motion.div>
           )}
           {view === "lesson" && (
@@ -8045,7 +8168,7 @@ export default function App() {
           )}
           {view === "lab" && (
             <motion.div key="lab" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.3 }}>
-              <PromptLabPage onBack={goBack}/>
+              <PromptLabPage onBack={goBack} user={user}/>
             </motion.div>
           )}
           {view === "challenges" && (
@@ -8055,7 +8178,7 @@ export default function App() {
           )}
           {view === "dashboard" && (
             <motion.div key="dashboard" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.3 }}>
-              <ObservatoryDashboard completed={completed} stageStarsMap={stageStarsMap} streak={streak} streakDays={streakDays} completedChallengeIds={completedChallengeIds} onOpenStage={openStage} user={user}/>
+              <ObservatoryDashboard completed={completed} stageStarsMap={stageStarsMap} streak={streak} streakDays={streakDays} completedChallengeIds={completedChallengeIds} streakHistory={streakHistory} onOpenStage={openStage} user={user}/>
             </motion.div>
           )}
         </AnimatePresence>
