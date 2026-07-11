@@ -7156,7 +7156,7 @@ function DashStreakCalendar({ streak, streakDays }) {
         const barH = heights[i];
         // Brightness ramps from 45% opacity on Mon to 90% on Sun so the
         // rightmost bars are the most vivid — clear "rising" visual effect.
-        const greenOpacity = 0.45 + (i / 6) * 0.45;
+        const blueOpacity = 0.45 + (i / 6) * 0.45;
         return (
           <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
             <div style={{
@@ -7164,17 +7164,17 @@ function DashStreakCalendar({ streak, streakDays }) {
               height: `${barH}px`,
               background: active
                 ? isToday
-                  ? "#7DBFA8"
-                  : `rgba(125,191,168,${greenOpacity})`
+                  ? "#7ec8e8"
+                  : `rgba(126,200,232,${blueOpacity})`
                 : "rgba(168,169,173,0.10)",
               borderRadius: "3px 3px 2px 2px",
               border: active
-                ? isToday ? "1px solid #7DBFA8" : "1px solid rgba(125,191,168,0.4)"
+                ? isToday ? "1px solid #7ec8e8" : "1px solid rgba(126,200,232,0.4)"
                 : "none",
               boxShadow: active
                 ? isToday
-                  ? "0 0 12px rgba(125,191,168,0.5), 0 2px 8px rgba(125,191,168,0.2)"
-                  : `0 0 6px rgba(125,191,168,${greenOpacity * 0.5})`
+                  ? "0 0 12px rgba(126,200,232,0.5), 0 2px 8px rgba(126,200,232,0.2)"
+                  : `0 0 6px rgba(126,200,232,${blueOpacity * 0.5})`
                 : "none",
               transition: "height 0.6s cubic-bezier(0.34,1.56,0.64,1), background 0.4s ease, box-shadow 0.4s ease",
             }} />
@@ -7277,32 +7277,27 @@ function ChallengesCompletedCard({ done, total }) {
   }, []);
 
   const pct       = total > 0 ? done / total : 0;
-  const radius    = 44;
-  const cx        = 60;
-  const cy        = 60;
+  const radius    = 50;
+  const cx        = 70;
+  const cy        = 70;
   const circum    = 2 * Math.PI * radius;
   const dashOffset = circum * (1 - pct);
 
-  // Segment dots around the ring — one per 8 challenges
+  // Segment dots around the ring
   const segments = total;
   const dots = Array.from({ length: segments }, (_, i) => {
     const angle = (i / segments) * 2 * Math.PI - Math.PI / 2;
     const isLit = i < done;
-    const dotR  = 58;
+    const dotR  = 64;
     return {
       x: cx + dotR * Math.cos(angle),
       y: cy + dotR * Math.sin(angle),
       lit: isLit,
-      color: isLit ? `hsl(${180 + i * 3}, 35%, 68%)` : "rgba(168,169,173,0.12)",
     };
   });
 
-  // Color shifts from silver → warm gold as completion grows
-  const ringColor = pct < 0.33
-    ? "#A8A9AD"
-    : pct < 0.66
-    ? "#C4B07A"
-    : "#D4C4A8";
+  // Dynamic glow color matching the icy theme
+  const ringColor = pct < 0.5 ? "#7ec8e8" : pct < 1 ? "#aaddff" : "#6bffb8";
 
   return (
     <div className="obs-card" style={{
@@ -7317,41 +7312,41 @@ function ChallengesCompletedCard({ done, total }) {
       position: "relative",
       overflow: "hidden",
     }}>
-      {/* Subtle radial glow behind ring */}
+      {/* Subtle radial glow behind ring - reduced intensity */}
       <div style={{
-        position: "absolute", top: "30%", left: "50%", transform: "translate(-50%,-50%)",
-        width: "120px", height: "120px",
-        background: `radial-gradient(circle, ${ringColor}12 0%, transparent 70%)`,
+        position: "absolute", top: "35%", left: "50%", transform: "translate(-50%,-50%)",
+        width: "140px", height: "140px",
+        background: `radial-gradient(circle, ${ringColor}15 0%, transparent 55%)`,
         pointerEvents: "none",
         transition: "background 1s ease",
       }} />
 
-      <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: "rgba(168,169,173,0.5)", marginBottom: "14px", alignSelf: "flex-start" }}>
+      <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.18em", color: "rgba(255,255,255,0.85)", marginBottom: "14px", alignSelf: "flex-start" }}>
         CHALLENGES COMPLETED
       </div>
 
       {/* Ring */}
-      <svg width="120" height="120" viewBox="0 0 120 120" style={{ overflow: "visible", flexShrink: 0 }}>
+      <svg width="140" height="140" viewBox="0 0 140 140" style={{ overflow: "visible", flexShrink: 0 }}>
         <defs>
           <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={ringColor} stopOpacity="0.4" />
-            <stop offset="100%" stopColor={ringColor} stopOpacity="1" />
+            <stop offset="0%" stopColor={ringColor} stopOpacity="0.6" />
+            <stop offset="100%" stopColor={ringColor} stopOpacity="0.9" />
           </linearGradient>
           <filter id="ringGlow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.5" result="b"/>
+            <feGaussianBlur stdDeviation="2.0" result="b"/>
             <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
         </defs>
 
         {/* Track */}
         <circle cx={cx} cy={cy} r={radius}
-          fill="none" stroke="rgba(168,169,173,0.07)" strokeWidth="5" />
+          fill="none" stroke="rgba(126,200,232,0.06)" strokeWidth="6" />
 
         {/* Progress arc */}
         <circle cx={cx} cy={cy} r={radius}
           fill="none"
           stroke="url(#ringGrad)"
-          strokeWidth="5"
+          strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={circum}
           strokeDashoffset={dashOffset}
@@ -7362,26 +7357,26 @@ function ChallengesCompletedCard({ done, total }) {
 
         {/* Segment tick marks */}
         {dots.map((d, i) => (
-          <circle key={i} cx={d.x} cy={d.y} r={i < done ? 1.8 : 1.2}
-            fill={d.color}
-            style={{ transition: "fill 0.4s ease, r 0.3s ease" }}
+          <circle key={i} cx={d.x} cy={d.y} r={d.lit ? 2.2 : 1.2}
+            fill={d.lit ? ringColor : "rgba(126,200,232,0.12)"}
+            style={{ transition: "fill 0.4s ease, r 0.3s ease", filter: d.lit ? "url(#ringGlow)" : "none" }}
           >
             {d.lit && (
-              <animate attributeName="opacity" values="0.6;1;0.6"
+              <animate attributeName="opacity" values="0.7;1;0.7"
                 dur={`${2 + (i % 5) * 0.3}s`} begin={`${(i * 0.1) % 1.5}s`} repeatCount="indefinite" />
             )}
           </circle>
         ))}
 
         {/* Centre: animated count */}
-        <text x={cx} y={cy - 8} textAnchor="middle"
-          fill="#FFFFFF" fontSize="26" fontWeight="700"
+        <text x={cx} y={cy - 4} textAnchor="middle"
+          fill="#FFFFFF" fontSize="34" fontWeight="700"
           fontFamily="'Playfair Display', serif"
-          style={{ transition: "fill 0.5s" }}>
+          style={{ transition: "fill 0.5s", textShadow: `0 0 8px ${ringColor}40` }}>
           {displayCount}
         </text>
-        <text x={cx} y={cy + 10} textAnchor="middle"
-          fill="rgba(168,169,173,0.45)" fontSize="10"
+        <text x={cx} y={cy + 18} textAnchor="middle"
+          fill="rgba(255,255,255,0.85)" fontSize="12" fontWeight="500" letterSpacing="0.08em"
           fontFamily="'Cormorant Garamond', serif">
           of {total}
         </text>
@@ -7392,36 +7387,35 @@ function ChallengesCompletedCard({ done, total }) {
           const tx = cx + radius * Math.cos(angle);
           const ty = cy + radius * Math.sin(angle);
           return (
-            <circle cx={tx} cy={ty} r="4" fill={ringColor} filter="url(#ringGlow)">
-              <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/>
+            <circle cx={tx} cy={ty} r="5" fill="#ffffff" filter="url(#ringGlow)">
+              <animate attributeName="opacity" values="1;0.7;1" dur="1.5s" repeatCount="indefinite"/>
             </circle>
           );
         })()}
       </svg>
 
       {/* Bottom: segmented fill bar */}
-      <div style={{ width: "100%", marginTop: "16px" }}>
-        <div style={{ display: "flex", gap: "3px" }}>
+      <div style={{ width: "100%", marginTop: "28px" }}>
+        <div style={{ display: "flex", gap: "4px" }}>
           {Array.from({ length: Math.min(total, 16) }, (_, i) => {
-            // Each segment represents total/16 challenges
-            const threshold = Math.round((i + 1) * total / 16);
             const lit = done >= Math.round(i * total / 16) + 1;
             return (
               <div key={i} style={{
-                flex: 1, height: "3px", borderRadius: "2px",
-                background: lit ? ringColor : "rgba(168,169,173,0.08)",
-                opacity: lit ? (0.4 + (i / 16) * 0.6) : 1,
-                transition: `background 0.3s ease ${i * 0.03}s`,
+                flex: 1, height: "4px", borderRadius: "2px",
+                background: lit ? ringColor : "rgba(126,200,232,0.08)",
+                opacity: lit ? (0.6 + (i / 16) * 0.4) : 1,
+                boxShadow: lit ? `0 0 4px ${ringColor}30` : "none",
+                transition: `all 0.3s ease ${i * 0.03}s`,
               }} />
             );
           })}
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "6px" }}>
-          <span style={{ fontSize: "9px", color: "rgba(168,169,173,0.3)", fontFamily: "'Cormorant Garamond', serif" }}>0</span>
-          <span style={{ fontSize: "9px", color: pct >= 0.5 ? ringColor : "rgba(168,169,173,0.3)", fontFamily: "'Cormorant Garamond', serif", transition: "color 0.5s" }}>
-            {Math.round(pct * 100)}% complete
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
+          <span style={{ fontSize: "11px", fontWeight: "600", color: "rgba(255,255,255,0.7)", fontFamily: "'Special Elite', monospace" }}>0</span>
+          <span style={{ fontSize: "11px", fontWeight: "600", color: pct >= 0.5 ? ringColor : "rgba(255,255,255,0.7)", fontFamily: "'Special Elite', monospace", letterSpacing: "0.06em", transition: "color 0.5s", textShadow: pct >= 0.5 ? `0 0 4px ${ringColor}30` : "none" }}>
+            {Math.round(pct * 100)}% COMPLETE
           </span>
-          <span style={{ fontSize: "9px", color: "rgba(168,169,173,0.3)", fontFamily: "'Cormorant Garamond', serif" }}>{total}</span>
+          <span style={{ fontSize: "11px", fontWeight: "600", color: "rgba(255,255,255,0.7)", fontFamily: "'Special Elite', monospace" }}>{total}</span>
         </div>
       </div>
     </div>
@@ -7710,7 +7704,7 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
         <div className="obs-card" style={{ background: DS.card, border: `0.5px solid ${cardBorder}`, borderRadius: "14px", padding: "24px 20px 16px", marginBottom: "20px", animationDelay: "80ms" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <div>
-              <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "3px" }}>CONSTELLATION PROGRESS</div>
+              <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.18em", color: "rgba(255,255,255,0.85)", marginBottom: "3px" }}>CONSTELLATION PROGRESS</div>
               <div style={{ fontSize: "18px", fontWeight: "700", fontFamily: "'Playfair Display', serif", color: DS.white }}>Orion's Method</div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -7737,7 +7731,7 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
 
           {/* XP Arc */}
           <div className="obs-card" style={{ background: DS.card, border: `0.5px solid ${cardBorder}`, borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", animationDelay: "160ms" }}>
-            <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "12px", alignSelf: "flex-start" }}>LUMINANCE</div>
+            <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.18em", color: "rgba(255,255,255,0.85)", marginBottom: "12px", alignSelf: "flex-start" }}>STAGE PROGRESS</div>
             <div className="obs-float"><DashXPArcMeter percent={xpPercent} /></div>
             <div style={{ marginTop: "8px", textAlign: "center" }}>
               <div style={{ fontSize: "15px", fontWeight: "700", fontFamily: "'Playfair Display', serif", color: DS.silverLt }}>{xpCurrent.toLocaleString()}</div>
@@ -7750,12 +7744,12 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
 
           {/* Daily Challenges Streak */}
           <div className="obs-card" style={{ background: DS.card, border: `0.5px solid ${cardBorder}`, borderRadius: "14px", padding: "20px", animationDelay: "240ms" }}>
-            <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "14px" }}>DAILY CHALLENGES</div>
+            <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.18em", color: "rgba(255,255,255,0.85)", marginBottom: "14px" }}>DAILY CHALLENGES</div>
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "18px" }}>
               <div style={{ fontSize: "42px", fontWeight: "700", fontFamily: "'Playfair Display', serif", lineHeight: 1, color: currentStreak > 0 ? DS.white : "rgba(168,169,173,0.3)" }}>{currentStreak}</div>
               <div>
                 <div style={{ fontSize: "13px", color: DS.silver }}>day streak</div>
-                <div style={{ fontSize: "11px", color: currentStreak > 0 ? "#7DBFA8" : DS.muted, fontStyle: "italic" }}>
+                <div style={{ fontSize: "11px", color: currentStreak > 0 ? "#7ec8e8" : DS.muted, fontStyle: "italic" }}>
                   {currentStreak > 0 ? "challenges completed" : "no streak yet"}
                 </div>
               </div>
@@ -7798,7 +7792,7 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
         <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: "16px" }}>
           {/* Stage List */}
           <div className="obs-card" style={{ background: DS.card, border: `0.5px solid ${cardBorder}`, borderRadius: "14px", padding: "20px", animationDelay: "400ms" }}>
-            <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "14px" }}>JOURNEY</div>
+            <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.18em", color: "rgba(255,255,255,0.85)", marginBottom: "14px" }}>JOURNEY</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
               {DASH_STAGES.map((stage) => (
                 <div key={stage.id} className="obs-stage-row" onMouseEnter={() => setHoveredStage(stage.id)} onMouseLeave={() => setHoveredStage(null)} style={{ borderRadius: "8px", transition: "all 0.2s ease" }}>
@@ -7834,7 +7828,7 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
             </div>
 
             <div className="obs-card" style={{ background: DS.card, border: `0.5px solid ${cardBorder}`, borderRadius: "14px", padding: "18px 20px", animationDelay: "560ms" }}>
-              <div style={{ fontSize: "10px", letterSpacing: "0.18em", color: DS.muted, marginBottom: "10px" }}>NEXT IN ORBIT</div>
+              <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.18em", color: "rgba(255,255,255,0.85)", marginBottom: "10px" }}>NEXT IN ORBIT</div>
               {DASH_STAGES.slice(activeStage, Math.min(activeStage + 2, 11)).map((stage) => (
                 <div key={stage.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 0", borderBottom: "0.5px solid rgba(168,169,173,0.07)", opacity: 0.45 }}>
                   <span style={{ fontSize: "13px", color: stage.color }}>{stage.icon}</span>

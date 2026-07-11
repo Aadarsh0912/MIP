@@ -1,5 +1,8 @@
+# pyrefly: ignore [missing-import]
 from flask import Blueprint, request, jsonify
+# pyrefly: ignore [missing-import]
 from flask_jwt_extended import jwt_required, get_current_user
+# pyrefly: ignore [missing-import]
 from bson import ObjectId
 
 from extensions import mongo

@@ -134,14 +134,40 @@
   /* ─── Input field ─── */
   function Field({ label, type = "text", placeholder, value, onChange, delay = 0, error }) {
     const [focused, setFocused] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const isPassword = type === "password";
+    const inputType = isPassword ? (showPassword ? "text" : "password") : type;
+
     return (
       <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay }} style={{ marginBottom:"18px" }}>
         <label style={{ display:"block", fontSize:"10px", letterSpacing:"0.22em", textTransform:"uppercase", color: error ? C.error : C.silverDim, marginBottom:"7px", fontFamily:"'Special Elite', monospace", textShadow: focused ? `0 0 8px ${C.ice}60` : "none", transition:"text-shadow 0.3s" }}>{label}</label>
-        <input
-          type={type} placeholder={placeholder} value={value} onChange={onChange}
-          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-          style={{ width:"100%", padding:"12px 15px", background: focused ? "rgba(126,200,232,0.05)" : "rgba(255,255,255,0.03)", border: `1px solid ${error ? C.error : focused ? "rgba(126,200,232,0.45)" : "rgba(200,205,214,0.15)"}`, borderRadius:"6px", color:"#fff", fontSize:"14px", fontFamily:"'Cormorant Garamond', serif", outline:"none", boxSizing:"border-box", boxShadow: focused ? `0 0 14px rgba(126,200,232,0.12), inset 0 0 8px rgba(126,200,232,0.04)` : "none", transition:"all 0.3s", letterSpacing:"0.04em" }}
-        />
+        <div style={{ position: "relative" }}>
+          <input
+            type={inputType} placeholder={placeholder} value={value} onChange={onChange}
+            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+            style={{ width:"100%", padding:"12px 15px", paddingRight: isPassword ? "40px" : "15px", background: focused ? "rgba(126,200,232,0.05)" : "rgba(255,255,255,0.03)", border: `1px solid ${error ? C.error : focused ? "rgba(126,200,232,0.45)" : "rgba(200,205,214,0.15)"}`, borderRadius:"6px", color:"#fff", fontSize:"14px", fontFamily:"'Cormorant Garamond', serif", outline:"none", boxSizing:"border-box", boxShadow: focused ? `0 0 14px rgba(126,200,232,0.12), inset 0 0 8px rgba(126,200,232,0.04)` : "none", transition:"all 0.3s", letterSpacing:"0.04em" }}
+          />
+          {isPassword && (
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{ position:"absolute", right:"10px", top:"50%", transform:"translateY(-50%)", background:"none", border:"none", color: focused ? C.ice : C.silverDim, cursor:"pointer", padding:"5px", display:"flex", alignItems:"center", justifyContent:"center", transition:"color 0.3s" }}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              )}
+            </button>
+          )}
+        </div>
         {error && <p style={{ color: C.error, fontSize:"11px", marginTop:"4px", fontFamily:"'Cormorant Garamond', serif" }}>{error}</p>}
       </motion.div>
     );

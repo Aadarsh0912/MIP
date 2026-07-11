@@ -1,9 +1,14 @@
 import logging
 
+# pyrefly: ignore [missing-import]
 import certifi
+# pyrefly: ignore [missing-import]
 from bson import ObjectId
+# pyrefly: ignore [missing-import]
 from flask import Flask, request, Response
+# pyrefly: ignore [missing-import]
 from pymongo import MongoClient
+# pyrefly: ignore [missing-import]
 from pymongo.errors import ConnectionFailure
 
 from config import Config
@@ -76,7 +81,6 @@ def _init_mongo(app: Flask) -> None:
     try:
         client = MongoClient(
             app.config["MONGO_URI"],
-            tlsCAFile=ca,
             serverSelectionTimeoutMS=5_000,  # fail fast instead of hanging
         )
         # Eagerly verify the connection so misconfiguration surfaces at startup

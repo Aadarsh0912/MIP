@@ -119,6 +119,9 @@ your password has not been changed.
     msg["Subject"] = "Reset your Prompt Mastery password"
     msg["From"]    = cfg["MAIL_SENDER"]
     msg["To"]      = to_email
+    
+    current_app.logger.info(f"\n{'='*50}\nPassword Reset Link for {to_email}:\n{reset_url}\n{'='*50}\n")
+    
     msg.attach(MIMEText(plain, "plain"))
     msg.attach(MIMEText(html,  "html"))
 
