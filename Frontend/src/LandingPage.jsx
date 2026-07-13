@@ -7863,6 +7863,140 @@ function ObservatoryDashboard({ completed, stageStarsMap, streak, streakDays, co
   );
 }
 
+// ─── Onboarding Modal ────────────────────────────────────────────────────────
+const ONBOARD_STEPS = [
+  {
+    icon: "◈", color: "#7ec8e8",
+    title: "Welcome to the Observatory",
+    body: "Your mission: master the art of prompting. 11 stages, real AI feedback, and a journey from basics to mastery.",
+  },
+  {
+    icon: "✦", color: "#e2e6ed",
+    title: "Study. Practice. Level Up.",
+    body: "Work through each stage → test yourself in the Prompt Lab → complete Daily Challenges to build your streak and XP.",
+  },
+  {
+    icon: "◉", color: "#7ec8e8",
+    title: "Everything Syncs. Nothing Is Lost.",
+    body: "Your Observatory Dashboard tracks your stage progress, streak, and challenge history — synced to the cloud on every device.",
+  },
+];
+
+function OnboardingModal({ onDone }) {
+  const [step, setStep] = useState(0);
+  const [dir,  setDir]  = useState(1);
+  const s = ONBOARD_STEPS[step];
+  const isLast = step === ONBOARD_STEPS.length - 1;
+  const go = (next) => { setDir(next > step ? 1 : -1); setStep(next); };
+
+  return (
+    <motion.div
+      key="onboarding-overlay"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 600,
+        background: "rgba(8,8,15,0.92)", backdropFilter: "blur(14px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 28, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          background: "linear-gradient(160deg, #0d0e14 0%, #0f111c 100%)",
+          border: "1px solid rgba(126,200,232,0.22)",
+          borderRadius: "22px",
+          padding: "48px 48px 36px",
+          maxWidth: "440px", width: "90%",
+          position: "relative",
+          boxShadow: "0 0 100px rgba(126,200,232,0.07), 0 0 0 1px rgba(200,205,214,0.05), 0 32px 64px rgba(0,0,0,0.7)",
+        }}
+      >
+        {/* Skip */}
+        <button onClick={onDone} style={{
+          position: "absolute", top: "16px", right: "18px",
+          background: "rgba(126,200,232,0.08)",
+          border: "1px solid rgba(126,200,232,0.28)",
+          borderRadius: "8px",
+          cursor: "pointer",
+          color: "#7ec8e8", fontSize: "11px",
+          letterSpacing: "0.14em", fontFamily: "inherit",
+          padding: "5px 10px",
+        }}>SKIP</button>
+
+        {/* Site Logo — same as Navbar */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+          <svg width="54" height="54" viewBox="0 0 26 26"
+            style={{ filter: "drop-shadow(0 0 8px rgba(168,169,173,0.55))" }}>
+            <circle cx="13" cy="13" r="12" stroke="#A8A9AD" strokeWidth="0.7" strokeDasharray="4 2" />
+            <circle cx="13" cy="13" r="7"  stroke="#A8A9AD" strokeWidth="0.45" opacity="0.35" />
+            <polygon points="13,7 15,11 19.5,11 16,14 17.5,18.5 13,15.5 8.5,18.5 10,14 6.5,11 11,11"
+              fill="#C8C9CC" opacity="0.92"/>
+          </svg>
+        </div>
+
+        {/* Text */}
+        <AnimatePresence mode="wait">
+          <motion.div key={step + "-text"}
+            initial={{ opacity: 0, x: dir * 28 }} animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: dir * -28 }} transition={{ duration: 0.28 }}
+          >
+            <div style={{
+              fontSize: "20px", fontWeight: "700",
+              fontFamily: "'Playfair Display', serif",
+              color: "#e2e6ed", textAlign: "center",
+              marginBottom: "13px", lineHeight: 1.3,
+              textShadow: "0 0 30px rgba(126,200,232,0.15)",
+            }}>{s.title}</div>
+            <div style={{
+              fontSize: "13.5px", color: "#8a8f9a",
+              textAlign: "center", lineHeight: 1.8,
+            }}>{s.body}</div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Progress dots */}
+        <div style={{ display: "flex", justifyContent: "center", gap: "8px", margin: "28px 0 24px" }}>
+          {ONBOARD_STEPS.map((_, i) => (
+            <div key={i} onClick={() => go(i)} style={{
+              width: i === step ? "22px" : "6px", height: "6px",
+              borderRadius: "3px", cursor: "pointer",
+              background: i === step ? "#7ec8e8" : "rgba(126,200,232,0.18)",
+              boxShadow: i === step ? "0 0 8px rgba(126,200,232,0.55)" : "none",
+              transition: "all 0.3s ease",
+            }} />
+          ))}
+        </div>
+
+        {/* Buttons */}
+        <div style={{ display: "flex", gap: "10px" }}>
+          {step > 0 && (
+            <button onClick={() => go(step - 1)} style={{
+              flex: 1, padding: "11px",
+              background: "rgba(200,205,214,0.06)",
+              border: "1px solid rgba(200,205,214,0.14)",
+              borderRadius: "10px", cursor: "pointer",
+              color: "#8a8f9a", fontSize: "13px",
+              fontFamily: "inherit",
+            }}>← Back</button>
+          )}
+          <button onClick={isLast ? onDone : () => go(step + 1)} style={{
+            flex: 2, padding: "12px",
+            background: "linear-gradient(135deg, #7ec8e8, #4aa8d0)",
+            border: "none", borderRadius: "10px",
+            color: "#07090e", cursor: "pointer",
+            fontSize: "13px", fontWeight: "700",
+            fontFamily: "inherit", letterSpacing: "0.04em",
+            boxShadow: "0 4px 20px rgba(126,200,232,0.28)",
+          }}>{isLast ? "Begin Your Journey →" : "Next →"}</button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ─── localStorage helpers ─────────────────────────────────────────────────────
 function lsGet(key, fallback) {
   try { const s = localStorage.getItem(key); return s !== null ? JSON.parse(s) : fallback; } catch { return fallback; }
@@ -7887,8 +8021,9 @@ export default function App() {
   const [quizOpen,     setQuizOpen]     = useState(false);
 
   // ─── Auth state (declared first — needed by progress key derivation) ────────
-  const [user,     setUser]     = useState(() => lsGet("pe_user", null));
-  const [authOpen, setAuthOpen] = useState(false);
+  const [user,           setUser]           = useState(() => lsGet("pe_user", null));
+  const [authOpen,       setAuthOpen]       = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // ─── Persisted progress state (user-scoped localStorage keys) ────────────
   // Every key is suffixed with the user ID so two accounts on the same
@@ -7980,6 +8115,9 @@ export default function App() {
     setUser(userData);
     setAuthOpen(false);
     lsSet("pe_user", userData);
+    // Show onboarding only for first-time users
+    const onboardKey = `pe_onboarded_${userData.id || userData.email}`;
+    if (!lsGet(onboardKey, false)) setShowOnboarding(true);
     // Load user-scoped progress from localStorage immediately
     // (useProgressSync will then override with MongoDB data)
     setCompleted(lsGet(userKey(userData, "pe_completed"), []));
@@ -8217,6 +8355,17 @@ export default function App() {
               <NeoNoirAuth onLogin={handleLogin} />
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Onboarding Modal ─────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showOnboarding && (
+          <OnboardingModal onDone={() => {
+            setShowOnboarding(false);
+            const onboardKey = `pe_onboarded_${user?.id || user?.email}`;
+            lsSet(onboardKey, true);
+          }} />
         )}
       </AnimatePresence>
     </>
